@@ -12,6 +12,7 @@ namespace Hoist.Models
         [Required]
         public string? BTUserId { get; set; }
 
+
         public string? Description { get; set; }
 
 

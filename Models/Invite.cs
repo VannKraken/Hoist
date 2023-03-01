@@ -46,8 +46,8 @@ namespace Hoist.Models
         [NotMapped]
         public string? InviteeFullName { get { return $"{InviteeFirstName} {InviteeLastName}"; } }
 
-     
 
+        [StringLength(20000, ErrorMessage = " The {0} must be at least {2} and at most {1} characters.", MinimumLength = 2)]
         public string? Message { get; set; }
 
         public bool IsValid { get; set; }

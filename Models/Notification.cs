@@ -23,10 +23,12 @@ namespace Hoist.Models
 
         [Required]
         [Display(Name="Subject")]
+        [StringLength(200, ErrorMessage = " The {0} must be at least {2} and at most {1} characters.", MinimumLength = 2)]
         public string? Title { get; set; }
 
 
         [Required]
+        [StringLength(10000, ErrorMessage = " The {0} must be at least {2} and at most {1} characters.", MinimumLength = 2)]
         public string? Message { get; set; }
 
 

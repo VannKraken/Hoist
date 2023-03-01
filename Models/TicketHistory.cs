@@ -14,7 +14,7 @@ namespace Hoist.Models
         [Display(Name = "Updated Property")]      
         public string? PropertyName{get; set;}
 
-        
+        [StringLength(5000, ErrorMessage = " The {0} must be at least {2} and at most {1} characters.", MinimumLength = 2)]
         public string? Description { get; set;}
 
 
