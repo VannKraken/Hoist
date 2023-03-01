@@ -7,15 +7,18 @@ namespace Hoist.Models
         public int Id { get; set; }
 
         [Required]
-        public string? HoistUserId { get; set;}
+        public string? BTUserId { get; set;}
 
         public int TicketId { get; set; }
 
-
+        [Display(Name = "Updated Property")]      
         public string? PropertyName{get; set;}
 
+        
         public string? Description { get; set;}
 
+
+        [DataType(DataType.DateTime)]
         public DateTime Created { get; set;}
 
         public string? OldValue { get; set;}
@@ -26,7 +29,7 @@ namespace Hoist.Models
 
         public virtual Ticket? Ticket { get; set;}
 
-        public virtual HoistUser? HoistUser { get; set;}
+        public virtual BTUser? BTUser { get; set;}
 
 
 

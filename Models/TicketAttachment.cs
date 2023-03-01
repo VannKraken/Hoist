@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hoist.Models
 {
@@ -8,9 +9,13 @@ namespace Hoist.Models
 
         public int TicketId { get; set; }
 
-        public string? HoistUserId { get; set; }
+        [Required]
+        public string? BTUserId { get; set; }
+
         public string? Description { get; set; }
 
+
+        [DataType(DataType.DateTime)]
         public DateTime Created { get; set; }
 
         public byte[]? FileData { get; set; }
@@ -25,7 +30,7 @@ namespace Hoist.Models
 
         public virtual Ticket? Ticket { get; set; }
 
-        public virtual HoistUser? HoistUser { get; set; }
+        public virtual BTUser? BTUser { get; set; }
 
 
     }

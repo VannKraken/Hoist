@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hoist.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<HoistUser>
+    public class ApplicationDbContext : IdentityDbContext<BTUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

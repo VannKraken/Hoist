@@ -16,9 +16,18 @@ namespace Hoist.Models
 
         [Required]
         public string? Description { get; set; }
-        
+
+        [DataType(DataType.DateTime)]
         public DateTime Created { get; set; }
+
+
+        [Display(Name="Start Date")]
+        [DataType(DataType.DateTime)]
         public DateTime StartDate { get; set; }
+
+
+        [Display(Name="End Date")]
+        [DataType(DataType.DateTime)]
         public DateTime EndDate { get; set; }
 
         public bool Archived { get; set; }
@@ -39,7 +48,7 @@ namespace Hoist.Models
 
         public virtual ProjectPriority? ProjectPriority { get; set; }
         
-        public virtual ICollection<HoistUser> Members { get; set; } = new HashSet<HoistUser>();
+        public virtual ICollection<BTUser> Members { get; set; } = new HashSet<BTUser>();
 
         public virtual ICollection<Ticket> Tickets { get; } = new HashSet<Ticket>();
 

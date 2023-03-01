@@ -18,18 +18,24 @@ namespace Hoist.Models
 
 
         public string? DeveloperUserId { get; set; }
+
         [Required]
         public string? SubmitterUserId { get; set; }
 
 
         [Required]
+        [Display(Name = "Subject")]
         public string? Title { get; set; }
 
         [Required]
         public string? Description { get; set; }
 
+
+        [DataType(DataType.DateTime)]
         public DateTime Created { get; set; }
 
+
+        [DataType(DataType.DateTime)]
         public DateTime? Updated { get; set; }
 
         public bool Archived { get; set; }
@@ -47,9 +53,9 @@ namespace Hoist.Models
 
         public virtual TicketPriority? TicketPriority { get; set; }
 
-        public virtual HoistUser? DeveloperUser {get; set; }
+        public virtual BTUser? DeveloperUser {get; set; }
 
-        public virtual HoistUser? SubmitterUser { get; set; }
+        public virtual BTUser? SubmitterUser { get; set; }
 
         public virtual ICollection<TicketComment> Comments { get; set; } = new HashSet<TicketComment>();
 

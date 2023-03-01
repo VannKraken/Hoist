@@ -7,8 +7,12 @@ namespace Hoist.Models
     {
         public int Id { get; set; }
 
+        [Display(Name = "Invite Date")]
+        [DataType(DataType.DateTime)]
         public DateTime InviteDate { get; set; }
 
+        [Display(Name = "Join Date")]
+        [DataType(DataType.DateTime)]
         public DateTime? JoinDate { get; set; }
 
         public Guid CompanyToken { get; set; }
@@ -26,7 +30,7 @@ namespace Hoist.Models
         //
 
         [Required]
-        [Display(Name = "Invitee Email")]
+        [Display(Name = "Email")]
         public string? InviteeEmail { get; set; }
 
         [Required]
@@ -49,11 +53,11 @@ namespace Hoist.Models
         public bool IsValid { get; set; }
 
         //Navigation
-         public virtual Company? Company { get; set; }
+        public virtual Company? Company { get; set; }
 
         public virtual Project? Project { get; set; }
 
-        public virtual HoistUser? Invitor { get; set; }
-        public virtual HoistUser? Invitee { get; set; }
+        public virtual BTUser? Invitor { get; set; }
+        public virtual BTUser? Invitee { get; set; }
     }
 }

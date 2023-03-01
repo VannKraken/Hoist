@@ -8,11 +8,13 @@ namespace Hoist.Models
 
         public int TicketId { get; set; }
 
-        public string? HoistUserId { get; set; }
+        public string? BTUserId { get; set; }
 
         [Required]
         public string? Comment{ get; set; }
 
+
+        [DataType(DataType.DateTime)]
         public DateTime Created { get; set; }
 
 
@@ -20,7 +22,7 @@ namespace Hoist.Models
 
         public virtual Ticket? Ticket { get; set; }
 
-        public virtual HoistUser? HoistUser { get; set; }
+        public virtual BTUser? BTUser { get; set; }
 
     }
 }
