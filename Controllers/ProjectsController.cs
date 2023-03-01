@@ -7,16 +7,24 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Hoist.Data;
 using Hoist.Models;
+using Microsoft.AspNetCore.Identity;
+using Hoist.Services.Interfaces;
 
 namespace Hoist.Controllers
 {
     public class ProjectsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<BTUser> _userManager;
+        private readonly SignInManager<BTUser> _signInManager;
+        private readonly IBTFileService _btFileService;
 
-        public ProjectsController(ApplicationDbContext context)
+        public ProjectsController(ApplicationDbContext context, UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, IBTFileService btFileService)
         {
             _context = context;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _btFileService = btFileService;
         }
 
         // GET: Projects
@@ -50,7 +58,7 @@ namespace Hoist.Controllers
         public IActionResult Create()
         {
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name");
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Id");
+            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name");
             return View();
         }
 
@@ -59,10 +67,36 @@ namespace Hoist.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CompanyId,ProjectPriorityId,Name,Description,Created,StartDate,EndDate,Archived,FileData,FileType")] Project project)
+        public async Task<IActionResult> Create([Bind("Id,CompanyId,ProjectPriorityId,Name,Description,Created,StartDate,EndDate,Archived,FileData,FileType,FormFile")] Project project)
         {
+            ModelState.Remove("CompanyId");
+
             if (ModelState.IsValid)
             {
+                string? userId = _userManager.GetUserId(User);
+
+
+                project.CompanyId = _context.Users.Single(u => u.Id == userId).CompanyId;
+
+
+                //TODO Created Date and date for post gres
+                project.Created = DataUtility.GetPostGresDate(DateTime.UtcNow);
+                project.StartDate = DataUtility.GetPostGresDate(project.StartDate);
+                project.EndDate = DataUtility.GetPostGresDate(project.EndDate);
+
+                //Archived
+                project.Archived = false;
+
+
+                //TODO File conversion
+                if (project.FormFile != null)
+                {
+                    project.FileData = await _btFileService.ConvertFileToByteArrayAsync(project.FormFile);
+                    project.FileType = project.FormFile.ContentType;
+                }
+
+
+
                 _context.Add(project);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -161,14 +195,14 @@ namespace Hoist.Controllers
             {
                 _context.Projects.Remove(project);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ProjectExists(int id)
         {
-          return (_context.Projects?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Projects?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

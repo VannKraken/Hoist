@@ -10,14 +10,14 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Create" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
+            @*<div class="form-group">
                 <label asp-for="CompanyId" class="control-label"></label>
                 <select asp-for="CompanyId" class ="form-control" asp-items="ViewBag.CompanyId"></select>
-            </div>
+            </div>*@
             <div class="form-group">
-                <label asp-for="ProjectPriorityId" class="control-label"></label>
+                <label asp-for="ProjectPriorityId" class="control-label">Priority</label>
                 <select asp-for="ProjectPriorityId" class ="form-control" asp-items="ViewBag.ProjectPriorityId"></select>
             </div>
             <div class="form-group">
@@ -30,11 +30,11 @@
                 <input asp-for="Description" class="form-control" />
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            @*<div class="form-group">
                 <label asp-for="Created" class="control-label"></label>
                 <input asp-for="Created" class="form-control" />
                 <span asp-validation-for="Created" class="text-danger"></span>
-            </div>
+            </div>*@
             <div class="form-group">
                 <label asp-for="StartDate" class="control-label"></label>
                 <input asp-for="StartDate" class="form-control" />
@@ -45,20 +45,11 @@
                 <input asp-for="EndDate" class="form-control" />
                 <span asp-validation-for="EndDate" class="text-danger"></span>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="Archived" /> @Html.DisplayNameFor(model => model.Archived)
-                </label>
-            </div>
             <div class="form-group">
-                <label asp-for="FileData" class="control-label"></label>
-                <input asp-for="FileData" class="form-control" />
-                <span asp-validation-for="FileData" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="FileType" class="control-label"></label>
-                <input asp-for="FileType" class="form-control" />
-                <span asp-validation-for="FileType" class="text-danger"></span>
+                <label asp-for="FormFile" class="control-label">File</label>
+                <img class="img-fluid border rounded-3 m-2" style="max-height: 250px;" src="~/img/DefaultBlogImage.svg" id="fileIcon">
+                <input asp-for="FormFile" type="file" class="form-control mt-3 pt-2" accept=".png,.jpg,.jpeg,.gif,.txt"
+                       onchange="document.getElementById('fileIcon').src = window.URL.createObjectURL(this.files[0])" />
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
