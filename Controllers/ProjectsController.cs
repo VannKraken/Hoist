@@ -9,9 +9,11 @@ using Hoist.Data;
 using Hoist.Models;
 using Microsoft.AspNetCore.Identity;
 using Hoist.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoist.Controllers
 {
+    [Authorize]
     public class ProjectsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -129,7 +131,7 @@ namespace Hoist.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,ProjectPriorityId,Name,Description,StartDate,EndDate,Archived,FileData,FileType,FormFile")] Project project)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,ProjectPriorityId,Name,Description,Created,StartDate,EndDate,Archived,FileData,FileType,FormFile")] Project project)
         {
             if (id != project.Id)
             {
@@ -182,7 +184,7 @@ namespace Hoist.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
+            
             ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
             return View(project);
         }
@@ -219,7 +221,7 @@ namespace Hoist.Controllers
             var project = await _context.Projects.FindAsync(id);
             if (project != null)
             {
-                _context.Projects.Remove(project);
+                project.Archived = true;
             }
 
             await _context.SaveChangesAsync();

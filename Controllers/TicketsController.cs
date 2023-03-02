@@ -31,7 +31,9 @@ namespace Hoist.Controllers
         // GET: Tickets
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Tickets.Include(t => t.DeveloperUser).Include(t => t.Project).Include(t => t.SubmitterUser).Include(t => t.TicketPriority).Include(t => t.TicketStatus).Include(t => t.TicketType);
+            BTUser? btUser = await _userManager.GetUserAsync(User);
+
+            var applicationDbContext = _context.Tickets.Where(t => t.).Include(t => t.DeveloperUser).Include(t => t.Project).Include(t => t.SubmitterUser).Include(t => t.TicketPriority).Include(t => t.TicketStatus).Include(t => t.TicketType);
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -67,8 +69,8 @@ namespace Hoist.Controllers
             IEnumerable<Project> projects = _context.Projects.Where(p => p.CompanyId == btUser!.CompanyId);
 
 
-            
-            ViewData["ProjectId"] = new SelectList(projects, "Id", "Name");            
+
+            ViewData["ProjectId"] = new SelectList(projects, "Id", "Name");
             ViewData["TicketPriorityId"] = new SelectList(_context.TicketPriorities, "Id", "Name");
             ViewData["TicketStatusId"] = new SelectList(_context.TicketStatuses, "Id", "Name");
             ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Name");
@@ -86,7 +88,7 @@ namespace Hoist.Controllers
             ModelState.Remove("TicketStatusId");
 
             if (ModelState.IsValid)
-            {                
+            {
                 try
                 {
                     string? userId = _userManager.GetUserId(User);
@@ -107,15 +109,15 @@ namespace Hoist.Controllers
 
                     throw;
                 }
-                
+
 
                 //ticket.ProjectId = _context.Companies.Include(c => c.Projects).ThenInclude(p => p.Members.Where(m => m.Id == userId)
 
-               
+
             }
-            
+
             ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Name", ticket.ProjectId);
-            
+
             ViewData["TicketPriorityId"] = new SelectList(_context.TicketPriorities, "Id", "Name", ticket.TicketPriorityId);
             ViewData["TicketStatusId"] = new SelectList(_context.TicketStatuses, "Id", "Name", ticket.TicketStatusId);
             ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Name", ticket.TicketTypeId);
@@ -135,16 +137,17 @@ namespace Hoist.Controllers
             {
                 return NotFound();
             }
-            int? companyId = (await _userManager.GetUserAsync(User))?.CompanyId;
 
-           
+            //int? companyId = (await _userManager.GetUserAsync(User))?.CompanyId;
 
-            
 
-        
+
+
+
+
             ViewData["DeveloperUserId"] = new SelectList(_context.Users, "Id", "FullName", ticket.DeveloperUserId);
             ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Name", ticket.ProjectId);
-            
+
             ViewData["TicketPriorityId"] = new SelectList(_context.TicketPriorities, "Id", "Name", ticket.TicketPriorityId);
             ViewData["TicketStatusId"] = new SelectList(_context.TicketStatuses, "Id", "Name", ticket.TicketStatusId);
             ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Name", ticket.TicketTypeId);
@@ -233,16 +236,16 @@ namespace Hoist.Controllers
             var ticket = await _context.Tickets.FindAsync(id);
             if (ticket != null)
             {
-                _context.Tickets.Remove(ticket);
+                ticket.Archived = false;
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool TicketExists(int id)
         {
-          return (_context.Tickets?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Tickets?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

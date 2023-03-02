@@ -18,6 +18,8 @@ builder.Services.AddIdentity<BTUser, IdentityRole>(options => options.SignIn.Req
     .AddDefaultTokenProviders()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+
+// Custom Services
 builder.Services.AddScoped<IBTFileService, BTFileService>();
 
 builder.Services.AddMvc();
