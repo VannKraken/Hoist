@@ -101,8 +101,8 @@ namespace Hoist.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Id", project.ProjectPriorityId);
+            
+            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
             return View(project);
         }
 
@@ -120,7 +120,7 @@ namespace Hoist.Controllers
                 return NotFound();
             }
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Id", project.ProjectPriorityId);
+            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
             return View(project);
         }
 
@@ -129,17 +129,43 @@ namespace Hoist.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,ProjectPriorityId,Name,Description,Created,StartDate,EndDate,Archived,FileData,FileType")] Project project)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,ProjectPriorityId,Name,Description,StartDate,EndDate,Archived,FileData,FileType,FormFile")] Project project)
         {
             if (id != project.Id)
             {
                 return NotFound();
             }
 
+            ModelState.Remove("CompanyId");
+
             if (ModelState.IsValid)
             {
                 try
                 {
+
+                    string? userId = _userManager.GetUserId(User);
+
+
+                    project.CompanyId = _context.Users.Single(u => u.Id == userId).CompanyId;
+
+
+                    //TODO Created Date and date for post gres
+                    project.Created = DataUtility.GetPostGresDate(project.Created);
+                    project.StartDate = DataUtility.GetPostGresDate(project.StartDate);
+                    project.EndDate = DataUtility.GetPostGresDate(project.EndDate);
+
+                    //Archived
+                    project.Archived = false;
+
+
+                    //TODO File conversion
+                    if (project.FormFile != null)
+                    {
+                        project.FileData = await _btFileService.ConvertFileToByteArrayAsync(project.FormFile);
+                        project.FileType = project.FormFile.ContentType;
+                    }
+
+
                     _context.Update(project);
                     await _context.SaveChangesAsync();
                 }
@@ -157,7 +183,7 @@ namespace Hoist.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Id", project.ProjectPriorityId);
+            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
             return View(project);
         }
 
