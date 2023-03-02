@@ -1,0 +1,50 @@
+﻿<html lang="en" class="dark">
+<!-- BEGIN: Head -->
+<head>
+    <meta charset="utf-8">
+    <link href="dist/images/logo.svg" rel="shortcut icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Icewall admin is super flexible, powerful, clean & modern responsive bootstrap admin template with unlimited possibilities.">
+    <meta name="keywords" content="admin template, Icewall Admin Template, dashboard template, flat admin template, responsive admin template, web app">
+    <meta name="author" content="LEFT4CODE">
+    <title>Dashboard - Icewall - Bootstrap HTML Admin Template</title>
+    <!-- BEGIN: CSS Assets-->
+    <link rel="stylesheet" href="~/dist/css/app.css" />
+    <!-- END: CSS Assets-->
+</head>
+<!-- END: Head -->
+<body class="login">
+    <div class="container px-sm-10">
+        <div class="grid columns-2 gap-4">
+            <!-- BEGIN: Login Info -->
+            <div class="g-col-2 g-col-xl-1 d-none d-xl-flex flex-column min-vh-screen">
+                <a href="" class="-intro-x d-flex align-items-center pt-5">
+                    <img alt="Icewall Bootstrap HTML Admin Template" class="w-6" src="~/dist/images/logo.svg">
+                    <span class="text-white fs-lg ms-3"> Ice<span class="fw-medium">wall</span> </span>
+                </a>
+                <div class="my-auto">
+                    <img alt="Icewall Bootstrap HTML Admin Template" class="-intro-x w-1/2 mt-n16" src="~/dist/images/illustration.svg">
+                    <div class="-intro-x text-white fw-medium fs-4xl lh-base mt-10">
+                        A few more clicks to
+                        <br>
+                        sign in to your account.
+                    </div>
+                    <div class="-intro-x mt-5 fs-lg text-white text-opacity-70 dark-text-gray-500">Manage all your e-commerce accounts in one place</div>
+                </div>
+            </div>
+
+            @RenderBody();
+        </div>
+    </div>
+    <!-- BEGIN: Dark Mode Switcher-->
+    <div data-url="login-light-login.html" class="dark-mode-switcher cursor-pointer shadow-md position-fixed bottom-0 end-0 box dark-bg-dark-2 border rounded-pill w-40 h-12 d-flex align-items-center justify-content-center z-50 mb-10 me-10">
+        <div class="me-4 text-gray-700 dark-text-gray-300">Dark Mode</div>
+        <div class="dark-mode-switcher__toggle dark-mode-switcher__toggle--active border"></div>
+    </div>
+    <!-- END: Dark Mode Switcher-->
+    <!-- BEGIN: JS Assets-->
+    <script src="~/dist/js/app.js"></script>
+    @await RenderSectionAsync("scripts", required:false)
+    <!-- END: JS Assets-->
+</body>
+</html>
