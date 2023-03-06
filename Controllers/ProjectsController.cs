@@ -11,23 +11,30 @@ using Microsoft.AspNetCore.Identity;
 using Hoist.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using X.PagedList;
+using Hoist.Extensions;
 
 namespace Hoist.Controllers
 {
     [Authorize]
     public class ProjectsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        
         private readonly UserManager<BTUser> _userManager;
         private readonly SignInManager<BTUser> _signInManager;
         private readonly IBTFileService _btFileService;
+        private readonly IBTProjectService _btProjectService;
 
-        public ProjectsController(ApplicationDbContext context, UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, IBTFileService btFileService)
+        public ProjectsController(
+                                    UserManager<BTUser> userManager,
+                                    SignInManager<BTUser> signInManager,
+                                    IBTFileService btFileService,
+                                    IBTProjectService btProjectService)
         {
-            _context = context;
+            
             _userManager = userManager;
             _signInManager = signInManager;
             _btFileService = btFileService;
+            _btProjectService = btProjectService;
         }
 
         // GET: Projects
@@ -37,20 +44,9 @@ namespace Hoist.Controllers
             int pageSize = 8;  //Number per page
             int page = pageNum ?? 1;  //Which page number clicked upon on the page.
 
-            BTUser? user = await _userManager.GetUserAsync(User);
+            int companyId = User.Identity!.GetCompanyId();
 
-            IPagedList<Project> projects = ( _context.Projects.Where(p => p.CompanyId == user.CompanyId)
-                                            .Include(p => p.Tickets)
-                                            .Include(p => p.Company)
-                                            .Include(p => p.ProjectPriority)
-                                            .Include(p => p.Members)).ToPagedList(page, pageSize);
-            
-            
-            
-            
-
-          
-            
+            IPagedList<Project> projects =  (await _btProjectService.GetProjectsAsync(companyId)).ToPagedList(page, pageSize);
 
             return View(projects);
         }
@@ -58,15 +54,14 @@ namespace Hoist.Controllers
         // GET: Projects/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Projects == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var project = await _context.Projects
-                .Include(p => p.Company)
-                .Include(p => p.ProjectPriority)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            int companyId = User.Identity!.GetCompanyId();
+
+            Project? project = await _btProjectService.GetProjectAsync(id.Value,companyId);
             if (project == null)
             {
                 return NotFound();
@@ -76,10 +71,12 @@ namespace Hoist.Controllers
         }
 
         // GET: Projects/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name");
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name");
+            IEnumerable<ProjectPriority> priorities = await _btProjectService.GetProjectPrioritiesAsync();
+            
+            
+            ViewData["ProjectPriorityId"] = new SelectList(priorities, "Id", "Name");
             return View();
         }
 
@@ -94,10 +91,10 @@ namespace Hoist.Controllers
 
             if (ModelState.IsValid)
             {
-                string? userId = _userManager.GetUserId(User);
+                int companyId = User.Identity!.GetCompanyId();
 
 
-                project.CompanyId = _context.Users.Single(u => u.Id == userId).CompanyId;
+                project.CompanyId = companyId;
 
 
                 //TODO Created Date and date for post gres
@@ -116,32 +113,37 @@ namespace Hoist.Controllers
                     project.FileType = project.FormFile.ContentType;
                 }
 
+               await _btProjectService.AddProjectAsync(project);
 
-
-                _context.Add(project);
-                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
+
+            IEnumerable<ProjectPriority> priorities = await _btProjectService.GetProjectPrioritiesAsync();
+
+            ViewData["ProjectPriorityId"] = new SelectList(priorities, "Id", "Name", project.ProjectPriorityId);
             return View(project);
         }
 
         // GET: Projects/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Projects == null)
+            if (id == null)
             {
                 return NotFound();
             }
+            int companyId = User.Identity!.GetCompanyId();
 
-            var project = await _context.Projects.FindAsync(id);
+            Project? project = await _btProjectService.GetProjectAsync(id.Value, companyId);
             if (project == null)
             {
                 return NotFound();
             }
-            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
+
+
+            IEnumerable<ProjectPriority> priorities = await _btProjectService.GetProjectPrioritiesAsync();
+
+
+            ViewData["ProjectPriorityId"] = new SelectList(priorities, "Id", "Name");
             return View(project);
         }
 
@@ -164,10 +166,10 @@ namespace Hoist.Controllers
                 try
                 {
 
-                    string? userId = _userManager.GetUserId(User);
+                    int companyId = User.Identity!.GetCompanyId();
 
 
-                    project.CompanyId = _context.Users.Single(u => u.Id == userId).CompanyId;
+                    project.CompanyId = companyId;
 
 
                     //TODO Created Date and date for post gres
@@ -186,13 +188,12 @@ namespace Hoist.Controllers
                         project.FileType = project.FormFile.ContentType;
                     }
 
-
-                    _context.Update(project);
-                    await _context.SaveChangesAsync();
+                    _btProjectService.UpdateProjectAsync(project);
+                    
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProjectExists(project.Id))
+                    if (!_btProjectService.ProjectExists(project.Id))
                     {
                         return NotFound();
                     }
@@ -203,53 +204,34 @@ namespace Hoist.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
+
+            IEnumerable<ProjectPriority> priorities = await _btProjectService.GetProjectPrioritiesAsync();
+
+            ViewData["ProjectPriorityId"] = new SelectList(priorities, "Id", "Name", project.ProjectPriorityId);
             return View(project);
         }
 
         // GET: Projects/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (id == null || _context.Projects == null)
-            {
-                return NotFound();
-            }
 
-            var project = await _context.Projects
-                .Include(p => p.Company)
-                .Include(p => p.ProjectPriority)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (project == null)
+            try
             {
-                return NotFound();
-            }
+                int companyId = User.Identity!.GetCompanyId();
 
-            return View(project);
+                Project project = await _btProjectService.GetProjectAsync(id, companyId);
+
+                await _btProjectService.ArchiveProjectAsync(project);
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }            
+
         }
 
-        // POST: Projects/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            if (_context.Projects == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.Projects'  is null.");
-            }
-            var project = await _context.Projects.FindAsync(id);
-            if (project != null)
-            {
-                project.Archived = true;
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool ProjectExists(int id)
-        {
-            return (_context.Projects?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
     }
 }
