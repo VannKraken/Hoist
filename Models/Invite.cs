@@ -8,11 +8,11 @@ namespace Hoist.Models
         public int Id { get; set; }
 
         [Display(Name = "Invite Date")]
-        [DataType(DataType.DateTime)]
+        [DataType(DataType.Date)]
         public DateTime InviteDate { get; set; }
 
         [Display(Name = "Join Date")]
-        [DataType(DataType.DateTime)]
+        [DataType(DataType.Date)]
         public DateTime? JoinDate { get; set; }
 
         public Guid CompanyToken { get; set; }

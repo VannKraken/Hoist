@@ -4,8 +4,209 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
 
+<div class="content">
+    <div class="intro-y box mt-5">
+        <div class="d-flex flex-column flex-sm-row align-items-center p-5 border-bottom border-gray-200 dark-border-dark-5">
+            <h2 class="fw-medium fs-base me-auto">
+                All Tickets
+            </h2>
+        </div>
+        <div id="hoverable-table" class="p-5">
+            <div class="preview">
+                <div class="overflow-x-auto">
+                    <table class="table table-bordered table-hover table-responsive">
+                        <thead>
+                            <tr>
+                                <th class="text-nowrap">Title</th>
+                                <th class="text-nowrap">Submitter</th>
+                                <th class="text-nowrap">Developer</th>
+                                <th class="text-nowrap">Type</th>
+                                <th class="text-nowrap">Priority</th>
+                                <th class="text-nowrap">Status</th>
+                                <th class="text-nowrap">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (Ticket ticket in Model)
+                            {
+                                <tr>
+                                    <td>@ticket.Title</td>
+                                    <td>@ticket.SubmitterUser.FullName</td>
+                                    @if (ticket.DeveloperUser == null)
+                                    {
+                                        <td class="fw-bold text-center"><strong>...</strong></td>
+                                    }
+                                    else
+                                    {
+
+                                        <td>@ticket.DeveloperUser?.FullName</td>
+                                    }
+                                    <td>@ticket.TicketType.Name</td>
+                                    <td>@ticket.TicketPriority.Name</td>
+                                    <td>@ticket.TicketStatus.Name</td>
+                                    <td>
+                                        <a asp-action="Edit" asp-route-id="@ticket.Id"><i class="bi bi-pencil-square"></i>Edit</a> |
+                                        <a asp-action="Details" asp-route-id="@ticket.Id">Details</a> |
+                                        <a asp-action="Delete" asp-route-id="@ticket.Id">Delete</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="source-code d-none">
+                <button data-target="#copy-hoverable-table" class="copy-code btn py-1 px-2 btn-outline-secondary"> <i data-feather="file" class="w-4 h-4 me-2"></i> Copy example code </button>
+                <div class="overflow-y-auto mt-3 rounded-2">
+                    <pre class="source-preview" id="copy-hoverable-table"> <code class="fs-xs p-0 rounded-2 html ps-5 pt-8 pb-4 mb-n10 mt-n10"> HTMLOpenTagdiv class=&quot;overflow-x-auto&quot;HTMLCloseTag HTMLOpenTagtable class=&quot;table table-bordered table-hover&quot;HTMLCloseTag HTMLOpenTagtheadHTMLCloseTag HTMLOpenTagtrHTMLCloseTag HTMLOpenTagth class=&quot;text-nowrap&quot;HTMLCloseTag#HTMLOpenTag/thHTMLCloseTag HTMLOpenTagth class=&quot;text-nowrap&quot;HTMLCloseTagFirst NameHTMLOpenTag/thHTMLCloseTag HTMLOpenTagth class=&quot;text-nowrap&quot;HTMLCloseTagLast NameHTMLOpenTag/thHTMLCloseTag HTMLOpenTagth class=&quot;text-nowrap&quot;HTMLCloseTagUsernameHTMLOpenTag/thHTMLCloseTag HTMLOpenTag/trHTMLCloseTag HTMLOpenTag/theadHTMLCloseTag HTMLOpenTagtbodyHTMLCloseTag HTMLOpenTagtrHTMLCloseTag HTMLOpenTagtdHTMLCloseTag1HTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTagAngelinaHTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTagJolieHTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTag@angelinajolieHTMLOpenTag/tdHTMLCloseTag HTMLOpenTag/trHTMLCloseTag HTMLOpenTagtrHTMLCloseTag HTMLOpenTagtdHTMLCloseTag2HTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTagBradHTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTagPittHTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTag@bradpittHTMLOpenTag/tdHTMLCloseTag HTMLOpenTag/trHTMLCloseTag HTMLOpenTagtrHTMLCloseTag HTMLOpenTagtdHTMLCloseTag3HTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTagCharlieHTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTagHunnamHTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTag@charliehunnamHTMLOpenTag/tdHTMLCloseTag HTMLOpenTag/trHTMLCloseTag HTMLOpenTag/tbodyHTMLCloseTag HTMLOpenTag/tableHTMLCloseTag HTMLOpenTag/divHTMLCloseTag </code> </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@*<div class="content">
+    <div class="intro-y d-flex flex-column flex-sm-row align-items-center mt-8">
+        <h2 class="fs-lg fw-medium me-auto">
+            All Tickets
+        </h2>
+        <div class="w-full w-sm-auto d-flex mt-4 mt-sm-0">
+            <button class="btn btn-primary shadow-md me-2">Add New Product</button>
+            <div class="dropdown ms-auto ms-sm-0">
+                <button class="dropdown-toggle btn px-2 box text-gray-700 dark-text-gray-300" aria-expanded="false" data-bs-toggle="dropdown">
+                    <span class="w-5 h-5 d-flex align-items-center justify-content-center"> <i class="w-4 h-4" data-feather="plus"></i> </span>
+                </button>
+                <div class="dropdown-menu w-40">
+                    <ul class="dropdown-content">
+                        <li>
+                            <a href="" class="dropdown-item"> <i data-feather="file-plus" class="w-4 h-4 me-2"></i> New Category </a>
+                        </li>
+                        <li>
+                            <a href="" class="dropdown-item"> <i data-feather="users" class="w-4 h-4 me-2"></i> New Group </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- BEGIN: HTML Table Data -->
+    <div class="intro-y box p-5 mt-5">
+        <div class="d-flex flex-column flex-sm-row align-items-sm-end align-items-xl-start">
+            <form id="tabulator-html-filter-form" class="d-xl-flex me-sm-auto">
+                <div class="d-sm-flex align-items-center me-sm-4">
+                    <label class="w-12 flex-none w-xl-auto flex-xl-initial me-2">Field</label>
+                    <select id="tabulator-html-filter-field" class="form-select w-full w-sm-32 w-2xl-full mt-2 mt-sm-0 w-sm-auto">
+                        <option value="name">Name</option>
+                        <option value="category">Category</option>
+                        <option value="remaining_stock">Remaining Stock</option>
+                    </select>
+                </div>
+                <div class="d-sm-flex align-items-center me-sm-4 mt-2 mt-xl-0">
+                    <label class="w-12 flex-none w-xl-auto flex-xl-initial me-2">Type</label>
+                    <select id="tabulator-html-filter-type" class="form-select w-full mt-2 mt-sm-0 w-sm-auto">
+                        <option value="like" selected>like</option>
+                        <option value="=">=</option>
+                        <option value="<">&lt;</option>
+                        <option value="<=">&lt;=</option>
+                        <option value=">">></option>
+                        <option value=">=">>=</option>
+                        <option value="!=">!=</option>
+                    </select>
+                </div>
+                <div class="d-sm-flex align-items-center me-sm-4 mt-2 mt-xl-0">
+                    <label class="w-12 flex-none w-xl-auto flex-xl-initial me-2">Value</label>
+                    <input id="tabulator-html-filter-value" type="text" class="form-control w-sm-40 w-2xl-full mt-2 mt-sm-0" placeholder="Search...">
+                </div>
+                <div class="mt-2 mt-xl-0">
+                    <button id="tabulator-html-filter-go" type="button" class="btn btn-primary w-full w-sm-16">Go</button>
+                    <button id="tabulator-html-filter-reset" type="button" class="btn btn-secondary w-full w-sm-16 mt-2 mt-sm-0 ms-sm-1">Reset</button>
+                </div>
+            </form>
+            <div class="d-flex mt-5 mt-sm-0">
+                <button id="tabulator-print" class="btn btn-outline-secondary w-1/2 w-sm-auto me-2"> <i data-feather="printer" class="w-4 h-4 me-2"></i> Print </button>
+                <div class="dropdown w-1/2 w-sm-auto">
+                    <button class="dropdown-toggle btn btn-outline-secondary w-full w-sm-auto" aria-expanded="false" data-bs-toggle="dropdown"> <i data-feather="file-text" class="w-4 h-4 me-2"></i> Export <i data-feather="chevron-down" class="w-4 h-4 ms-auto ms-sm-2"></i> </button>
+                    <div class="dropdown-menu w-40">
+                        <ul class="dropdown-content">
+                            <li>
+                                <a id="tabulator-export-csv" href="javascript:;" class="dropdown-item"> <i data-feather="file-text" class="w-4 h-4 me-2"></i> Export CSV </a>
+                            </li>
+                            <li>
+                                <a id="tabulator-export-json" href="javascript:;" class="dropdown-item"> <i data-feather="file-text" class="w-4 h-4 me-2"></i> Export JSON </a>
+                            </li>
+                            <li>
+                                <a id="tabulator-export-xlsx" href="javascript:;" class="dropdown-item"> <i data-feather="file-text" class="w-4 h-4 me-2"></i> Export XLSX </a>
+                            </li>
+                            <li>
+                                <a id="tabulator-export-html" href="javascript:;" class="dropdown-item"> <i data-feather="file-text" class="w-4 h-4 me-2"></i> Export HTML </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="overflow-x-hidden scrollbar-hidden" style="overflow-x: hidden;">
+            <div id="tabulatorTickets" class="mt-5 table-report table-report--tabulator"></div>
+        </div>
+    </div>
+    <!-- END: HTML Table Data -->
+</div>
+<!-- END: Content -->
+@section Scripts {
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js"></script>
+    <script>
+
+
+        var table  = new Tabulator("#tabulatorTickets",
+        {
+            pagination: true,
+            paginationSize: 12,
+            paginationButtonCount: 3,
+            layout:"fitColumns",
+            ajaxURL: "/Tickets/TicketData",
+
+
+            columns:
+            [
+                {title: "Ticket", field: "title"},
+                {title: "Issue", field: "description", formatter:"html"},
+                {title: "Submitter", field: "submitter"},
+                {title: "Developer", field: "developer"},
+                {title: "Type", field: "type"},
+                {title: "Status", field: "status"},
+                {title: "Priority", field: "priority"},
+                {title: "Submitted", field: "created"},
+                {title: "Edit", formatter: editLinkFormatter}
+            ]
+        });
+
+        function editLinkFormatter(cell){
+
+
+            var id = cell.getRow().getData().id;
+
+            var link = document.createElement("button");
+
+
+
+
+            link.setAttribute("asp-action", "Edit");
+            link.setAttribute("asp-route-id",id);
+            link.innerText = "Edit";
+
+            return link;
+        }
+
+
+    </script>*@
+
+
+@*            let button = "<a asp-controller='Tickets' asp-action='edit' asp-route-id="Id"><i class="bi bi-pencil-fill"></i></a>""*@
+
+
+
+
+@*
 <p>
     <a asp-action="Create">Create New</a>
 </p>
@@ -99,3 +300,4 @@
 }
     </tbody>
 </table>
+*@

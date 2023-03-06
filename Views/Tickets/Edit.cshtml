@@ -4,9 +4,115 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
 
-<h4>Ticket</h4>
+<div class="content">
+    <div class="intro-y d-flex align-items-center mt-8">
+    </div>
+    <div class="row gap-y-6 mt-5 justify-content-center">
+        <div class="intro-y col-12 col-lg-6">
+            <!-- BEGIN: Input -->
+            <div class="intro-y box">
+                <div class="d-flex flex-column flex-sm-row align-items-center p-5 border-bottom border-gray-200 dark-border-dark-5">
+                    <h2 class="fs-xl fw-medium me-auto">
+                        Edit Ticket
+                    </h2>
+                </div>
+                <form asp-action="Edit" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="SubmitterUserId" />
+                    <input type="hidden" asp-for="ProjectId" />
+                    <input type="hidden" asp-for="Created" />
+                    <div id="input" class="p-5">
+                        <div class="mb-3">
+                            <label class="fs-lg">Project</label>
+                            <div class="mt-2">
+                                <select asp-for="ProjectId" class="form-control" asp-items="ViewBag.ProjectId" data-placeholder="Select your Project" class="tom-select w-full">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="fs-lg">Type</label>
+                            <div class="mt-2">
+                                <select asp-for="TicketTypeId" class="form-control" asp-items="ViewBag.TicketTypeId" data-placeholder="Select your Project" class="tom-select w-full">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="fs-lg">Assigned Dev</label>
+                            <div class="mt-2">
+                                <select asp-for="DeveloperUserId" class="form-control" asp-items="ViewBag.DeveloperUserId" data-placeholder="Select your Project" class="tom-select w-full">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="mb-3 col-6">
+                                <label class="fs-lg">Priority</label>
+                                @foreach (TicketPriority item in ViewBag.TicketPriorityId)
+                                {
+                                    <div class="form-check mt-2">
+                                        <input asp-for="TicketPriorityId" id="radio-switch-1" class="form-check-input" type="radio" value="@item.Id">
+                                        <label class="form-check-label" for="radio-switch-1">@item.Name</label>
+                                    </div>
+                                }
+                            </div>
+                            <div class="mb-3 col-6">
+                                <label class="fs-lg">Status</label>
+                                @foreach (var item in ViewBag.TicketStatusId)
+                                {
+                                    <div class="form-check mt-2">
+                                        <input asp-for="TicketStatusId" id="radio-switch-1" class="form-check-input" type="radio" value="@item.Id">
+                                        <label class="form-check-label" for="radio-switch-1">@item.Name</label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label class="fs-lg">Title</label>
+                            <div class="mt-2">
+                                <input asp-for="Title" id="regular-form-2" type="text" class="form-control" placeholder="Title">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="source-code d-none">
+                        <button data-target="#copy-input" class="copy-code btn py-1 px-2 btn-outline-secondary"> <i data-feather="file" class="w-4 h-4 me-2"></i> Copy example code </button>
+                        <div class="overflow-y-auto mt-3 rounded-2">
+                            <pre id="copy-input" class="source-preview"> <code class="fs-xs p-0 rounded-2 html ps-5 pt-8 pb-4 mb-n10 mt-n10"> HTMLOpenTagdivHTMLCloseTag HTMLOpenTaglabel for=&quot;regular-form-1&quot; class=&quot;form-label&quot;HTMLCloseTagInput TextHTMLOpenTag/labelHTMLCloseTag HTMLOpenTaginput id=&quot;regular-form-1&quot; type=&quot;text&quot; class=&quot;form-control&quot; placeholder=&quot;Input text&quot;HTMLCloseTag HTMLOpenTag/divHTMLCloseTag HTMLOpenTagdiv class=&quot;mt-3&quot;HTMLCloseTag HTMLOpenTaglabel for=&quot;regular-form-2&quot; class=&quot;form-label&quot;HTMLCloseTagRoundedHTMLOpenTag/labelHTMLCloseTag HTMLOpenTaginput id=&quot;regular-form-2&quot; type=&quot;text&quot; class=&quot;form-control form-control-rounded&quot; placeholder=&quot;Rounded&quot;HTMLCloseTag HTMLOpenTag/divHTMLCloseTag HTMLOpenTagdiv class=&quot;mt-3&quot;HTMLCloseTag HTMLOpenTaglabel for=&quot;regular-form-3&quot; class=&quot;form-label&quot;HTMLCloseTagWith HelpHTMLOpenTag/labelHTMLCloseTag HTMLOpenTaginput id=&quot;regular-form-3&quot; type=&quot;text&quot; class=&quot;form-control&quot; placeholder=&quot;With help&quot;HTMLCloseTag HTMLOpenTagdiv class=&quot;form-help&quot;HTMLCloseTagLorem Ipsum is simply dummy text of the printing and typesetting industry.HTMLOpenTag/divHTMLCloseTag HTMLOpenTag/divHTMLCloseTag HTMLOpenTagdiv class=&quot;mt-3&quot;HTMLCloseTag HTMLOpenTaglabel for=&quot;regular-form-4&quot; class=&quot;form-label&quot;HTMLCloseTagPasswordHTMLOpenTag/labelHTMLCloseTag HTMLOpenTaginput id=&quot;regular-form-4&quot; type=&quot;password&quot; class=&quot;form-control&quot; placeholder=&quot;Password&quot;HTMLCloseTag HTMLOpenTag/divHTMLCloseTag HTMLOpenTagdiv class=&quot;mt-3&quot;HTMLCloseTag HTMLOpenTaglabel for=&quot;regular-form-5&quot; class=&quot;form-label&quot;HTMLCloseTagDisabledHTMLOpenTag/labelHTMLCloseTag HTMLOpenTaginput id=&quot;regular-form-5&quot; type=&quot;text&quot; class=&quot;form-control&quot; placeholder=&quot;Disabled&quot; disabledHTMLCloseTag HTMLOpenTag/divHTMLCloseTag </code> </pre>
+                        </div>
+                    </div>
+                    <div class="row gap-y-6 mt-5">
+                        <!-- BEGIN: Classic Editor -->
+                        <div class="intro-y col-12">
+                            <div class="box">
+                                <div class="d-flex flex-column flex-sm-row align-items-center p-5 border-bottom border-gray-200 dark-border-dark-5">
+                                    <h2 class="fw-medium fs-base me-auto">
+                                        Description
+                                    </h2>
+                                </div>
+                                <div class="p-5" id="classic-editor">
+                                    <div class="preview">
+                                        <textarea asp-for="Description" class="editor form-control"></textarea>
+                                        <span asp-validation-for="Description" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- END: Classic Editor -->
+                    </div>
+                    <div class="text-center">
+                        <button class="btn btn-primary w-24 me-1 mb-2">Submit</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+@*<h4>Ticket</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -62,10 +168,11 @@
 
 <div>
     <a asp-action="Index">Back to List</a>
-</div>
+</div>*@
 
 @section Scripts {
     @{
+        <script src="~/dist/js/ckeditor-classic.js"></script>
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }

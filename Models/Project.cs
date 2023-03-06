@@ -19,17 +19,17 @@ namespace Hoist.Models
         [StringLength(40000, ErrorMessage = " The {0} must be at least {2} and at most {1} characters.", MinimumLength = 2)]
         public string? Description { get; set; }
 
-        [DataType(DataType.DateTime)]
+        [DataType(DataType.Date)]
         public DateTime Created { get; set; }
 
 
         [Display(Name="Start Date")]
-        [DataType(DataType.DateTime)]
+        [DataType(DataType.Date)]
         public DateTime StartDate { get; set; }
 
 
         [Display(Name="End Date")]
-        [DataType(DataType.DateTime)]
+        [DataType(DataType.Date)]
         public DateTime EndDate { get; set; }
 
         public bool Archived { get; set; }

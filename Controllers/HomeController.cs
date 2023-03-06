@@ -18,6 +18,11 @@ namespace Hoist.Controllers
             return View();
         }
 
+        public IActionResult IcewallIndex()
+        {
+            return View();
+        }
+
         public IActionResult Privacy()
         {
             return View();

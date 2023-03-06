@@ -32,7 +32,7 @@ namespace Hoist.Models
         public string? Message { get; set; }
 
 
-        [DataType(DataType.DateTime)]
+        [DataType(DataType.Date)]
         public DateTime Created { get; set; }
 
         public bool HasBeenViewed { get; set; }

@@ -10,6 +10,7 @@ using Hoist.Models;
 using Microsoft.AspNetCore.Identity;
 using Hoist.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using X.PagedList;
 
 namespace Hoist.Controllers
 {
@@ -30,10 +31,28 @@ namespace Hoist.Controllers
         }
 
         // GET: Projects
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? pageNum)
         {
-            var applicationDbContext = _context.Projects.Include(p => p.Company).Include(p => p.ProjectPriority);
-            return View(await applicationDbContext.ToListAsync());
+
+            int pageSize = 8;  //Number per page
+            int page = pageNum ?? 1;  //Which page number clicked upon on the page.
+
+            BTUser? user = await _userManager.GetUserAsync(User);
+
+            IPagedList<Project> projects = ( _context.Projects.Where(p => p.CompanyId == user.CompanyId)
+                                            .Include(p => p.Tickets)
+                                            .Include(p => p.Company)
+                                            .Include(p => p.ProjectPriority)
+                                            .Include(p => p.Members)).ToPagedList(page, pageSize);
+            
+            
+            
+            
+
+          
+            
+
+            return View(projects);
         }
 
         // GET: Projects/Details/5
