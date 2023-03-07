@@ -82,7 +82,8 @@ namespace Hoist.Services
             }
             return fileImage;
         }
-        #endregion    
-    }
+        #endregion
 
+        
+    }
 }

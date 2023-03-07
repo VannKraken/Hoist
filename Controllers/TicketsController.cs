@@ -39,7 +39,7 @@ namespace Hoist.Controllers
         {
             BTUser? btUser = await _userManager.GetUserAsync(User);
 
-            var applicationDbContext = _context.Tickets.Include(t => t.DeveloperUser).Include(t => t.Project).Include(t => t.SubmitterUser).Include(t => t.TicketPriority).Include(t => t.TicketStatus).Include(t => t.TicketType);
+            var applicationDbContext = _context.Tickets.Include(t => t.DeveloperUser).Include(t => t.Project).Include(t => t.SubmitterUser).Include(t => t.TicketPriority).Include(t => t.TicketStatus).Include(t => t.TicketType).Include(t => t.Attachments);
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -313,7 +313,7 @@ namespace Hoist.Controllers
                 return RedirectToAction("Details", new { id = ticketId });
             }
 
-            return RedirectToAction(nameof(Details));
+            return RedirectToAction(nameof("Details", new { id = ticketId }));
         }
 
         [HttpPost]

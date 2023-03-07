@@ -6,5 +6,10 @@
 
         public string ConvertByteArrayToFile(byte[] fileData, string extension, int defaultImage);
 
+        public string GetFileIcon(int fileId);
+
+
+        public string FormatFileSize(long bytes);
+
     }
 }
