@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Hoist.Extensions;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hoist.Models
@@ -25,6 +26,10 @@ namespace Hoist.Models
 
 
         [NotMapped]
+        [Display(Name ="Select a File")]
+        [DataType(DataType.Upload)]
+        [MaxFileSize(1024*1024)]
+        [AllowedExtensions(new string[] { ".jpg", ".png", ".doc", ".docx", ".xls", ".xlsx", ".pdf" } )]
         public virtual IFormFile? FormFile { get; set; }
 
         //Navigation

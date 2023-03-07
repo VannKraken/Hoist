@@ -3,7 +3,7 @@ using System.Security.Principal;
 
 namespace Hoist.Extensions
 {
-    public static class IdentitiyExtensions 
+    public static class IdentityExtensions 
     {
 
         public static int GetCompanyId(this IIdentity identity) //

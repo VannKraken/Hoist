@@ -188,7 +188,7 @@ namespace Hoist.Controllers
                         project.FileType = project.FormFile.ContentType;
                     }
 
-                    _btProjectService.UpdateProjectAsync(project);
+                     await _btProjectService.UpdateProjectAsync(project);
                     
                 }
                 catch (DbUpdateConcurrencyException)

@@ -14,5 +14,7 @@ namespace Hoist.Services.Interfaces
         public Task ArchiveTicketAsync(Ticket ticket);
 
         #endregion
+
+        public Task AddTicketAttachmentAsync(TicketAttachment ticketAttachment);
     }
 }

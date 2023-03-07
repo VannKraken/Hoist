@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Hoist.Models.Enums;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
+using Hoist.Services;
 
 namespace Hoist.Controllers
 {
@@ -22,13 +23,15 @@ namespace Hoist.Controllers
         private readonly UserManager<BTUser> _userManager;
         private readonly SignInManager<BTUser> _signInManager;
         private readonly IBTFileService _btFileService;
+        private readonly IBTTicketService _btTicketService;
 
-        public TicketsController(ApplicationDbContext context, UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, IBTFileService btFileService)
+        public TicketsController(ApplicationDbContext context, UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, IBTFileService btFileService, IBTTicketService btTicketService)
         {
             _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _btFileService = btFileService;
+            _btTicketService = btTicketService;
         }
 
         // GET: Tickets
@@ -290,9 +293,62 @@ namespace Hoist.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddTicketComment([Bind("Id,TicketId,BTUserId,Comment,Created")]TicketComment ticketComment)
+        {
+            ModelState.Remove("BTUserId");
+            if (ModelState.IsValid)
+            {
+
+                int ticketId = ticketComment.TicketId;
+
+                ticketComment.BTUserId = _userManager.GetUserId(User);
+
+                ticketComment.Created = DataUtility.GetPostGresDate(DateTime.UtcNow);
+
+                _context.Add(ticketComment);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Details", new { id = ticketId });
+            }
+
+            return RedirectToAction(nameof(Details));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddTicketAttachment([Bind("Id,FormFile,Description,TicketId")] TicketAttachment ticketAttachment)
+        {
+            string statusMessage;
+            ModelState.Remove("BTUserId");
+
+            if (ModelState.IsValid && ticketAttachment.FormFile != null)
+            {
+                ticketAttachment.FileData = await _btFileService.ConvertFileToByteArrayAsync(ticketAttachment.FormFile);                
+                ticketAttachment.FileType = ticketAttachment.FormFile.ContentType;
+
+                ticketAttachment.Created = DataUtility.GetPostGresDate(DateTime.UtcNow);
+                ticketAttachment.BTUserId = _userManager.GetUserId(User);
+
+                await _btTicketService.AddTicketAttachmentAsync(ticketAttachment);
+                statusMessage = "Success: New attachment added to Ticket.";
+            }
+            else
+            {
+                statusMessage = "Error: Invalid data.";
+
+            }
+
+            return RedirectToAction("Details", new { id = ticketAttachment.TicketId, message = statusMessage });
+        }
+
         private bool TicketExists(int id)
         {
             return (_context.Tickets?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+
+
+
     }
 }
