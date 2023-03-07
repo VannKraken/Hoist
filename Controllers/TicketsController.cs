@@ -13,6 +13,7 @@ using Hoist.Models.Enums;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Hoist.Services;
+using Hoist.Extensions;
 
 namespace Hoist.Controllers
 {
@@ -24,23 +25,36 @@ namespace Hoist.Controllers
         private readonly SignInManager<BTUser> _signInManager;
         private readonly IBTFileService _btFileService;
         private readonly IBTTicketService _btTicketService;
+        private readonly IBTProjectService _btProjectService;
 
-        public TicketsController(ApplicationDbContext context, UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, IBTFileService btFileService, IBTTicketService btTicketService)
+        public TicketsController(ApplicationDbContext context, UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, IBTFileService btFileService, IBTTicketService btTicketService, IBTProjectService  btProjectService )
         {
             _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _btFileService = btFileService;
             _btTicketService = btTicketService;
+            _btProjectService = btProjectService;
         }
 
         // GET: Tickets
         public async Task<IActionResult> Index()
         {
+            int companyId = User.Identity!.GetCompanyId();
+
             BTUser? btUser = await _userManager.GetUserAsync(User);
 
-            var applicationDbContext = _context.Tickets.Include(t => t.DeveloperUser).Include(t => t.Project).Include(t => t.SubmitterUser).Include(t => t.TicketPriority).Include(t => t.TicketStatus).Include(t => t.TicketType).Include(t => t.Attachments);
-            return View(await applicationDbContext.ToListAsync());
+          IEnumerable<Ticket> tickets =  await _context.Tickets.Include(t => t.DeveloperUser)
+                                                       .Include(t => t.Project)
+                                                            .ThenInclude(p => p.Company)
+                                                            .Where(t => t.Project.CompanyId == companyId)
+                                                       .Include(t => t.SubmitterUser)
+                                                       .Include(t => t.TicketPriority)
+                                                       .Include(t => t.TicketStatus)
+                                                       .Include(t => t.TicketType)
+                                                       .Include(t => t.Attachments).ToListAsync();
+
+            return View(tickets);
         }
 
         public IActionResult TicketData()
@@ -298,11 +312,14 @@ namespace Hoist.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddTicketComment([Bind("Id,TicketId,BTUserId,Comment,Created")]TicketComment ticketComment)
         {
+
+            int ticketId = ticketComment.TicketId;
+
             ModelState.Remove("BTUserId");
             if (ModelState.IsValid)
             {
 
-                int ticketId = ticketComment.TicketId;
+               
 
                 ticketComment.BTUserId = _userManager.GetUserId(User);
 
@@ -313,7 +330,7 @@ namespace Hoist.Controllers
                 return RedirectToAction("Details", new { id = ticketId });
             }
 
-            return RedirectToAction(nameof("Details", new { id = ticketId }));
+            return RedirectToAction("Details", new { id = ticketId });
         }
 
         [HttpPost]
