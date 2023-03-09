@@ -392,12 +392,12 @@ namespace Hoist.Controllers
 
             int? companyId =  User.Identity.GetCompanyId();
 
-            IEnumerable<Project> projects = await _btProjectService.GetUserProjectsAsync(companyId.Value, userId);
+            BTUser user = await _btProjectService.GetUserProjectsAsync(companyId.Value, userId);
             
 
 
 
-        return View(projects);
+        return View(user);
 
     }
 

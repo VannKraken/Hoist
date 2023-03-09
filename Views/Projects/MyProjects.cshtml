@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Hoist.Models.Project>
+﻿@model Hoist.Models.BTUser
 
 
 
@@ -76,7 +76,7 @@
             </div>
             </div>*@
             <div class="grid columns-12 gap-5 mt-5 pt-5 border-top border-theme-25 dark-border-dark-3">
-                @foreach (Project project in Model)
+                @foreach (Project project in Model.Projects)
                 {
                     <a asp-action="Details" asp-route-id="@project.Id" class="intro-y d-block g-col-12 g-col-sm-4 g-col-xxl-3">
                         <div class="box rounded-2 p-3 position-relative zoom-in">

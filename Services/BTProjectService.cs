@@ -80,18 +80,21 @@ namespace Hoist.Services
 
 
         }
-        public async Task<IEnumerable<Project>> GetUserProjectsAsync(int companyId, string? userId)
+        public async Task<BTUser> GetUserProjectsAsync(int companyId, string? userId)
         {
             try
             {
-                IEnumerable<Project> projects = await _context.Projects
-                                            .Where(p => p.CompanyId == companyId && p.Archived == false)
-                                            .Include(p => p.Tickets)
-                                            .Include(p => p.Company)
-                                            .Include(p => p.ProjectPriority)
-                                            .Include(p => p.Members.Where( m => m.Id == userId)).ToListAsync();
+                //IEnumerable<Project> projects = await _context.Projects
+                //                            .Where(p => p.CompanyId == companyId && p.Archived == false)
+                //                            .Include(p => p.Tickets)
+                //                            .Include(p => p.Company)
+                //                            .Include(p => p.ProjectPriority)
+                //                            .Include(p => p.Members.Where( m => m.Id == userId)).ToListAsync();
 
-                return projects;
+
+                BTUser? user = await _context.Users.Include(u => u.Projects).FirstOrDefaultAsync(u => u.Id == userId && u.CompanyId == companyId);
+
+                return user;
             }
             catch (Exception)
             {

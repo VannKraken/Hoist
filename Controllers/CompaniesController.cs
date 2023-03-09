@@ -12,6 +12,7 @@ using Hoist.Models.ViewModels;
 using Hoist.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Hoist.Services;
+using Hoist.Models.Enums;
 
 namespace Hoist.Controllers
 {
@@ -32,12 +33,14 @@ namespace Hoist.Controllers
             _userManager = userManager;
         }
 
+
+        #region Companies CRUD
         // GET: Companies
         public async Task<IActionResult> Index()
         {
-              return _context.Companies != null ? 
-                          View(await _context.Companies.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.Companies'  is null.");
+            return _context.Companies != null ?
+                        View(await _context.Companies.ToListAsync()) :
+                        Problem("Entity set 'ApplicationDbContext.Companies'  is null.");
         }
 
         // GET: Companies/Details/5
@@ -163,10 +166,12 @@ namespace Hoist.Controllers
             {
                 _context.Companies.Remove(company);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+        #endregion
+
 
         private bool CompanyExists(int id)
         {
@@ -175,6 +180,7 @@ namespace Hoist.Controllers
 
 
 
+        #region Manage User Roles
         [HttpGet]
         public async Task<IActionResult> ManageUserRoles()
         {
@@ -182,7 +188,14 @@ namespace Hoist.Controllers
             int? companyId = User.Identity!.GetCompanyId();
 
             IEnumerable<BTUser> members = await _btCompanyService.GetMembersAsync(companyId);
-            List<ManageUserRolesViewModel> userModels = new List<ManageUserRolesViewModel>(); 
+            List<ManageUserRolesViewModel> userModels = new List<ManageUserRolesViewModel>();
+            //MultiSelectList allRoles = new MultiSelectList(await _btRolesService.GetRolesAsync());
+
+            List<IdentityRole> roles = (await _btRolesService.GetRolesAsync());
+            IdentityRole? roleToRemove = roles.FirstOrDefault(r => r.Name == "DemoUser");
+
+
+            roles.Remove(roleToRemove);            
 
             foreach (BTUser member in members)
             {
@@ -190,12 +203,12 @@ namespace Hoist.Controllers
 
                 ManageUserRolesViewModel user = new()
                 {
-                    
+
 
                     BTUser = member,
-                    Roles = new MultiSelectList(await _btRolesService.GetRolesAsync(), "Name", "Name",currentRoles, "Name")
+                    Roles = new MultiSelectList( roles, "Name", "Name", currentRoles)
 
-                    
+
                 };
 
                 userModels.Add(user);
@@ -213,7 +226,7 @@ namespace Hoist.Controllers
             int companyId = User.Identity!.GetCompanyId();
 
             // 2 Instantiate the BTUser
-            BTUser? btUser = await _context.Users.FindAsync(viewModel.BTUser.Id);
+            BTUser? btUser = await _btCompanyService.GetMemberAsync(viewModel.BTUser!.Id, companyId);
 
             // 3 Get Roles for the User
             IEnumerable<string> currentRoles = await _btRolesService.GetUserRolesAsync(btUser);
@@ -238,32 +251,9 @@ namespace Hoist.Controllers
 
 
         }
+        #endregion
 
 
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> ManageUserRoles([Bind("BTUser, Roles, SelectedRoles")] ManageUserRolesViewModel viewModel)
-        ////
-        //    int companyId = User.Identity!.GetCompanyId();
-
-        //    BTUser? user = await _context.Users.FindAsync(viewModel.BTUser.Id);
-
-        //    await _btRolesService.GetUserRolesAsync(user);
-
-        //    if (viewModel.SelectedRoles != null)
-        //    {
-        //        await _btRolesService.RemoveUserFromRolesAsync(user, viewModel.SelectedRoles);
-
-        //        foreach (string selectRole in viewModel.SelectedRoles)
-        //        {
-        //            await _btRolesService.AddUserToRoleAsync(viewModel.BTUser, selectRole);
-        //        }
-        //    }
-
-
-
-
-        //}
 
 
     }

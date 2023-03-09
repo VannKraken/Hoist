@@ -145,8 +145,7 @@ namespace Hoist.Controllers
                     ticket.Archived = false;
                     ticket.ArchivedByProject = false;
 
-                    _context.Add(ticket);
-                    await _context.SaveChangesAsync();
+                    await _btTicketService.AddTicketAsync(ticket);
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception)
@@ -165,8 +164,7 @@ namespace Hoist.Controllers
 
             ViewData["TicketPriorityId"] = new SelectList(_context.TicketPriorities, "Id", "Name", ticket.TicketPriorityId);
             ViewData["TicketStatusId"] = new SelectList(_context.TicketStatuses, "Id", "Name", ticket.TicketStatusId);
-            ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Name", ticket.TicketTypeId);
-            return View(ticket);
+                return View(ticket);
         }
 
         // GET: Tickets/Edit/5

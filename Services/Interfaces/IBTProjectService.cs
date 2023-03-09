@@ -11,7 +11,7 @@ namespace Hoist.Services.Interfaces
 
         public Task<Project> GetProjectAsync(int? projectId, int? companyId);
         public Task<IEnumerable<Project>> GetProjectsAsync(int companyId);
-        public Task<IEnumerable<Project>> GetUserProjectsAsync(int companyId, string? userId);
+        public Task<BTUser> GetUserProjectsAsync(int companyId, string? userId);
         public Task UpdateProjectAsync(Project project);
         public Task ArchiveProjectAsync(Project project);
 

@@ -49,5 +49,12 @@ namespace Hoist.Services
             return members;
 
         }
+
+        public async Task<BTUser> GetMemberAsync(string? userId, int? companyId)
+        {
+            BTUser? member = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId && u.CompanyId == companyId);
+
+            return member;
+        }
     }
 }
