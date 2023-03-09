@@ -9,8 +9,9 @@ namespace Hoist.Services.Interfaces
 
         public Task AddProjectAsync(Project project);
 
-        public Task<Project> GetProjectAsync(int projectId, int companyId);
+        public Task<Project> GetProjectAsync(int? projectId, int? companyId);
         public Task<IEnumerable<Project>> GetProjectsAsync(int companyId);
+        public Task<IEnumerable<Project>> GetUserProjectsAsync(int companyId, string? userId);
         public Task UpdateProjectAsync(Project project);
         public Task ArchiveProjectAsync(Project project);
 
@@ -18,7 +19,25 @@ namespace Hoist.Services.Interfaces
 
         #endregion
 
+        #region Members
+        public Task<bool> AddMemberToProjectAsync(BTUser? member, int? projectId);
+        public Task AddMembersToProjectAsync(IEnumerable<string> userIds, int? projectId, int? companyId);
+        public Task RemoveMembersFromProjectAsync(int? projectId, int? companyId);
 
+        public Task<bool> RemoveMemberFromProjectAsync(BTUser? member, int? projectId);
+        #endregion
+
+        #region Project Manager
+
+
+        public Task<bool> AddProjectManagerAsync(string? userId, int? projectId);
+
+        public Task<BTUser> GetProjectManagerAsync(int? projectId);
+
+        public Task RemoveProjectManagerAsync(int? projectId);
+
+        
+        #endregion
 
         #region Project Extended Methods
 

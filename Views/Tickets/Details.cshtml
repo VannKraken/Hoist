@@ -87,8 +87,14 @@
             @Html.DisplayFor(model => model.SubmitterUser.Id)
         </dd>
     </dl>
+ 
 </div>
-
+@foreach (TicketComment ticketComment in Model.Comments)
+{
+    <div>
+        @ticketComment.Comment
+    </div>
+}
 <div>
 <form  asp-action="AddTicketComment" method="post">
     <input type="hidden" asp-for="Id" name="TicketId">
@@ -118,6 +124,7 @@
         </form>
     </div>
 </div>
+
 <hr />
 
 <div>

@@ -7,16 +7,29 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Hoist.Data;
 using Hoist.Models;
+using Hoist.Services.Interfaces;
+using Hoist.Models.ViewModels;
+using Hoist.Extensions;
+using Microsoft.AspNetCore.Identity;
+using Hoist.Services;
 
 namespace Hoist.Controllers
 {
     public class CompaniesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<BTUser> _userManager;
+        private readonly IBTRolesService _btRolesService;
+        private readonly IBTCompanyService _btCompanyService;
 
-        public CompaniesController(ApplicationDbContext context)
+
+
+        public CompaniesController(ApplicationDbContext context, IBTRolesService btRolesService, IBTCompanyService btCompanyService, UserManager<BTUser> userManager)
         {
             _context = context;
+            _btRolesService = btRolesService;
+            _btCompanyService = btCompanyService;
+            _userManager = userManager;
         }
 
         // GET: Companies
@@ -159,5 +172,99 @@ namespace Hoist.Controllers
         {
           return (_context.Companies?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> ManageUserRoles()
+        {
+
+            int? companyId = User.Identity!.GetCompanyId();
+
+            IEnumerable<BTUser> members = await _btCompanyService.GetMembersAsync(companyId);
+            List<ManageUserRolesViewModel> userModels = new List<ManageUserRolesViewModel>(); 
+
+            foreach (BTUser member in members)
+            {
+                IEnumerable<string> currentRoles = await _btRolesService.GetUserRolesAsync(member);
+
+                ManageUserRolesViewModel user = new()
+                {
+                    
+
+                    BTUser = member,
+                    Roles = new MultiSelectList(await _btRolesService.GetRolesAsync(), "Name", "Name",currentRoles, "Name")
+
+                    
+                };
+
+                userModels.Add(user);
+            }
+
+            return View(userModels);
+
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ManageUserRoles(ManageUserRolesViewModel viewModel)
+        {
+            int companyId = User.Identity!.GetCompanyId();
+
+            // 2 Instantiate the BTUser
+            BTUser? btUser = await _context.Users.FindAsync(viewModel.BTUser.Id);
+
+            // 3 Get Roles for the User
+            IEnumerable<string> currentRoles = await _btRolesService.GetUserRolesAsync(btUser);
+
+            // 4 Get Selected Role(s) for the User submitted from the form
+            IEnumerable<string> selectedRoles = viewModel.SelectedRoles.ToList();
+
+            // 5 Remove current role(s) and Add new role
+            await _btRolesService.RemoveUserFromRolesAsync(btUser, currentRoles);
+
+            foreach (string role in selectedRoles)
+            {
+                await _btRolesService.AddUserToRoleAsync(btUser, role);
+            }
+
+            await _context.SaveChangesAsync();
+
+            // 6 Navigate
+            return RedirectToAction("ManageUserRoles");
+
+
+
+
+        }
+
+
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> ManageUserRoles([Bind("BTUser, Roles, SelectedRoles")] ManageUserRolesViewModel viewModel)
+        ////
+        //    int companyId = User.Identity!.GetCompanyId();
+
+        //    BTUser? user = await _context.Users.FindAsync(viewModel.BTUser.Id);
+
+        //    await _btRolesService.GetUserRolesAsync(user);
+
+        //    if (viewModel.SelectedRoles != null)
+        //    {
+        //        await _btRolesService.RemoveUserFromRolesAsync(user, viewModel.SelectedRoles);
+
+        //        foreach (string selectRole in viewModel.SelectedRoles)
+        //        {
+        //            await _btRolesService.AddUserToRoleAsync(viewModel.BTUser, selectRole);
+        //        }
+        //    }
+
+
+
+
+        //}
+
+
     }
 }
