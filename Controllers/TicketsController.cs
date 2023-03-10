@@ -29,16 +29,18 @@ namespace Hoist.Controllers
         private readonly IBTTicketService _btTicketService;
         private readonly IBTProjectService _btProjectService;
         private readonly IBTRolesService _btRolesService;
+        private readonly IBTTicketHistoryService _btTicketHistoryService;
 
-        public TicketsController(UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, IBTFileService btFileService, IBTTicketService btTicketService, IBTProjectService btProjectService, IBTRolesService btRolesService)
+        public TicketsController(UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, IBTFileService btFileService, IBTTicketService btTicketService, IBTProjectService btProjectService, IBTRolesService btRolesService, IBTTicketHistoryService btTicketHistoryService)
         {
-            
+
             _userManager = userManager;
             _signInManager = signInManager;
             _btFileService = btFileService;
             _btTicketService = btTicketService;
             _btProjectService = btProjectService;
             _btRolesService = btRolesService;
+            _btTicketHistoryService = btTicketHistoryService;
         }
 
         // GET: Tickets
@@ -124,6 +126,8 @@ namespace Hoist.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,ProjectId,TicketTypeId,TicketStatusId,TicketPriorityId,DeveloperUserId,SubmitterUserId,Title,Description,Created,Archived,ArchivedByProject")] Ticket ticket)
         {
+
+            int companyId = User.Identity!.GetCompanyId();
             ModelState.Remove("SubmitterUserId");
             ModelState.Remove("TicketStatusId");
 
@@ -142,6 +146,19 @@ namespace Hoist.Controllers
                     ticket.ArchivedByProject = false;
 
                     await _btTicketService.AddTicketAsync(ticket);
+
+                    //History Record
+
+                    Ticket newTicket = await _btTicketService.GetTicketSnapshotAsync(ticket.Id, companyId);
+
+
+                    await _btTicketHistoryService.AddHistoryAsync(null, newTicket, userId);
+
+
+
+                    //TODO: Add Notification
+
+
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception)
@@ -156,7 +173,7 @@ namespace Hoist.Controllers
 
             }
 
-            int companyId = User.Identity!.GetCompanyId();
+            
 
             IEnumerable<Project> projects = await _btProjectService.GetProjectsAsync(companyId);
             IEnumerable<TicketPriority> priorities = await _btTicketService.GetTicketPriorities();
@@ -212,6 +229,10 @@ namespace Hoist.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,ProjectId,TicketTypeId,TicketStatusId,TicketPriorityId,DeveloperUserId,SubmitterUserId,Title,Description,Created,Updated,Archived,ArchivedByProject")] Ticket ticket)
         {
+            int companyId = User.Identity!.GetCompanyId();
+            string? userId = _userManager.GetUserId(User);
+            Ticket oldTicket = await _btTicketService.GetTicketSnapshotAsync(ticket.Id, companyId);
+
             if (id != ticket.Id)
             {
                 return NotFound();
@@ -219,6 +240,8 @@ namespace Hoist.Controllers
 
             if (ModelState.IsValid)
             {
+
+
                 try
                 {
 
@@ -239,12 +262,18 @@ namespace Hoist.Controllers
                         throw;
                     }
                 }
+
+                Ticket newTicket = await _btTicketService.GetTicketSnapshotAsync(ticket.Id, companyId);
+
+
+                await _btTicketHistoryService.AddHistoryAsync(oldTicket, newTicket, userId);
+
                 return RedirectToAction(nameof(Index));
             }
 
             BTUser? btUser = await _userManager.GetUserAsync(User);
 
-            int companyId = User.Identity!.GetCompanyId();
+            
 
             IEnumerable<Project> projects = await _btProjectService.GetProjectsAsync(companyId);
             IEnumerable<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
@@ -308,6 +337,8 @@ namespace Hoist.Controllers
 
                 await _btTicketService.AddTicketComment(ticketComment);
 
+                await _btTicketHistoryService.AddHistoryAsync(ticketComment.TicketId, nameof(TicketComment), ticketComment.BTUserId);
+
                 return RedirectToAction("Details", new { id = ticketId });
             }
 
@@ -330,6 +361,8 @@ namespace Hoist.Controllers
                 ticketAttachment.BTUserId = _userManager.GetUserId(User);
 
                 await _btTicketService.AddTicketAttachmentAsync(ticketAttachment);
+
+                await _btTicketHistoryService.AddHistoryAsync(ticketAttachment.TicketId, nameof(TicketAttachment), ticketAttachment.BTUserId);
                 statusMessage = "Success: New attachment added to Ticket.";
             }
             else
@@ -395,14 +428,40 @@ namespace Hoist.Controllers
         public async Task<IActionResult> AssignTicketDeveloper(AssignDeveloperViewModel viewModel)
         {
 
-            Ticket? ticket = await _btTicketService.GetTicketAsync(viewModel.Ticket?.Id);
+            //As no tracking old ticket
+           
+
+            
+
 
             if (!string.IsNullOrEmpty(viewModel.DeveloperId))
             {
 
-                ticket.DeveloperUserId = viewModel.DeveloperId;
-                await _btTicketService.UpdateTicketAsync(ticket);
-            return RedirectToAction("Details", new { id = ticket.Id });
+                int companyId = User.Identity!.GetCompanyId();
+                string? userId = _userManager.GetUserId(User);
+
+
+                Ticket? oldTicket = await _btTicketService.GetTicketSnapshotAsync(viewModel.Ticket?.Id, companyId);
+
+                try
+                {
+                    Ticket? ticket = await _btTicketService.GetTicketAsync(viewModel.Ticket?.Id);
+
+                    ticket.DeveloperUserId = viewModel.DeveloperId;
+                    await _btTicketService.UpdateTicketAsync(ticket);                    
+
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+
+                Ticket? newTicket = await _btTicketService.GetTicketSnapshotAsync(viewModel.Ticket!.Id, companyId);
+
+                return RedirectToAction("Details", new { id = newTicket.Id });
+
+
             }
 
             ModelState.AddModelError("DeveloperId", "No Developer Chosen. Please select a developer for the ticket.");

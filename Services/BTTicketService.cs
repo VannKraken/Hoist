@@ -11,10 +11,12 @@ namespace Hoist.Services
     {
 
         private readonly ApplicationDbContext _context;
+        private readonly IBTProjectService _btProjectService;
 
-        public BTTicketService(ApplicationDbContext context)
+        public BTTicketService(ApplicationDbContext context, IBTProjectService btProjectService)
         {
             _context = context;
+            _btProjectService = btProjectService;
         }
 
         public async Task AddTicketAsync(Ticket ticket)
@@ -81,9 +83,26 @@ namespace Hoist.Services
             return tickets;
         }
 
-        public Task<IEnumerable<Ticket>> GetProjectTicketsAsync(int? projectId, int? companyid)
+        //public async Task<IEnumerable<Ticket>> GetProjectTicketsAsync(int? projectId, int? companyId)
+        //{
+        //    //Project project =  await _btProjectService.GetProjectAsync(projectId, companyId);
+
+        //    //IEnumerable <Ticket> tickets = project.Tickets.ToList();
+
+
+
+
+
+        //    return tickets;
+        //}
+
+        public async Task<BTUser> GetProjectManagerTickets(string? userId, int? companyId)
         {
-            throw new NotImplementedException();
+            BTUser? projectManager = await _context.Users.Include(u => u.Projects).ThenInclude(p => p.Tickets).FirstOrDefaultAsync(u => u.Id == userId && u.CompanyId == companyId );
+
+           IEnumerable<Ticket> tickets = projectManager.Projects.SelectMany(p => p.Tickets.Where( t => t.DeveloperUserId == null));
+
+            return tickets;
         }
 
         public async Task<Ticket> GetTicketAsync(int? ticketId)
@@ -96,7 +115,26 @@ namespace Hoist.Services
                 .Include(t => t.TicketPriority)
                 .Include(t => t.TicketStatus)
                 .Include(t => t.TicketType)
+                .Include(t => t.History)
                 .FirstOrDefaultAsync(m => m.Id == ticketId); ;
+
+            return ticket;
+        } 
+        
+        public async Task<Ticket> GetTicketSnapShotAsync(int? ticketId, int? companyId)
+        {
+            Ticket? ticket = await _context.Tickets
+                .Include(t => t.DeveloperUser)
+                .Include(t => t.Project)
+                    .ThenInclude(p => p.Company)
+                .Include(t => t.SubmitterUser)
+                .Include(t => t.Comments)
+                .Include(t => t.TicketPriority)
+                .Include(t => t.TicketStatus)
+                .Include(t => t.TicketType)
+                .Include(t => t.History)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == ticketId && prop.Company.Id == companyId && t.Archived == false); ;
 
             return ticket;
         }

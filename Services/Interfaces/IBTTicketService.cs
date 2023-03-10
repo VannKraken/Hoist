@@ -8,10 +8,11 @@ namespace Hoist.Services.Interfaces
         public Task AddTicketAsync(Ticket ticket);
 
         public Task<Ticket> GetTicketAsync(int? ticketId);
+        public Task<Ticket> GetTicketSnapshotAsync(int? ticketId, int? companyId);
 
         public Task<IEnumerable<Ticket>> GetCompanyTicketsAsync(int? companyId);
 
-        public Task<IEnumerable<Ticket>> GetProjectTicketsAsync(int? projectId, int? companyid);
+        public Task<IEnumerable<Ticket>> GetProjectTicketsAsync(int? projectId, int? companyId);
 
         public Task<IEnumerable<Ticket>> GetUserTicketsAsync(string? userId, int? companyid);
 
