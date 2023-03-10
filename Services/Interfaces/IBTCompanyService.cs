@@ -11,5 +11,7 @@ namespace Hoist.Services.Interfaces
 
         public Task<List<BTUser>> GetMembersAsync(int? companyId);
 
+        
+
     }
 }

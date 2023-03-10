@@ -14,27 +14,31 @@ using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Hoist.Services;
 using Hoist.Extensions;
+using Hoist.Models.ViewModels;
+using System.ComponentModel.Design;
 
 namespace Hoist.Controllers
 {
     [Authorize]
     public class TicketsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+
         private readonly UserManager<BTUser> _userManager;
         private readonly SignInManager<BTUser> _signInManager;
         private readonly IBTFileService _btFileService;
         private readonly IBTTicketService _btTicketService;
         private readonly IBTProjectService _btProjectService;
+        private readonly IBTRolesService _btRolesService;
 
-        public TicketsController(ApplicationDbContext context, UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, IBTFileService btFileService, IBTTicketService btTicketService, IBTProjectService  btProjectService )
+        public TicketsController(UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, IBTFileService btFileService, IBTTicketService btTicketService, IBTProjectService btProjectService, IBTRolesService btRolesService)
         {
-            _context = context;
+            
             _userManager = userManager;
             _signInManager = signInManager;
             _btFileService = btFileService;
             _btTicketService = btTicketService;
             _btProjectService = btProjectService;
+            _btRolesService = btRolesService;
         }
 
         // GET: Tickets
@@ -42,62 +46,51 @@ namespace Hoist.Controllers
         {
             int companyId = User.Identity!.GetCompanyId();
 
+            string? userId = _userManager.GetUserId(User);
+
             BTUser? btUser = await _userManager.GetUserAsync(User);
 
-          IEnumerable<Ticket> tickets =  await _context.Tickets.Include(t => t.DeveloperUser)
-                                                       .Include(t => t.Project)
-                                                            .ThenInclude(p => p.Company)
-                                                            .Where(t => t.Project!.CompanyId == companyId)
-                                                       .Include(t => t.SubmitterUser)
-                                                       .Include(t => t.TicketPriority)
-                                                       .Include(t => t.TicketStatus)
-                                                       .Include(t => t.TicketType)
-                                                       .Include(t => t.Attachments).ToListAsync();
+            IEnumerable<Ticket> tickets = await _btTicketService.GetCompanyTicketsAsync(companyId);
 
             return View(tickets);
         }
 
-        public IActionResult TicketData()
-        {
-            var data = _context.Tickets.Include(t => t.DeveloperUser)
-                                       .Include(t => t.Project)
-                                       .Include(t => t.SubmitterUser)
-                                       .Include(t => t.TicketPriority)
-                                       .Include(t => t.TicketStatus)
-                                       .Include(t => t.TicketType)
-                                       .Select(t => new
-                                       {
-                                           title = t.Title,
-                                           description = t.Description.Truncate(40),
-                                           submitter = t.SubmitterUser!.FullName,
-                                           developer = t.DeveloperUser!.FullName,
-                                           type = t.TicketType.Name,
-                                           status = t.TicketStatus.Name,
-                                           priority = t.TicketPriority.Name,
-                                           created = t.Created.ToString("yyyy/MM/dd"),
-                                           id = t.Id.ToString()
-                                       }).ToList();
 
-            return new JsonResult(data);
-        }
+
+        //Tabulator
+        //public IActionResult TicketData()
+        //{
+        //    var data = _context.Tickets.Include(t => t.DeveloperUser)
+        //                               .Include(t => t.Project)
+        //                               .Include(t => t.SubmitterUser)
+        //                               .Include(t => t.TicketPriority)
+        //                               .Include(t => t.TicketStatus)
+        //                               .Include(t => t.TicketType)
+        //                               .Select(t => new
+        //                               {
+        //                                   title = t.Title,
+        //                                   description = t.Description.Truncate(40),
+        //                                   submitter = t.SubmitterUser!.FullName,
+        //                                   developer = t.DeveloperUser!.FullName,
+        //                                   type = t.TicketType.Name,
+        //                                   status = t.TicketStatus.Name,
+        //                                   priority = t.TicketPriority.Name,
+        //                                   created = t.Created.ToString("yyyy/MM/dd"),
+        //                                   id = t.Id.ToString()
+        //                               }).ToList();
+
+        //    return new JsonResult(data);
+        //}
 
         // GET: Tickets/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Tickets == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var ticket = await _context.Tickets
-                .Include(t => t.DeveloperUser)
-                .Include(t => t.Project)
-                .Include(t => t.SubmitterUser)
-                .Include(t => t.Comments)
-                .Include(t => t.TicketPriority)
-                .Include(t => t.TicketStatus)
-                .Include(t => t.TicketType)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            Ticket? ticket = await _btTicketService.GetTicketAsync(id);
             if (ticket == null)
             {
                 return NotFound();
@@ -109,16 +102,18 @@ namespace Hoist.Controllers
         // GET: Tickets/Create
         public async Task<IActionResult> Create()
         {
+
+            int companyId = User.Identity!.GetCompanyId();
             BTUser? btUser = await _userManager.GetUserAsync(User);
 
-            IEnumerable<Project> projects = _context.Projects.Where(p => p.CompanyId == btUser!.CompanyId);
-
+            IEnumerable<Project> projects = await _btProjectService.GetProjectsAsync(companyId);
+            IEnumerable<TicketPriority> priorities = await _btTicketService.GetTicketPriorities();
 
 
             ViewData["ProjectId"] = new SelectList(projects, "Id", "Name");
-            ViewData["TicketPriorityId"] = (_context.TicketPriorities);
-            ViewData["TicketStatusId"] = new SelectList(_context.TicketStatuses, "Id", "Name");
-            ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Name");
+            ViewData["TicketPriorityId"] = priorities;
+            ViewData["TicketStatusId"] = new SelectList(await _btTicketService.GetTicketStatuses(), "Id", "Name");
+            ViewData["TicketTypeId"] = new SelectList(await _btTicketService.GetTicketTypes(), "Id", "Name");
             return View();
         }
 
@@ -140,7 +135,8 @@ namespace Hoist.Controllers
 
                     ticket.SubmitterUserId = userId;
                     ticket.Created = DataUtility.GetPostGresDate(DateTime.UtcNow);
-                    ticket.TicketStatusId = (await _context.TicketStatuses.FirstOrDefaultAsync(t => t.Name == "New"))!.Id;
+                    ticket.TicketStatusId = (await _btTicketService.GetTicketStatuses()).FirstOrDefault(s => s.Name == "New")!.Id; 
+                        
 
                     ticket.Archived = false;
                     ticket.ArchivedByProject = false;
@@ -160,11 +156,16 @@ namespace Hoist.Controllers
 
             }
 
-            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Name", ticket.ProjectId);
+            int companyId = User.Identity!.GetCompanyId();
 
-            ViewData["TicketPriorityId"] = new SelectList(_context.TicketPriorities, "Id", "Name", ticket.TicketPriorityId);
-            ViewData["TicketStatusId"] = new SelectList(_context.TicketStatuses, "Id", "Name", ticket.TicketStatusId);
-                return View(ticket);
+            IEnumerable<Project> projects = await _btProjectService.GetProjectsAsync(companyId);
+            IEnumerable<TicketPriority> priorities = await _btTicketService.GetTicketPriorities();
+
+            ViewData["ProjectId"] = new SelectList(projects, "Id", "Name");
+            ViewData["TicketPriorityId"] = priorities;
+            ViewData["TicketStatusId"] = new SelectList(await _btTicketService.GetTicketStatuses(), "Id", "Name");
+            ViewData["TicketTypeId"] = new SelectList(await _btTicketService.GetTicketTypes(), "Id", "Name");
+            return View(ticket);
         }
 
         // GET: Tickets/Edit/5
@@ -175,7 +176,7 @@ namespace Hoist.Controllers
                 return NotFound();
             }
 
-            Ticket? ticket = await _context.Tickets.FindAsync(id);
+            Ticket? ticket = await _btTicketService.GetTicketAsync(id);
             if (ticket == null)
             {
                 return NotFound();
@@ -183,28 +184,24 @@ namespace Hoist.Controllers
 
 
             BTUser? btUser = await _userManager.GetUserAsync(User);
-            int companyId =  btUser.CompanyId;
+            int companyId =  btUser!.CompanyId;
 
-            IEnumerable<Project> projects = _context.Projects.Where(p => p.CompanyId == btUser!.CompanyId);
+            IEnumerable<Project> projects = await _btProjectService.GetProjectsAsync(companyId);
 
-            IEnumerable<BTUser> developers = _context.Users.Where(u => u.CompanyId == companyId).ToList();
-            //int? companyId = (await _userManager.GetUserAsync(User))?.CompanyId;
+            IEnumerable<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
 
+            IEnumerable<TicketPriority> priorities = await _btTicketService.GetTicketPriorities();
+            IEnumerable<TicketStatus> statuses = await _btTicketService.GetTicketStatuses();
 
             ViewData["DeveloperUserId"] = new SelectList(developers, "Id", "FullName", ticket.DeveloperUserId);
             ViewData["ProjectId"] = new SelectList(projects, "Id", "Name");
-            ViewData["TicketPriorityId"] = (_context.TicketPriorities);
-            ViewData["TicketStatusId"] = (_context.TicketStatuses);
-            ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Name");
+            ViewData["TicketPriorityId"] = priorities;
+            ViewData["TicketStatusId"] = statuses;
+            ViewData["TicketTypeId"] = new SelectList(await _btTicketService.GetTicketTypes(), "Id", "Name");
 
 
 
-            //ViewData["DeveloperUserId"] = new SelectList(_context.Users, "Id", "FullName", ticket.DeveloperUserId);
-            //ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Name", ticket.ProjectId);
-
-            //ViewData["TicketPriorityId"] = new SelectList(_context.TicketPriorities, "Id", "Name", ticket.TicketPriorityId);
-            //ViewData["TicketStatusId"] = new SelectList(_context.TicketStatuses, "Id", "Name", ticket.TicketStatusId);
-            //ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Name", ticket.TicketTypeId);
+            
             return View(ticket);
         }
 
@@ -229,12 +226,11 @@ namespace Hoist.Controllers
                     ticket.Updated = DataUtility.GetPostGresDate(DateTime.UtcNow);
 
 
-                    _context.Update(ticket);
-                    await _context.SaveChangesAsync();
+                    await _btTicketService.UpdateTicketAsync(ticket);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TicketExists(ticket.Id))
+                    if (!await _btTicketService.TicketExists(id))
                     {
                         return NotFound();
                     }
@@ -248,37 +244,31 @@ namespace Hoist.Controllers
 
             BTUser? btUser = await _userManager.GetUserAsync(User);
 
-            IEnumerable<Project> projects = _context.Projects.Where(p => p.CompanyId == btUser!.CompanyId);
-            //ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Name", ticket.ProjectId);
+            int companyId = User.Identity!.GetCompanyId();
 
-            //ViewData["TicketPriorityId"] = new SelectList(_context.TicketPriorities, "Id", "Name", ticket.TicketPriorityId);
-            //ViewData["TicketStatusId"] = new SelectList(_context.TicketStatuses, "Id", "Name", ticket.TicketStatusId);
-            //ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Name", ticket.TicketTypeId);
+            IEnumerable<Project> projects = await _btProjectService.GetProjectsAsync(companyId);
+            IEnumerable<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
+            IEnumerable<TicketPriority> priorities = await _btTicketService.GetTicketPriorities();
+            IEnumerable<TicketStatus> statuses = await _btTicketService.GetTicketStatuses();
 
-            ViewData["DeveloperUserId"] = new SelectList(_context.Users, "Id", "Name", ticket.DeveloperUserId);
+
+            ViewData["DeveloperUserId"] = new SelectList(developers, "Id", "FullName", ticket.DeveloperUserId);
             ViewData["ProjectId"] = new SelectList(projects, "Id", "Name");
-            ViewData["TicketPriorityId"] = (_context.TicketPriorities);
-            ViewData["TicketStatusId"] = (_context.TicketStatuses);
-            ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Name");
+            ViewData["TicketPriorityId"] = priorities;
+            ViewData["TicketStatusId"] = statuses;
+            ViewData["TicketTypeId"] = new SelectList(await _btTicketService.GetTicketTypes(), "Id", "Name");
             return View(ticket);
         }
 
         // GET: Tickets/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Archive(int? id)
         {
-            if (id == null || _context.Tickets == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var ticket = await _context.Tickets
-                .Include(t => t.DeveloperUser)
-                .Include(t => t.Project)
-                .Include(t => t.SubmitterUser)
-                .Include(t => t.TicketPriority)
-                .Include(t => t.TicketStatus)
-                .Include(t => t.TicketType)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            Ticket? ticket = await _btTicketService.GetTicketAsync(id);
             if (ticket == null)
             {
                 return NotFound();
@@ -288,21 +278,13 @@ namespace Hoist.Controllers
         }
 
         // POST: Tickets/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost, ActionName("Archive")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> ArchiveConfirmed(int id)
         {
-            if (_context.Tickets == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.Tickets'  is null.");
-            }
-            var ticket = await _context.Tickets.FindAsync(id);
-            if (ticket != null)
-            {
-                ticket.Archived = false;
-            }
 
-            await _context.SaveChangesAsync();
+            Ticket? ticket = await _btTicketService.GetTicketAsync(id);
+            await _btTicketService.ArchiveTicketAsync(ticket);
             return RedirectToAction(nameof(Index));
         }
 
@@ -324,8 +306,8 @@ namespace Hoist.Controllers
 
                 ticketComment.Created = DataUtility.GetPostGresDate(DateTime.UtcNow);
 
-                _context.Add(ticketComment);
-                await _context.SaveChangesAsync();
+                await _btTicketService.AddTicketComment(ticketComment);
+
                 return RedirectToAction("Details", new { id = ticketId });
             }
 
@@ -359,9 +341,74 @@ namespace Hoist.Controllers
             return RedirectToAction("Details", new { id = ticketAttachment.TicketId, message = statusMessage });
         }
 
-        private bool TicketExists(int id)
+        [HttpGet]
+        public async Task<IActionResult> MyTickets()
         {
-            return (_context.Tickets?.Any(e => e.Id == id)).GetValueOrDefault();
+
+            string? userId = _userManager.GetUserId(User);
+
+            int? companyId = User.Identity.GetCompanyId();
+
+            IEnumerable<Ticket> tickets = await _btTicketService.GetUserTicketsAsync(userId, companyId);
+
+            return View(tickets);
+
+        }
+
+       
+
+
+
+        public async Task<IActionResult> AssignTicketDeveloper(int? ticketId)
+        {
+
+            if(ticketId == null)
+            {
+                return NotFound();
+            }
+
+            int companyId = User.Identity!.GetCompanyId();
+
+            Ticket ticket = await _btTicketService.GetTicketAsync(ticketId);
+
+            List<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
+
+            string? currentDeveloperId = ticket.DeveloperUserId;
+
+            AssignDeveloperViewModel viewModel = new()
+            {
+                
+                Ticket = ticket,
+                DeveloperList = new SelectList(developers, "Id", "FullName", currentDeveloperId)
+
+            };
+
+
+
+
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignTicketDeveloper(AssignDeveloperViewModel viewModel)
+        {
+
+            Ticket? ticket = await _btTicketService.GetTicketAsync(viewModel.Ticket?.Id);
+
+            if (!string.IsNullOrEmpty(viewModel.DeveloperId))
+            {
+
+                ticket.DeveloperUserId = viewModel.DeveloperId;
+                await _btTicketService.UpdateTicketAsync(ticket);
+            return RedirectToAction("Details", new { id = ticket.Id });
+            }
+
+            ModelState.AddModelError("DeveloperId", "No Developer Chosen. Please select a developer for the ticket.");
+
+            return View(viewModel);
+
         }
 
 

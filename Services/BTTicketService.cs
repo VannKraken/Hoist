@@ -40,9 +40,45 @@ namespace Hoist.Services
             }
         }
 
-        public Task ArchiveTicketAsync(Ticket ticket)
+        public async Task AddTicketComment(TicketComment ticketComment)
         {
-            throw new NotImplementedException();
+            _context.Add(ticketComment);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> ArchiveTicketAsync(Ticket ticket)
+        {
+
+            try
+            {
+                ticket.Archived = true;
+
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            
+
+        }
+
+        public async Task<IEnumerable<Ticket>> GetCompanyTicketsAsync(int? companyId)
+        {
+            IEnumerable<Ticket> tickets = await _context.Tickets.Include(t => t.DeveloperUser)
+                                                                .Include(t => t.Project)
+                                                                    .ThenInclude(p => p.Company)
+                                                                    .Where(t => t.Project!.CompanyId == companyId)
+                                                                .Include(t => t.SubmitterUser)
+                                                                .Include(t => t.TicketPriority)
+                                                                .Include(t => t.TicketStatus)
+                                                                .Include(t => t.TicketType)
+                                                                .Include(t => t.Attachments).ToListAsync();
+
+            return tickets;
         }
 
         public Task<IEnumerable<Ticket>> GetProjectTicketsAsync(int? projectId, int? companyid)
@@ -50,11 +86,25 @@ namespace Hoist.Services
             throw new NotImplementedException();
         }
 
-        public async Task<Ticket> GetTicketAsync(int ticketId)
+        public async Task<Ticket> GetTicketAsync(int? ticketId)
         {
-            Ticket? ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == ticketId);
+            Ticket? ticket = await _context.Tickets
+                .Include(t => t.DeveloperUser)
+                .Include(t => t.Project)
+                .Include(t => t.SubmitterUser)
+                .Include(t => t.Comments)
+                .Include(t => t.TicketPriority)
+                .Include(t => t.TicketStatus)
+                .Include(t => t.TicketType)
+                .FirstOrDefaultAsync(m => m.Id == ticketId); ;
 
             return ticket;
+        }
+
+        public async Task<IEnumerable<TicketPriority>> GetTicketPriorities()
+        {
+            IEnumerable<TicketPriority> ticketPriorities = await _context.TicketPriorities.ToListAsync();
+            return ticketPriorities;
         }
 
         public async Task<IEnumerable<Ticket>> GetTicketsByPriority(int? ticketPriorityId, int? companyId)
@@ -83,6 +133,20 @@ namespace Hoist.Services
             return tickets;
         }
 
+        public async Task<IEnumerable<TicketStatus>> GetTicketStatuses()
+        {
+            IEnumerable<TicketStatus> ticketStatuses = await _context.TicketStatuses.ToListAsync();
+
+            return ticketStatuses;
+        }
+
+        public async Task<IEnumerable<TicketType>> GetTicketTypes()
+        {
+            IEnumerable<TicketType> ticketTypes = await _context.TicketTypes.ToListAsync();
+
+            return ticketTypes;
+        }
+
         public async Task<IEnumerable<Ticket>> GetUserTicketsAsync(string? userId, int? companyId)
         {
             IEnumerable<Ticket> tickets = await _context.Tickets.Where(t => t.SubmitterUserId == userId || t.DeveloperUserId == userId)
@@ -91,9 +155,15 @@ namespace Hoist.Services
             return tickets;
         }
 
-        public Task UpdateTicketAsync(Ticket ticket)
+        public async Task<bool> TicketExists(int? ticketId)
         {
-            throw new NotImplementedException();
+            return ( _context.Tickets?.Any(e => e.Id == ticketId)).GetValueOrDefault();
+        }
+
+        public async Task UpdateTicketAsync(Ticket ticket)
+        {
+            _context.Update(ticket);
+            await _context.SaveChangesAsync();
         }
     }
 }

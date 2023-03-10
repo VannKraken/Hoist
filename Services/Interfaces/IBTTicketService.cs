@@ -7,7 +7,9 @@ namespace Hoist.Services.Interfaces
         #region Ticket CRUD
         public Task AddTicketAsync(Ticket ticket);
 
-        public Task<Ticket> GetTicketAsync(int ticketId);
+        public Task<Ticket> GetTicketAsync(int? ticketId);
+
+        public Task<IEnumerable<Ticket>> GetCompanyTicketsAsync(int? companyId);
 
         public Task<IEnumerable<Ticket>> GetProjectTicketsAsync(int? projectId, int? companyid);
 
@@ -21,9 +23,18 @@ namespace Hoist.Services.Interfaces
 
         public Task UpdateTicketAsync(Ticket ticket);
 
-        public Task ArchiveTicketAsync(Ticket ticket);
+        public Task<bool> ArchiveTicketAsync(Ticket ticket);
+
+        public Task<bool> TicketExists(int? ticketId);
 
         #endregion
+
+
+        public Task AddTicketComment(TicketComment ticketComment);
+
+        public Task<IEnumerable<TicketPriority>> GetTicketPriorities();
+        public Task<IEnumerable<TicketStatus>> GetTicketStatuses();
+        public Task<IEnumerable<TicketType>> GetTicketTypes();
 
         public Task AddTicketAttachmentAsync(TicketAttachment ticketAttachment);
     }
