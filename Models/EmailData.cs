@@ -1,4 +1,6 @@
-﻿namespace Hoist.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Hoist.Models
 {
     public class EmailData
     {

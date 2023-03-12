@@ -1,6 +1,8 @@
 ﻿using Hoist.Data;
 using Hoist.Models;
 using Hoist.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using X.PagedList;
 
 namespace Hoist.Services
 {
@@ -205,9 +207,32 @@ namespace Hoist.Services
             }
         }
 
-        public Task<List<TicketHistory>> GetCompanyTicketHistoriesAsync(int? companyId)
+        public async Task<List<TicketHistory>> GetCompanyTicketHistoriesAsync(int? companyId)
         {
-            throw new NotImplementedException();
+
+
+            //List<TicketHistory> tistories = await _context.Companies
+            //                                 .Include(c => c.Projects)
+            //                                    .ThenInclude(p => p.Tickets)
+            //                                    .ThenInclude(t => t.History)
+            //                                 ;
+
+
+            Company? company = await _context.Companies
+                                             .Include(c => c.Projects)
+                                                .ThenInclude(p => p.Tickets)
+                                                .ThenInclude(t => t.History)
+                                             .FirstOrDefaultAsync( c => c.Id == companyId);
+
+            IEnumerable<Ticket> companyTickets = company.Projects
+                                                        .SelectMany(p => p.Tickets
+                                                                          .Where(t => t.Archived == false));
+
+
+
+            List<TicketHistory> ticketHistories =  companyTickets.SelectMany(t => t.History).ToList();
+
+            return ticketHistories;
         }
 
         public Task<List<TicketHistory>> GetProjectTicketHistoriesAsync(int? projectId, int? companyId)

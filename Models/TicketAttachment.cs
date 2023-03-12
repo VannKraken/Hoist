@@ -22,6 +22,9 @@ namespace Hoist.Models
 
         public byte[]? FileData { get; set; }
 
+
+        public string? FileName { get; set; }
+
         public string? FileType { get; set; }
 
 

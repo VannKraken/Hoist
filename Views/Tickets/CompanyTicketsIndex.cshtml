@@ -1,0 +1,14 @@
+﻿@model IEnumerable<Hoist.Models.Ticket>
+
+
+
+<div>
+    @foreach (Ticket ticket in Model)
+    {
+        <div>
+            <div>
+                <span>@ticket.Title</span>
+            </div>
+        </div>
+    }
+</div>

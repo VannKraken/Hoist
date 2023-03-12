@@ -440,6 +440,9 @@ namespace Hoist.Data.Migrations
                     b.Property<byte[]>("FileData")
                         .HasColumnType("bytea");
 
+                    b.Property<string>("FileName")
+                        .HasColumnType("text");
+
                     b.Property<string>("FileType")
                         .HasColumnType("text");
 

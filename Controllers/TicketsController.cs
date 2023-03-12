@@ -139,8 +139,8 @@ namespace Hoist.Controllers
 
                     ticket.SubmitterUserId = userId;
                     ticket.Created = DataUtility.GetPostGresDate(DateTime.UtcNow);
-                    ticket.TicketStatusId = (await _btTicketService.GetTicketStatuses()).FirstOrDefault(s => s.Name == "New")!.Id; 
-                        
+                    ticket.TicketStatusId = (await _btTicketService.GetTicketStatuses()).FirstOrDefault(s => s.Name == "New")!.Id;
+
 
                     ticket.Archived = false;
                     ticket.ArchivedByProject = false;
@@ -173,7 +173,7 @@ namespace Hoist.Controllers
 
             }
 
-            
+
 
             IEnumerable<Project> projects = await _btProjectService.GetProjectsAsync(companyId);
             IEnumerable<TicketPriority> priorities = await _btTicketService.GetTicketPriorities();
@@ -201,7 +201,7 @@ namespace Hoist.Controllers
 
 
             BTUser? btUser = await _userManager.GetUserAsync(User);
-            int companyId =  btUser!.CompanyId;
+            int companyId = btUser!.CompanyId;
 
             IEnumerable<Project> projects = await _btProjectService.GetProjectsAsync(companyId);
 
@@ -218,7 +218,7 @@ namespace Hoist.Controllers
 
 
 
-            
+
             return View(ticket);
         }
 
@@ -273,7 +273,7 @@ namespace Hoist.Controllers
 
             BTUser? btUser = await _userManager.GetUserAsync(User);
 
-            
+
 
             IEnumerable<Project> projects = await _btProjectService.GetProjectsAsync(companyId);
             IEnumerable<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
@@ -320,7 +320,7 @@ namespace Hoist.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddTicketComment([Bind("Id,TicketId,BTUserId,Comment,Created")]TicketComment ticketComment)
+        public async Task<IActionResult> AddTicketComment([Bind("Id,TicketId,BTUserId,Comment,Created")] TicketComment ticketComment)
         {
 
             int ticketId = ticketComment.TicketId;
@@ -329,7 +329,7 @@ namespace Hoist.Controllers
             if (ModelState.IsValid)
             {
 
-               
+
 
                 ticketComment.BTUserId = _userManager.GetUserId(User);
 
@@ -354,7 +354,7 @@ namespace Hoist.Controllers
 
             if (ModelState.IsValid && ticketAttachment.FormFile != null)
             {
-                ticketAttachment.FileData = await _btFileService.ConvertFileToByteArrayAsync(ticketAttachment.FormFile);                
+                ticketAttachment.FileData = await _btFileService.ConvertFileToByteArrayAsync(ticketAttachment.FormFile);
                 ticketAttachment.FileType = ticketAttachment.FormFile.ContentType;
 
                 ticketAttachment.Created = DataUtility.GetPostGresDate(DateTime.UtcNow);
@@ -388,14 +388,14 @@ namespace Hoist.Controllers
 
         }
 
-       
+
 
 
 
         public async Task<IActionResult> AssignTicketDeveloper(int? ticketId)
         {
 
-            if(ticketId == null)
+            if (ticketId == null)
             {
                 return NotFound();
             }
@@ -410,7 +410,7 @@ namespace Hoist.Controllers
 
             AssignDeveloperViewModel viewModel = new()
             {
-                
+
                 Ticket = ticket,
                 DeveloperList = new SelectList(developers, "Id", "FullName", currentDeveloperId)
 
@@ -429,9 +429,9 @@ namespace Hoist.Controllers
         {
 
             //As no tracking old ticket
-           
 
-            
+
+
 
 
             if (!string.IsNullOrEmpty(viewModel.DeveloperId))
@@ -448,7 +448,7 @@ namespace Hoist.Controllers
                     Ticket? ticket = await _btTicketService.GetTicketAsync(viewModel.Ticket?.Id);
 
                     ticket.DeveloperUserId = viewModel.DeveloperId;
-                    await _btTicketService.UpdateTicketAsync(ticket);                    
+                    await _btTicketService.UpdateTicketAsync(ticket);
 
                 }
                 catch (Exception)
@@ -459,6 +459,8 @@ namespace Hoist.Controllers
 
                 Ticket? newTicket = await _btTicketService.GetTicketSnapshotAsync(viewModel.Ticket!.Id, companyId);
 
+                await _btTicketHistoryService.AddHistoryAsync(oldTicket, newTicket, userId);
+
                 return RedirectToAction("Details", new { id = newTicket.Id });
 
 
@@ -468,6 +470,27 @@ namespace Hoist.Controllers
 
             return View(viewModel);
 
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> CompanyTicketsIndex()
+        {
+            int? companyId = User.Identity.GetCompanyId();
+
+            IEnumerable<Ticket> tickets = await _btTicketService.GetCompanyTicketsAsync(companyId);
+
+            return View(tickets);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCompanyTicketHistories()
+        {
+            int companyId = User.Identity!.GetCompanyId();          
+
+            IEnumerable<TicketHistory> ticketHistories = await _btTicketHistoryService.GetCompanyTicketHistoriesAsync(companyId);
+
+            return View(ticketHistories);
         }
 
 
