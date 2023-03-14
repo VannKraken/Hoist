@@ -26,7 +26,7 @@ namespace Hoist.Services
         }
 
         //public async Task<TicketStatus> GetTicketStatusByName(string statusName)
-            
+
 
         public async Task AddTicketAttachmentAsync(TicketAttachment ticketAttachment)
         {
@@ -64,7 +64,7 @@ namespace Hoist.Services
 
                 throw;
             }
-            
+
 
         }
 
@@ -121,14 +121,14 @@ namespace Hoist.Services
                 .FirstOrDefaultAsync(m => m.Id == ticketId); ;
 
             return ticket;
-        } 
-        
+        }
+
 
         public async Task<IEnumerable<Ticket>> GetTicketsByPriority(int? ticketPriorityId, int? companyId)
         {
             IEnumerable<Ticket> tickets = await _context.Tickets.Where(t => t.TicketPriorityId == ticketPriorityId)
                                                                   .Include(t => t.Project)
-                                                                    .ThenInclude(p => p.CompanyId == companyId ).ToListAsync();
+                                                                    .ThenInclude(p => p.CompanyId == companyId).ToListAsync();
 
             return tickets;
 
@@ -194,14 +194,21 @@ namespace Hoist.Services
                                                                 .Include(t => t.TicketPriority)
                                                                 .Include(t => t.TicketStatus)
                                                                 .Include(t => t.TicketType)
+                                                                .Include(t => t.History)
                                                                 .Include(t => t.Comments)
                                                                 .ToListAsync();
+
+
+
+
             return tickets;
         }
 
+
+
         public async Task<bool> TicketExists(int? ticketId)
         {
-            return ( _context.Tickets?.Any(e => e.Id == ticketId)).GetValueOrDefault();
+            return (_context.Tickets?.Any(e => e.Id == ticketId)).GetValueOrDefault();
         }
 
         public async Task UpdateTicketAsync(Ticket ticket)
@@ -215,7 +222,7 @@ namespace Hoist.Services
         {
             try
             {
-                TicketAttachment ticketAttachment = await _context.TicketAttachments
+                TicketAttachment? ticketAttachment = await _context.TicketAttachments
                                                                   .Include(t => t.BTUser)
                                                                   .FirstOrDefaultAsync(t => t.Id == ticketAttachmentId);
                 return ticketAttachment;

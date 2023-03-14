@@ -6,6 +6,7 @@ using Hoist.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using OpenSails.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -170,6 +170,7 @@ namespace Hoist.Controllers
                         Title = "New Ticket Added",
                         Message = $"New Ticket: `{ticket.Title}` was {user.FullName} ",
                         Created = DataUtility.GetPostGresDate(DateTime.Now),
+                        ProjectId= ticket.ProjectId,
                         SenderId = user.Id,
                         RecipientId = projectManager?.Id,
                         NotificationTypeId = (await _context.NotificationTypes.FirstOrDefaultAsync(n => n.Name == nameof(BTNotificationTypes.Ticket)))!.Id

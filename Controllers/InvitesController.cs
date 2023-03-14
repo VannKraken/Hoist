@@ -28,7 +28,8 @@ namespace Hoist.Controllers
         private readonly IDataProtector _dataProtector;
         private readonly IConfiguration _configuration;
 
-        public InvitesController(ApplicationDbContext context, IBTProjectService btProjectService, IBTCompanyService bTCompanyService, IBTInviteService btInviteService, IEmailSender emailService, UserManager<BTUser> userManager, IDataProtectionProvider dataProtectorProvider, IConfiguration configuration)
+        public InvitesController(ApplicationDbContext context, IBTProjectService btProjectService, IBTCompanyService bTCompanyService,
+                                IBTInviteService btInviteService, IEmailSender emailService, UserManager<BTUser> userManager, IDataProtectionProvider dataProtectorProvider, IConfiguration configuration)
         {
             _context = context;
             _btProjectService = btProjectService;
@@ -89,7 +90,7 @@ namespace Hoist.Controllers
             int companyId = User.Identity!.GetCompanyId();
 
             ModelState.Remove("InvitorId");
-            ModelState.Remove("");
+            
             if (ModelState.IsValid)
             {
                 try

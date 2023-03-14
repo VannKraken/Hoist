@@ -5,48 +5,33 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
 using MimeKit;
 
-namespace Hoist.Services
+
+namespace OpenSails.Services
 {
     public class EmailService : IEmailSender
     {
-
         private readonly MailSettings _mailSettings; //This class gathers the object in our configuration to pass it around easier
 
         public EmailService(IOptions<MailSettings> mailSettings)
         {
             _mailSettings = mailSettings.Value;
         }
-
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
-
-
-
-
-            var emailFrom = email;//Will look on the environment variables to find the email address //Using a var is when you don;t know the types being sent to you. This is implicit 
-            var emailSender = MailboxAddress.Parse(_mailSettings.EmailAddress ?? Environment.GetEnvironmentVariable("EmailAddress")).ToString();
-
-
+            var emailSender = _mailSettings.EmailAddress ?? Environment.GetEnvironmentVariable("EmailAddress");//Will look on the environment variables to find the email address //Using a var is when you don;t know the types being sent to you. This is implicit 
             MimeMessage newEmail = new MimeMessage();
 
-            if (subject == "Confirm your email" && htmlMessage.Contains("Please confirm your account"))
+            newEmail.Sender = MailboxAddress.Parse(emailSender);
+
+            foreach (var emailAddress in email.Split(";"))
             {
-                newEmail.To.Add(MailboxAddress.Parse(email));
-            }
-            else
-            {
-                newEmail.To.Add(MailboxAddress.Parse(_mailSettings.EmailAddress ?? Environment.GetEnvironmentVariable("EmailAddress")));
+                newEmail.To.Add(MailboxAddress.Parse(emailAddress));
             }
 
-
-            newEmail.Sender = MailboxAddress.Parse(_mailSettings.EmailAddress ?? Environment.GetEnvironmentVariable("EmailAddress"));
-
-            newEmail.ReplyTo.Add(MailboxAddress.Parse(emailFrom));
             newEmail.Subject = subject;
 
             BodyBuilder emailBody = new BodyBuilder();
             emailBody.HtmlBody = htmlMessage;
-
 
             newEmail.Body = emailBody.ToMessageBody();
 
