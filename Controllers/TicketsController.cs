@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,8 +31,10 @@ namespace Hoist.Controllers
         private readonly IBTProjectService _btProjectService;
         private readonly IBTRolesService _btRolesService;
         private readonly IBTTicketHistoryService _btTicketHistoryService;
+        private readonly IBTNotifications _btNotificationsService;
+        private readonly ApplicationDbContext _context;
 
-        public TicketsController(UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, IBTFileService btFileService, IBTTicketService btTicketService, IBTProjectService btProjectService, IBTRolesService btRolesService, IBTTicketHistoryService btTicketHistoryService)
+        public TicketsController(UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, IBTFileService btFileService, IBTTicketService btTicketService, IBTProjectService btProjectService, IBTRolesService btRolesService, IBTTicketHistoryService btTicketHistoryService, IBTNotifications btNotificationsService, ApplicationDbContext context)
         {
 
             _userManager = userManager;
@@ -41,6 +44,8 @@ namespace Hoist.Controllers
             _btProjectService = btProjectService;
             _btRolesService = btRolesService;
             _btTicketHistoryService = btTicketHistoryService;
+            _btNotificationsService = btNotificationsService;
+            _context = context;
         }
 
         // GET: Tickets
@@ -135,9 +140,9 @@ namespace Hoist.Controllers
             {
                 try
                 {
-                    string? userId = _userManager.GetUserId(User);
+                    BTUser? user = await _userManager.GetUserAsync(User);
 
-                    ticket.SubmitterUserId = userId;
+                    ticket.SubmitterUserId = user.Id;
                     ticket.Created = DataUtility.GetPostGresDate(DateTime.UtcNow);
                     ticket.TicketStatusId = (await _btTicketService.GetTicketStatuses()).FirstOrDefault(s => s.Name == "New")!.Id;
 
@@ -152,8 +157,39 @@ namespace Hoist.Controllers
                     Ticket newTicket = await _btTicketService.GetTicketSnapshotAsync(ticket.Id, companyId);
 
 
-                    await _btTicketHistoryService.AddHistoryAsync(null, newTicket, userId);
+                    await _btTicketHistoryService.AddHistoryAsync(null, newTicket, user.Id);
 
+                    //Notification
+
+                    BTUser projectManager = await _btProjectService.GetProjectManagerAsync(ticket.ProjectId);
+
+                    Notification? notification = new()
+                    {
+
+                        TicketId = ticket.Id,
+                        Title = "New Ticket Added",
+                        Message = $"New Ticket: `{ticket.Title}` was {user.FullName} ",
+                        Created = DataUtility.GetPostGresDate(DateTime.Now),
+                        SenderId = user.Id,
+                        RecipientId = projectManager?.Id,
+                        NotificationTypeId = (await _context.NotificationTypes.FirstOrDefaultAsync(n => n.Name == nameof(BTNotificationTypes.Ticket)))!.Id
+
+                    };
+
+
+                    if (projectManager != null)
+                    {
+
+
+                        await _btNotificationsService.AddNotificationAsync(notification);
+                        await _btNotificationsService.SendEmailNotificationAsync(notification, "New Ticket Added");
+
+                    }
+                    else
+                    {
+                        await _btNotificationsService.AdminNotificationAsync(notification, companyId);
+                        await _btNotificationsService.SendAdminEmailNotificationAsync(notification, $"New Ticket Added for '{ticket.Project!.Name}'", companyId);
+                    }
 
 
                     //TODO: Add Notification
@@ -356,6 +392,7 @@ namespace Hoist.Controllers
             {
                 ticketAttachment.FileData = await _btFileService.ConvertFileToByteArrayAsync(ticketAttachment.FormFile);
                 ticketAttachment.FileType = ticketAttachment.FormFile.ContentType;
+                ticketAttachment.FileName = ticketAttachment.FormFile.FileName;
 
                 ticketAttachment.Created = DataUtility.GetPostGresDate(DateTime.UtcNow);
                 ticketAttachment.BTUserId = _userManager.GetUserId(User);
@@ -438,7 +475,7 @@ namespace Hoist.Controllers
             {
 
                 int companyId = User.Identity!.GetCompanyId();
-                string? userId = _userManager.GetUserId(User);
+                BTUser? user = await _userManager.GetUserAsync(User);
 
 
                 Ticket? oldTicket = await _btTicketService.GetTicketSnapshotAsync(viewModel.Ticket?.Id, companyId);
@@ -459,7 +496,30 @@ namespace Hoist.Controllers
 
                 Ticket? newTicket = await _btTicketService.GetTicketSnapshotAsync(viewModel.Ticket!.Id, companyId);
 
-                await _btTicketHistoryService.AddHistoryAsync(oldTicket, newTicket, userId);
+                await _btTicketHistoryService.AddHistoryAsync(oldTicket, newTicket, user.Id);
+
+                
+
+                Notification? notification = new()
+                {
+
+                    TicketId = viewModel.Ticket.Id,
+                    Title = "Developer Assigned to Ticket",
+                    Message = $"Ticket Assigned to {viewModel.Ticket.DeveloperUser.FullName}.",
+                    Created = DataUtility.GetPostGresDate(DateTime.Now),
+                    SenderId = user.Id,
+                    RecipientId = viewModel.DeveloperId,
+                    NotificationTypeId = (await _context.NotificationTypes.FirstOrDefaultAsync(n => n.Name == nameof(BTNotificationTypes.Ticket)))!.Id
+
+                };
+
+
+             
+
+
+                    await _btNotificationsService.AddNotificationAsync(notification);
+                    await _btNotificationsService.SendEmailNotificationAsync(notification, "New Developer Assigned");
+
 
                 return RedirectToAction("Details", new { id = newTicket.Id });
 
@@ -493,7 +553,16 @@ namespace Hoist.Controllers
             return View(ticketHistories);
         }
 
+        public async Task<IActionResult> ShowFile(int id)
+        {
+            TicketAttachment ticketAttachment = await _btTicketService.GetTicketAttachmentByIdAsync(id);
+            string fileName = ticketAttachment.FileName;
+            byte[] fileData = ticketAttachment.FileData;
+            string ext = Path.GetExtension(fileName).Replace(".", "");
 
+            Response.Headers.Add("Content-Disposition", $"inline; filename={fileName}");
+            return File(fileData, $"application/{ext}");
+        }
 
     }
 }

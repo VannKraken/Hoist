@@ -13,9 +13,12 @@ using Hoist.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Hoist.Services;
 using Hoist.Models.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoist.Controllers
 {
+
+    [Authorize]
     public class CompaniesController : Controller
     {
         private readonly ApplicationDbContext _context;

@@ -83,10 +83,7 @@ namespace Hoist.Services
             return fileImage;
         }
 
-        public string GetFileIcon(int fileId)
-        {
-            throw new NotImplementedException();
-        }
+
         #endregion
 
 

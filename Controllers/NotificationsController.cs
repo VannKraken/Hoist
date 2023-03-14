@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Hoist.Data;
 using Hoist.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hoist.Controllers
 {
+    [Authorize]
     public class NotificationsController : Controller
     {
         private readonly ApplicationDbContext _context;

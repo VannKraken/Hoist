@@ -116,6 +116,7 @@ namespace Hoist.Services
                 .Include(t => t.TicketPriority)
                 .Include(t => t.TicketStatus)
                 .Include(t => t.TicketType)
+                .Include(t => t.Attachments)
                 .Include(t => t.History)
                 .FirstOrDefaultAsync(m => m.Id == ticketId); ;
 
@@ -207,6 +208,23 @@ namespace Hoist.Services
         {
             _context.Update(ticket);
             await _context.SaveChangesAsync();
+        }
+
+
+        public async Task<TicketAttachment> GetTicketAttachmentByIdAsync(int ticketAttachmentId)
+        {
+            try
+            {
+                TicketAttachment ticketAttachment = await _context.TicketAttachments
+                                                                  .Include(t => t.BTUser)
+                                                                  .FirstOrDefaultAsync(t => t.Id == ticketAttachmentId);
+                return ticketAttachment;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }

@@ -23,16 +23,19 @@ builder.Services.AddIdentity<BTUser, IdentityRole>(options => options.SignIn.Req
 
 
 // Custom Services
+builder.Services.AddScoped<IEmailSender, EmailService>();
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+builder.Services.AddScoped<IBTRolesService, BTRolesService>();
+
 builder.Services.AddScoped<IBTFileService, BTFileService>();
 builder.Services.AddScoped<IBTProjectService, BTProjectService>();
 builder.Services.AddScoped<IBTTicketService, BTTicketService>();
-builder.Services.AddScoped<IBTRolesService, BTRolesService>();
 builder.Services.AddScoped<IBTCompanyService, BTCompanyService>();
 builder.Services.AddScoped<IBTTicketHistoryService, BTTicketHistoryService>();
+builder.Services.AddScoped<IBTInviteService, BTInviteService>();
 
 
-builder.Services.AddScoped<IEmailSender, EmailService>();
-builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+builder.Services.AddScoped<IBTNotifications, BTNotifications>();
 
 builder.Services.AddMvc();
 

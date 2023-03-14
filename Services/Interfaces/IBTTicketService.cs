@@ -38,5 +38,7 @@ namespace Hoist.Services.Interfaces
         public Task<IEnumerable<TicketType>> GetTicketTypes();
 
         public Task AddTicketAttachmentAsync(TicketAttachment ticketAttachment);
+
+        public Task<TicketAttachment> GetTicketAttachmentByIdAsync(int ticketAttachmentId);
     }
 }
