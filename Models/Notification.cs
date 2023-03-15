@@ -10,7 +10,7 @@ namespace Hoist.Models
         //Fk
         public int ProjectId { get; set; }
 
-        public int TicketId { get; set; }
+        public int? TicketId { get; set; }
 
         [Required]
         public string? SenderId { get; set; }
@@ -19,7 +19,7 @@ namespace Hoist.Models
         public string? RecipientId { get; set; }
 
         public int NotificationTypeId { get; set; }
-        //
+    
 
         [Required]
         [Display(Name="Subject")]

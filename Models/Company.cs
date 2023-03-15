@@ -12,7 +12,7 @@ namespace Hoist.Models
         [StringLength(100, ErrorMessage = " The {0} must be at least {2} and at most {1} characters.", MinimumLength = 2)]
         public string? Name { get; set; }
 
-        [StringLength(40000, ErrorMessage = " The {0} must be at least {2} and at most {1} characters.", MinimumLength = 2)]
+        [StringLength(400, ErrorMessage = " The {0} must be at least {2} and at most {1} characters.", MinimumLength = 2)]
         public string? Description { get; set; }
 
         public byte[]? ImageFileData { get; set; }

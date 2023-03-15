@@ -1,6 +1,192 @@
 ﻿@page
 @model RegisterModel
+
 @{
+    ViewBag.Title = "Sign Up";
+    Layout = null;
+}
+
+<!doctype html>
+<html lang="en" data-layout="vertical" data-layout-style="detached" data-sidebar="light" data-topbar="dark" data-sidebar-size="lg">
+<head>
+    @Html.Partial("~/Views/Shared/_title_meta.cshtml")
+    @Html.Partial("~/Views/Shared/_head_css.cshtml")
+</head>
+<body>
+
+    <div class="auth-page-wrapper pt-5">
+        <!-- auth page bg -->
+        <div class="auth-one-bg-position auth-one-bg" id="auth-particles">
+            <div class="bg-overlay"></div>
+
+            <div class="shape">
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1440 120">
+                    <path d="M 0,36 C 144,53.6 432,123.2 720,124 C 1008,124.8 1296,56.8 1440,40L1440 140L0 140z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- auth page content -->
+        <div class="auth-page-content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="text-center mt-sm-5 mb-4 text-white-50">
+                            <div>
+                                <a href="@Url.Action("Index", "Dashboard")" class="d-inline-block auth-logo">
+                                    <img src="~/assets/images/logo-light.png" alt="" height="50">
+                                </a>
+                            </div>
+                            <p class="mt-3 fs-15 fw-medium">Raise the flag.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- end row -->
+
+                <div class="row justify-content-center">
+                    <div class="col-md-8 col-lg-6 col-xl-5">
+                        <div class="card mt-4">
+
+                            <div class="card-body p-4">
+                                <div class="text-center mt-2">
+                                    <h5 class="text-primary">Register Your Company</h5>
+                                    <p class="text-muted">Moments away from easy project tracking.</p>
+                                </div>
+                                <div class="p-2 mt-4">
+                                    <form class="needs-validation" novalidate action="@Url.Action("Index", "Dashboard")">
+
+                                        <div class="mb-3">
+                                            <label asp-for="Input.CompanyName" class="form-label">Company Name <span class="text-danger"> *</span></label>
+                                            <input asp-for="Input.CompanyName" type="text" class="form-control"  placeholder="Company Name" required>
+                                            <div class="invalid-feedback">
+                                                Please enter a Company Name.
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label asp-for="Input.CompanyDescription" class="form-label">Company Description </label>
+                                            <textarea maxlength="400" onkeypress="textAreaAdjust(this)"  style="overflow: hidden; resize:none; max-height: 400px" asp-for="Input.CompanyDescription" type="text" class="form-control" id="username" placeholder="Company Description" required></textarea>
+                                            <div id="passwordHelpBlock" class="form-text">
+                                                Max 400 characters long.
+                                            </div>
+                                        </div>
+
+                                        <div class="text-center mt-2">
+                                        <h5 class="text-primary">Initial Admin Account</h5>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label asp-for="Input.Email" class="form-label">Email<span class="text-danger"> *</span></label>
+                                            <input asp-for="Input.Email" type="email" class="form-control" placeholder="Email" required>
+                                            <div class="invalid-feedback">
+                                                Please enter an Email.
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label asp-for="Input.FirstName" class="form-label">First Name<span class="text-danger"> *</span></label>
+                                            <input asp-for="Input.FirstName" type="text" class="form-control" placeholder="First Name" required>
+                                            <div class="invalid-feedback">
+                                                Please enter an First Name.
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label asp-for="Input.LastName" class="form-label">Last Name<span class="text-danger"> *</span></label>
+                                            <input asp-for="Input.LastName" type="text" class="form-control" placeholder="Last Name" required>
+                                            <div class="invalid-feedback">
+                                                Please enter an Last Name.
+                                            </div>
+                                        </div>
+
+
+                                        <div class="mb-3">
+                                            <label class="form-label" asp-for="Input.Password">Password<span class="text-danger"> *</span></label>
+                                            <div class="position-relative auth-pass-inputgroup">
+                                                <input asp-for="Input.Password" autocomplete="new-password" type="password" class="form-control pe-5 password-input" onpaste="return false" placeholder="Enter Password" id="password-input" aria-describedby="passwordInput" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required>
+                                                <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon" type="button" id="password-addon"><i class="ri-eye-fill align-middle"></i></button>
+                                                <div class="invalid-feedback">
+                                                    Please enter a Password.
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label" asp-for="Input.ConfirmPassword">Confirm Password<span class="text-danger"> *</span></label>
+                                            <div class="position-relative auth-pass-inputgroup">
+                                                <input asp-for="Input.ConfirmPassword" autocomplete="new-password" type="password" class="form-control pe-5 password-input" onpaste="return false" placeholder="Confirm Password"  aria-describedby="confirmpasswordInput" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required>
+                                                <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon" type="button" id="password-addon"><i class="ri-eye-fill align-middle"></i></button>
+                                                <div class="invalid-feedback">
+                                                    Please enter the same Password.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+
+                                        <div class="mb-4">
+                                            <p class="mb-0 fs-13 text-muted fst-italic">By registering you agree to the Hoist &nbsp;<a href="#" class="text-primary text-decoration-underline fst-normal fw-semibold">Terms of Use</a></p>
+                                        </div>
+
+                                        <div id="password-contain" class="p-3 bg-light mb-2 rounded">
+                                            <h5 class="fs-14">Password must contain:</h5>
+                                            <p id="pass-length" class="invalid fs-13 mb-2">Minimum <b>8 characters</b></p>
+                                            <p id="pass-lower" class="invalid fs-13 mb-2">At <b>lowercase</b> letter (a-z)</p>
+                                            <p id="pass-upper" class="invalid fs-13 mb-2">At least <b>uppercase</b> letter (A-Z)</p>
+                                            <p id="pass-number" class="invalid fs-13 mb-0">A least <b>number</b> (0-9)</p>
+                                        </div>
+
+                                        <div class="mt-4">
+                                            <button class="btn btn-info w-100" type="submit">Sign Up</button>
+                                        </div>                                        
+                                    </form>
+
+                                </div>
+                            </div>
+                            <!-- end card body -->
+                        </div>
+                        <!-- end card -->                      
+                    </div>
+                </div>
+                <!-- end row -->
+            </div>
+            <!-- end container -->
+        </div>
+        <!-- end auth page content -->
+        <!-- footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="text-center">
+                            <p class="mb-0 text-muted">&copy; <script>document.write(new Date().getFullYear())</script> Velzon. Crafted with <i class="mdi mdi-heart text-danger"></i> by Themesbrand</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- end Footer -->
+    </div>
+    <!-- end auth-page-wrapper -->
+    @Html.Partial("~/Views/Shared/_vendor_scripts.cshtml")
+
+    <!-- particles js -->
+    <script src="~/assets/libs/particles.js/particles.js"></script>
+    <!-- particles app js -->
+    <script src="~/assets/js/pages/particles.app.js"></script>
+    <!-- validation init -->
+    <script src="~/assets/js/pages/form-validation.init.js"></script>
+    <!-- password create init -->
+    <script src="~/assets/js/pages/passowrd-create.init.js"></script>
+    <script>
+        function textAreaAdjust(element)
+        {
+            element.style.height = "1px";
+            element.style.height = (25+element.scrollHeight)+"px";
+        }
+    </script>
+
+</body>
+</html>
+
+
+@*@{
     ViewData["Title"] = "Register";
 }
 
@@ -16,6 +202,26 @@
                 <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                 <label asp-for="Input.Email">Email</label>
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.FirstName" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                <label asp-for="Input.FirstName"></label>
+                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.LastName" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                <label asp-for="Input.LastName"></label>
+                <span asp-validation-for="Input.LastName" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.CompanyName" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                <label asp-for="Input.CompanyName"></label>
+                <span asp-validation-for="Input.CompanyName" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.CompanyDescription" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                <label asp-for="Input.CompanyDescription"></label>
+                <span asp-validation-for="Input.CompanyDescription" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
                 <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
@@ -60,8 +266,16 @@
             }
         </section>
     </div>
-</div>
+</div>*@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function textAreaAdjust(element)
+        {
+            element.style.height = "1px";
+            element.style.height = (25+element.scrollHeight)+"px";
+        }
+    </script>
 }
