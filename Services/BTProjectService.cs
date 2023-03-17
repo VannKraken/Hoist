@@ -118,6 +118,14 @@ namespace Hoist.Services
                 if (project != null)
                 {
                     project.Archived = true;
+                    _context.Update(project);
+
+                    foreach (Ticket ticket in project.Tickets)
+                    {
+                        ticket.Archived = true;
+                        ticket.ArchivedByProject = true;
+                        _context.Update(ticket);
+                    }
                 }
 
                 await _context.SaveChangesAsync();

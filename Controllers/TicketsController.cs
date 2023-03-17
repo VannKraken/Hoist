@@ -53,10 +53,6 @@ namespace Hoist.Controllers
         {
             int companyId = User.Identity!.GetCompanyId();
 
-            string? userId = _userManager.GetUserId(User);
-
-            BTUser? btUser = await _userManager.GetUserAsync(User);
-
             IEnumerable<Ticket> tickets = await _btTicketService.GetCompanyTicketsAsync(companyId);
 
             return View(tickets);
@@ -64,33 +60,33 @@ namespace Hoist.Controllers
 
 
 
-        //Tabulator
-        //public IActionResult TicketData()
-        //{
-        //    var data = _context.Tickets.Include(t => t.DeveloperUser)
-        //                               .Include(t => t.Project)
-        //                               .Include(t => t.SubmitterUser)
-        //                               .Include(t => t.TicketPriority)
-        //                               .Include(t => t.TicketStatus)
-        //                               .Include(t => t.TicketType)
-        //                               .Select(t => new
-        //                               {
-        //                                   title = t.Title,
-        //                                   description = t.Description.Truncate(40),
-        //                                   submitter = t.SubmitterUser!.FullName,
-        //                                   developer = t.DeveloperUser!.FullName,
-        //                                   type = t.TicketType.Name,
-        //                                   status = t.TicketStatus.Name,
-        //                                   priority = t.TicketPriority.Name,
-        //                                   created = t.Created.ToString("yyyy/MM/dd"),
-        //                                   id = t.Id.ToString()
-        //                               }).ToList();
+    //    Tabulator
+    //    public IActionResult TicketData()
+    //    {
+    //        var data = _context.Tickets.Include(t => t.DeveloperUser)
+    //                                   .Include(t => t.Project)
+    //                                   .Include(t => t.SubmitterUser)
+    //                                   .Include(t => t.TicketPriority)
+    //                                   .Include(t => t.TicketStatus)
+    //                                   .Include(t => t.TicketType)
+    //                                   .Select(t => new
+    //                                   {
+    //                                       title = t.Title,
+    //                                       description = t.Description.Truncate(40),
+    //                                       submitter = t.SubmitterUser!.FullName,
+    //                                       developer = t.DeveloperUser!.FullName,
+    //                                       type = t.TicketType.Name,
+    //                                       status = t.TicketStatus.Name,
+    //                                       priority = t.TicketPriority.Name,
+    //                                       created = t.Created.ToString("yyyy/MM/dd"),
+    //                                       id = t.Id.ToString()
+    //                                   }).ToList();
 
-        //    return new JsonResult(data);
-        //}
+    //        return new JsonResult(data);
+    //}
 
-        // GET: Tickets/Details/5
-        public async Task<IActionResult> Details(int? id)
+    // GET: Tickets/Details/5
+    public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {

@@ -78,6 +78,7 @@ namespace Hoist.Services
                                                                 .Include(t => t.TicketPriority)
                                                                 .Include(t => t.TicketStatus)
                                                                 .Include(t => t.TicketType)
+                                                                .Include(t => t.History)
                                                                 .Include(t => t.Attachments).ToListAsync();
 
             return tickets;
@@ -191,11 +192,13 @@ namespace Hoist.Services
         {
             IEnumerable<Ticket> tickets = await _context.Tickets.Where(t => t.SubmitterUserId == userId || t.DeveloperUserId == userId)
                                                                 .Include(t => t.Project)
+                                                                .Include(t => t.SubmitterUser)
+                                                                .Include(t => t.DeveloperUser)                                                                
                                                                 .Include(t => t.TicketPriority)
                                                                 .Include(t => t.TicketStatus)
                                                                 .Include(t => t.TicketType)
                                                                 .Include(t => t.History)
-                                                                .Include(t => t.Comments)
+                                                                .Include(t => t.Comments)                                                                
                                                                 .ToListAsync();
 
 
