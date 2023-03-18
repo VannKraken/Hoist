@@ -1,8 +1,12 @@
 ﻿@model Hoist.Models.Ticket
 
+@using Hoist.Models.Enums;
 @using Hoist.Services
 @using Hoist.Services.Interfaces;
+@using Microsoft.AspNetCore.Identity;
 @inject IBTFileService _BTFileService
+@inject IBTFileService _FileService
+@inject UserManager<BTUser> _UserManager
 
 @{
     ViewData["Title"] = "Details";
@@ -11,6 +15,17 @@
 @{
     ViewBag.Title = "Ticket Details";
     Layout = "_Layout";
+}
+
+@{
+    int statusId = Model.TicketStatusId;
+    int priorityId = Model.TicketPriorityId;
+    string userId = _UserManager.GetUserId(User);
+
+    bool isAdmin = User.IsInRole("Admin");
+    bool isProjectManager = (User.IsInRole(nameof(BTRoles.ProjectManager)) && Model.Project.Members.Any(m => m.Id == userId));
+    bool isSubmitter = Model.SubmitterUserId == userId;
+    bool isDeveloper = Model.DeveloperUserId == userId;
 }
 
 @section styles{
@@ -53,16 +68,61 @@
                                                         </div>
                                                     </div><!--end col-->
                                                     <div class="col-md">
-                                                        <h4 class="fw-bold">#VLZ135 - Create an Excellent UI for a Dashboard</h4>
+                                                        <h4 class="fw-bold">@Model.Title</h4>
                                                         <div class="hstack gap-3 flex-wrap">
-                                                            <div class="text-muted"><i class="ri-building-line align-bottom me-1"></i> Themesbrand</div>
+                                                            <div class="text-muted"><i class="ri-building-line align-bottom me-1"></i>@Model.Project.Name</div>
                                                             <div class="vr"></div>
-                                                            <div class="text-muted">Create Date : <span class="fw-semibold">20 Dec, 2021</span></div>
+                                                            <div class="text-muted">Create Date : <span class="fw-semibold">@Model.Created.ToString("dd MMM, yyyy")</span></div>
                                                             <div class="vr"></div>
-                                                            <div class="text-muted">Due Date : <span class="fw-semibold">29 Dec, 2021</span></div>
+                                                            @if (Model.Updated != null)
+                                                            {
+                                                                <div class="text-muted">Last Updated : <span class="fw-semibold">@Model.Updated.Value.ToString("dd MMM, yyyy")</span></div>
+                                                            }
+                                                            else
+                                                            {
+                                                                <div class="text-muted">Last Updated : <span class="fw-semibold">-/-/-</span></div>
+                                                            }
                                                             <div class="vr"></div>
-                                                            <div class="badge rounded-pill bg-info fs-12">New</div>
-                                                            <div class="badge rounded-pill bg-danger fs-12">High</div>
+
+                                                            @switch (statusId)
+                                                            {
+
+                                                                case 2:
+                                                                    <div class="badge badge-soft-info text-uppercase">@Model.TicketStatus.Name</div>
+                                                                    break;
+
+                                                                case 3:
+                                                                    <div class="badge badge-soft-warning text-uppercase">@Model.TicketStatus.Name</div>
+                                                                    break;
+
+                                                                case 4:
+                                                                    <div class="badge badge-soft-danger text-uppercase">@Model.TicketStatus.Name</div>
+                                                                    break;
+
+                                                                default:
+                                                                    <div class="badge badge-soft-success text-uppercase">@Model.TicketStatus.Name</div>
+                                                                    break;
+
+
+                                                            }
+                                                            @switch (priorityId)
+                                                            {
+                                                                case 2:
+                                                                    <div class="badge bg-info text-uppercase" style=" --bs-border-color: var(--bs-info-border-subtle); color: var(--bs-info-text);">@Model.TicketPriority.Name</div>
+                                                                    break;
+
+                                                                case 3:
+                                                                    <div class="badge bg-warning text-uppercase" style=" --bs-border-color: var(--bs-warning-border-subtle); color: var(--bs-warning-text);">@Model.TicketPriority.Name</div>
+                                                                    break;
+
+                                                                case 4:
+                                                                    <div class="badge bg-danger text-uppercase">@Model.TicketPriority.Name</div>
+                                                                    break;
+
+                                                                default:
+                                                                    <div class="badge bg-soft-dark  text-uppercase" style=" --bs-border-color: var(--bs-light-border-subtle); color: var(--bs-light-text);">@Model.TicketPriority.Name</div>
+                                                                    break;
+                                                            }
                                                         </div>
                                                     </div><!--end col-->
                                                 </div><!--end row-->
@@ -96,116 +156,91 @@
 
                     <div class="row">
                         <div class="col-xxl-9">
-                            <div class="card">
+                            <div class="card h-100 mb-3">
                                 <div class="card-body p-4">
-                                    <h6 class="fw-semibold text-uppercase mb-3">Ticket Discripation</h6>
-                                    <p class="text-muted">It would also help to know what the errors are - it could be something simple like a message saying delivery is not available which could be a problem with your shipping templates. Too much or too little spacing, as in the example below, can make things unpleasant for the reader. The goal is to make your text as comfortable to read as possible. On the note of consistency, color consistency is a MUST. If you’re not trying to create crazy contrast in your design, then a great idea would be for you to use a color palette throughout your entire design. It will subconsciously interest viewers and also is very pleasing to look at. <a href="javascript:void(0);" class="link-secondary text-decoration-underline">Example</a></p>
-                                    <h6 class="fw-semibold text-uppercase mb-3">Create an Excellent UI for a Dashboard</h6>
-                                    <ul class="text-muted vstack gap-2 mb-4">
-                                        <li>Pick a Dashboard Type</li>
-                                        <li>Categorize information when needed</li>
-                                        <li>Provide Context</li>
-                                        <li>On using colors</li>
-                                        <li>On using the right graphs</li>
-                                    </ul>
-                                    <div class="mt-4">
-                                        <h6 class="fw-semibold text-uppercase mb-3">Here is the code you've requsted</h6>
-                                        <div>
-<pre class="language-markup rounded-2"><code>var app = document.getElementById(&quot;app&quot;);
-var run = (model) =&gt; get(model, &quot;users&quot;, () =&gt;
-    get(model, &quot;posts&quot;,
-    () =&gt; {
-        model.users.forEach(user =&gt; model.userIdx[user.id] = user);
-        app.innerText = '';
-        model.posts.forEach(post =&gt;
-        app.appendChild(renderPost(post, model.userIdx[post.userId])));
-    }));
-app.appendChild(Wrapper.generate(&quot;button&quot;, &quot;Load&quot;).click(() =&gt; run({
-    userIdx: {}
-})).element);</code></pre>
-                                        </div>
-                                    </div>
-                                </div><!--end card-body-->
-                                <div class="card-body p-4">
-                                    <h5 class="card-title mb-4">Comments</h5>
+                                    <h6 class="fw-semibold text-uppercase mb-3">Details</h6>
+                                    <div>@Html.Raw(Model.Description)</div>
 
-                                    <div data-simplebar style="height: 300px;" class="px-3 mx-n3">
-                                        <div class="d-flex mb-4">
-                                            <div class="flex-shrink-0">
-                                                <img src="~/assets/images/users/avatar-8.jpg" alt="" class="avatar-xs rounded-circle" />
-                                            </div>
-                                            <div class="flex-grow-1 ms-3">
-                                                <h5 class="fs-14">Joseph Parker <small class="text-muted">20 Dec 2021 - 05:47AM</small></h5>
-                                                <p class="text-muted">I am getting message from customers that when they place order always get error message .</p>
-                                                <a href="javascript: void(0);" class="badge text-muted bg-light"><i class="mdi mdi-reply"></i> Reply</a>
-                                                <div class="d-flex mt-4">
+                                </div><!--end card-body-->
+                                @if (isAdmin || isProjectManager || isSubmitter || isDeveloper)
+                                {
+                                    <div class="card-body p-4">
+                                        <hr />
+                                        <h5 class="card-title mb-4">Comments</h5>
+
+                                        <div data-simplebar style="height: 300px;" class="px-3 mx-n3">
+                                            @foreach (TicketComment comment in Model.Comments)
+                                            {
+                                                <div class="d-flex mb-4">
                                                     <div class="flex-shrink-0">
-                                                        <img src="~/assets/images/users/avatar-10.jpg" alt="" class="avatar-xs rounded-circle" />
+                                                        <img src="~/assets/images/users/avatar-8.jpg" alt="" class="avatar-xs rounded-circle" />
                                                     </div>
                                                     <div class="flex-grow-1 ms-3">
-                                                        <h5 class="fs-14">Alexis Clarke <small class="text-muted">22 Dec 2021 - 02:32PM</small></h5>
-                                                        <p class="text-muted">Please be sure to check your Spam mailbox to see if your email filters have identified the email from Dell as spam.</p>
+                                                        <h5 class="fs-14">@comment.BTUser!.FullName<small class="text-muted"> at @comment.Created</small></h5>
+                                                        <p class="text-muted">@comment.Comment</p>
                                                         <a href="javascript: void(0);" class="badge text-muted bg-light"><i class="mdi mdi-reply"></i> Reply</a>
+
                                                     </div>
                                                 </div>
-                                            </div>
+                                            }
                                         </div>
-                                        <div class="d-flex mb-4">
-                                            <div class="flex-shrink-0">
-                                                <img src="~/assets/images/users/avatar-6.jpg" alt="" class="avatar-xs rounded-circle" />
-                                            </div>
-                                            <div class="flex-grow-1 ms-3">
-                                                <h5 class="fs-14">Donald Palmer <small class="text-muted">24 Dec 2021 - 05:20PM</small></h5>
-                                                <p class="text-muted">If you have further questions, please contact Customer Support from the “Action Menu” on your <a href="javascript:void(0);" class="text-decoration-underline">Online Order Support</a>.</p>
-                                                <a href="javascript: void(0);" class="badge text-muted bg-light"><i class="mdi mdi-reply"></i> Reply</a>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex">
-                                            <div class="flex-shrink-0">
-                                                <img src="~/assets/images/users/avatar-10.jpg" alt="" class="avatar-xs rounded-circle" />
-                                            </div>
-                                            <div class="flex-grow-1 ms-3">
-                                                <h5 class="fs-14">Alexis Clarke <small class="text-muted">26 min ago</small></h5>
-                                                <p class="text-muted">Your <a href="javascript:void(0)" class="text-decoration-underline">Online Order Support</a> provides you with the most current status of your order. To help manage your order refer to the “Action Menu” to initiate return, contact Customer Support and more.</p>
-                                                <div class="row g-2 mb-3">
-                                                    <div class="col-lg-1 col-sm-2 col-6">
-                                                        <img src="~/assets/images/small/img-4.jpg" alt="" class="img-fluid rounded">
-                                                    </div>
-                                                    <div class="col-lg-1 col-sm-2 col-6">
-                                                        <img src="~/assets/images/small/img-5.jpg" alt="" class="img-fluid rounded">
-                                                    </div>
+                                        <form asp-action="AddTicketComment" method="post" class="mt-3">
+                                            <input type="hidden" asp-for="Id" name="TicketId" />
+                                            <div class="row g-3">
+                                                <div class="col-lg-12">
+                                                    <label for="exampleFormControlTextarea1" class="form-label">Leave a Comment</label>
+                                                    <textarea class="form-control bg-light border-light" id="exampleFormControlTextarea1" rows="3" name="Comment" placeholder="Thoughts?"></textarea>
                                                 </div>
-                                                <a href="javascript: void(0);" class="badge text-muted bg-light"><i class="mdi mdi-reply"></i> Reply</a>
-                                                <div class="d-flex mt-4">
+                                                <div class="col-lg-12 text-end">
+                                                    <input type="submit" value="Post Comment" class="btn btn-success"></input>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="card-body p-4">
+                                        <hr />
+                                        <h5 class="card-title mb-4">Comments</h5>
+
+                                        <div data-simplebar style="height: 500px;" class="px-3 mx-n3">
+                                            @foreach (TicketComment comment in Model.Comments)
+                                            {
+                                                <div class="d-flex mb-4">
                                                     <div class="flex-shrink-0">
-                                                        <img src="~/assets/images/users/avatar-6.jpg" alt="" class="avatar-xs rounded-circle" />
+                                                        <img src="~/assets/images/users/avatar-8.jpg" alt="" class="avatar-xs rounded-circle" />
                                                     </div>
-                                                    <div class="flex-grow-1 ms-3">
-                                                        <h5 class="fs-14">Donald Palmer <small class="text-muted">8 sec ago</small></h5>
-                                                        <p class="text-muted">Other shipping methods are available at checkout if you want your purchase delivered faster.</p>
-                                                        <a href="javascript: void(0);" class="badge text-muted bg-light"><i class="mdi mdi-reply"></i> Reply</a>
+                                                    <div class="flex-grow-1 ms-3 ">
+                                                        <h5 class="fs-14">@comment.BTUser!.FullName<small class="text-muted"> at @comment.Created</small></h5>
+                                                        <p class="text-muted">@comment.Comment</p>
+                                                        <hr class="w-50"/>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            }
                                         </div>
                                     </div>
-                                    <form action="javascript:void(0);" class="mt-3">
-                                        <div class="row g-3">
-                                            <div class="col-lg-12">
-                                                <label for="exampleFormControlTextarea1" class="form-label">Leave a Comments</label>
-                                                <textarea class="form-control bg-light border-light" id="exampleFormControlTextarea1" rows="3" placeholder="Enter comments"></textarea>
-                                            </div>
-                                            <div class="col-lg-12 text-end">
-                                                <a href="javascript:void(0);" class="btn btn-success">Post Comments</a>
-                                            </div>
-                                        </div>
-                                    </form>
+                                }
+                                @* else
+                                {
+                                <form asp-action="AddTicketComment" method="post" class="mt-3">
+                                <input type="hidden" asp-for="Id" name="TicketId" />
+                                <div class="row g-3">
+                                <div class="col-lg-12">
+                                <label for="exampleFormControlTextarea1" class="form-label">Leave a Comment</label>
+                                <textarea class="form-control bg-light border-light" id="exampleFormControlTextarea1" rows="3" name="Comment" placeholder="Thoughts?" disabled></textarea>
                                 </div>
+                                <div class="col-lg-12 text-end">
+                                <input type="submit" value="Post Comment" class="btn btn-success" disabled></input>
+                                </div>
+                                </div>
+                                </form>
+                                }*@
                                 <!-- end card body -->
                             </div><!--end card-->
                         </div><!--end col-->
                         <div class="col-xxl-3">
-                            <div class="card">
+                            <div class="card container">
                                 <div class="card-header">
                                     <h5 class="card-title mb-0">Ticket Details</h5>
                                 </div>
@@ -215,147 +250,206 @@ app.appendChild(Wrapper.generate(&quot;button&quot;, &quot;Load&quot;).click(() 
                                             <tbody>
                                                 <tr>
                                                     <td class="fw-semibold">Ticket</td>
-                                                    <td>#VLZ135</td>
+                                                    <td>@Model.Title</td>
                                                 </tr>
-                                                <tr>
-                                                    <td class="fw-semibold">Client</td>
-                                                    <td>Themesbrand</td>
-                                                </tr>
+
                                                 <tr>
                                                     <td class="fw-semibold">Project</td>
-                                                    <td>Velzon - Admin Dashboard</td>
+                                                    <td>@Model.Project.Name</td>
                                                 </tr>
                                                 <tr>
                                                     <td class="fw-semibold">Assigned To:</td>
                                                     <td>
                                                         <div class="avatar-group">
-                                                            <a href="javascript:void(0);" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" data-bs-original-title="Erica Kernan">
-                                                                <img src="~/assets/images/users/avatar-4.jpg" alt="" class="rounded-circle avatar-xs" />
-                                                            </a>
-                                                            <a href="javascript:void(0);" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" data-bs-original-title="Alexis Clarke">
-                                                                <img src="~/assets/images/users/avatar-10.jpg" alt="" class="rounded-circle avatar-xs" />
-                                                            </a>
-                                                            <a href="javascript:void(0);" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" data-bs-original-title="James Price">
-                                                                <img src="~/assets/images/users/avatar-3.jpg" alt="" class="rounded-circle avatar-xs" />
-                                                            </a>
-                                                            <a href="javascript: void(0);" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" data-bs-original-title="Add Members">
-                                                                <div class="avatar-xs">
-                                                                    <div class="avatar-title fs-16 rounded-circle bg-light border-dashed border text-primary">
-                                                                        +
-                                                                    </div>
-                                                                </div>
+                                                            <a href="javascript:void(0);" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" data-bs-original-title="@Model.DeveloperUser.FullName">
+                                                                <img src="@_FileService.ConvertByteArrayToFile(Model.DeveloperUser.ImageFileData, Model.DeveloperUser.ImageFileType, (int)DefaultImage.BTUserImage)" alt="" class="rounded-circle avatar-xs" />
                                                             </a>
                                                         </div>
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td class="fw-semibold">Status:</td>
-                                                    <td>
-                                                        <select class="form-select" data-choices data-choices-search-false aria-label="Default select example">
-                                                            <option value="">Status</option>
-                                                            <option value="New" selected>New</option>
-                                                            <option value="Open">Open</option>
-                                                            <option value="Inprogress">Inprogress</option>
-                                                            <option value="Closed">Closed</option>
-                                                        </select>
-                                                    </td>
+                                                    @switch (statusId)
+                                                    {
+
+                                                        case 2:
+                                                            <td data-order="@Model.TicketStatusId"><span class="badge badge-soft-info text-uppercase">@Model.TicketStatus.Name</span></td>
+                                                            break;
+
+                                                        case 3:
+                                                            <td data-order="@Model.TicketStatusId"><span class="badge badge-soft-warning text-uppercase">@Model.TicketStatus.Name</span></td>
+                                                            break;
+
+                                                        case 4:
+                                                            <td data-order="@Model.TicketStatusId"><span class="badge badge-soft-danger text-uppercase">@Model.TicketStatus.Name</span></td>
+                                                            break;
+
+                                                        default:
+                                                            <td data-order="@Model.TicketStatusId"><span class="badge badge-soft-success text-uppercase">@Model.TicketStatus.Name</span></td>
+                                                            break;
+
+
+                                                    }
                                                 </tr>
                                                 <tr>
                                                     <td class="fw-semibold">Priority</td>
-                                                    <td>
-                                                        <span class="badge bg-danger">High</span>
-                                                    </td>
+                                                    @switch (priorityId)
+                                                    {
+                                                        case 2:
+                                                            <td data-order="@Model.TicketPriorityId"><span class="badge bg-info text-uppercase" style=" --bs-border-color: var(--bs-info-border-subtle); color: var(--bs-info-text);">@Model.TicketPriority.Name</span></td>
+                                                            break;
+
+                                                        case 3:
+                                                            <td data-order="@Model.TicketPriorityId">
+                                                                <span class="badge bg-warning text-uppercase" style=" --bs-border-color: var(--bs-warning-border-subtle); color: var(--bs-warning-text);">@Model.TicketPriority.Name</span>
+
+                                                            </td>
+                                                            break;
+
+                                                        case 4:
+                                                            <td data-order="@Model.TicketPriorityId">
+                                                                <span class="badge bg-danger text-uppercase">@Model.TicketPriority.Name</span>
+
+                                                            </td>
+                                                            break;
+
+                                                        default:
+                                                            <td data-order="@Model.TicketPriorityId">
+                                                                <span class="badge bg-soft-dark  text-uppercase" style=" --bs-border-color: var(--bs-light-border-subtle); color: var(--bs-light-text);">@Model.TicketPriority.Name</span>
+
+                                                            </td>
+                                                            break;
+                                                    }
                                                 </tr>
                                                 <tr>
                                                     <td class="fw-semibold">Create Date</td>
-                                                    <td>20 Dec, 2021</td>
+                                                    <td>@Model.Created.ToString("dd MMM, yyyy")</td>
                                                 </tr>
                                                 <tr>
-                                                    <td class="fw-semibold">Due Date</td>
-                                                    <td>29 Dec, 2021</td>
+                                                    <td class="fw-semibold">Last Updated</td>
+                                                    @if (Model.Updated != null)
+                                                    {
+                                                        <td>@Model.Updated.Value.ToString("dd MMM, yyyy")</td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td>-/-/-</td>
+                                                    }
+
                                                 </tr>
-                                                <tr>
-                                                    <td class="fw-semibold">Last Activity</td>
-                                                    <td>14 min ago</td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="fw-semibold">Labels</td>
-                                                    <td class="hstack text-wrap gap-1">
-                                                        <span class="badge badge-soft-primary">Admin</span>
-                                                        <span class="badge badge-soft-primary">UI</span>
-                                                        <span class="badge badge-soft-primary">Dashboard</span>
-                                                        <span class="badge badge-soft-primary">Design</span>
-                                                    </td>
-                                                </tr>
+                                                @* <tr>
+                                                <td class="fw-semibold">Last Activity</td>
+                                                <td>14 min ago</td>
+                                                </tr>*@
+
                                             </tbody>
                                         </table>
                                     </div>
                                 </div><!--end card-body-->
                             </div><!--end card-->
-                            <div class="card">
+                            <div class="card mb-0">
                                 <div class="card-header">
-                                    <h6 class="card-title fw-semibold mb-0">Files Attachment</h6>
+                                    <h6 class="card-title fw-semibold mb-0">Attachments</h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="d-flex align-items-center border border-dashed p-2 rounded">
-                                        <div class="flex-shrink-0 avatar-sm">
-                                            <div class="avatar-title bg-light rounded">
-                                                <i class="ri-file-zip-line fs-20 text-primary"></i>
+                                        <form asp-action="AddTicketAttachment" asp-controller="Tickets" enctype="multipart/form-data" method="post">
+                                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                            <input type="hidden" asp-for="Id" name="TicketId">
+                                            <div class="w-100">
+
+                                                <label>
+                                                    Description
+                                                    <input asp-for="@Model.Attachments.FirstOrDefault().Description" type="text" class="form-control w-100" />
+                                                </label><br />
+
+                                                <label class="btn btn-outline-primary btn-sm">
+                                                    <input asp-for="@Model.Attachments.FirstOrDefault().FormFile" type="file" class="form-control-file w-100" />
+                                                </label>
+
+                                                <button type="submit" class="btn btn-outline-secondary btn-sm md-btn-flat">Attach</button>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    @foreach (TicketAttachment attachment in Model.Attachments)
+                                    {
+                                        <div class="d-flex align-items-center border border-dashed p-2 rounded">
+                                            <div class="flex-shrink-0 avatar-sm">
+                                                <div class="avatar-title bg-light rounded">
+                                                    <img src="@_BTFileService.GetFileIcon(attachment.FileName)" style="height:50px;width:50px" data-bs-toggle="tooltip" data-bs-placement="top" title="" data-bs-original-title="@attachment.FileName" />
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <h6 class="mb-1"><a href="javascript:void(0);">@attachment.FileName</a></h6>
+                                                <small class="text-muted">3.2 MB</small>
+                                            </div>
+                                            <div class="hstack gap-3 fs-16">
+                                                <a asp-action="ShowFile" asp-controller="Tickets" asp-route-Id="@attachment.Id" class="text-muted"><i class="ri-download-2-line"></i></a>
+                                                @*<a href="javascript:void(0);" class="text-muted"><i class="ri-delete-bin-line"></i></a>*@
                                             </div>
                                         </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h6 class="mb-1"><a href="javascript:void(0);">Velzon-admin.zip</a></h6>
-                                            <small class="text-muted">3.2 MB</small>
-                                        </div>
-                                        <div class="hstack gap-3 fs-16">
-                                            <a href="javascript:void(0);" class="text-muted"><i class="ri-download-2-line"></i></a>
-                                            <a href="javascript:void(0);" class="text-muted"><i class="ri-delete-bin-line"></i></a>
-                                        </div>
+                                    }
+                                    @*<div class="d-flex align-items-center border border-dashed p-2 rounded">
+                                    <div class="flex-shrink-0 avatar-sm">
+                                    <div class="avatar-title bg-light rounded">
+                                    <i class="ri-file-zip-line fs-20 text-primary"></i>
+                                    </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1"><a href="javascript:void(0);">Velzon-admin.zip</a></h6>
+                                    <small class="text-muted">3.2 MB</small>
+                                    </div>
+                                    <div class="hstack gap-3 fs-16">
+                                    <a href="javascript:void(0);" class="text-muted"><i class="ri-download-2-line"></i></a>
+                                    <a href="javascript:void(0);" class="text-muted"><i class="ri-delete-bin-line"></i></a>
+                                    </div>
                                     </div>
                                     <div class="d-flex  align-items-center border border-dashed p-2 rounded mt-2">
-                                        <div class="flex-shrink-0 avatar-sm">
-                                            <div class="avatar-title bg-light rounded">
-                                                <i class="ri-file-ppt-2-line fs-20 text-danger"></i>
-                                            </div>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h6 class="mb-1"><a href="javascript:void(0);">Velzon-admin.ppt</a></h6>
-                                            <small class="text-muted">4.5 MB</small>
-                                        </div>
-                                        <div class="hstack gap-3 fs-16">
-                                            <a href="javascript:void(0);" class="text-muted"><i class="ri-download-2-line"></i></a>
-                                            <a href="javascript:void(0);" class="text-muted"><i class="ri-delete-bin-line"></i></a>
-                                        </div>
+                                    <div class="flex-shrink-0 avatar-sm">
+                                    <div class="avatar-title bg-light rounded">
+                                    <i class="ri-file-ppt-2-line fs-20 text-danger"></i>
                                     </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1"><a href="javascript:void(0);">Velzon-admin.ppt</a></h6>
+                                    <small class="text-muted">4.5 MB</small>
+                                    </div>
+                                    <div class="hstack gap-3 fs-16">
+                                    <a href="javascript:void(0);" class="text-muted"><i class="ri-download-2-line"></i></a>
+                                    <a href="javascript:void(0);" class="text-muted"><i class="ri-delete-bin-line"></i></a>
+                                    </div>
+                                    </div>*@
                                 </div>
                             </div>
                         </div><!--end col-->
                         <!--TIMELINE-->
 
-                        <div class="col-lg-12">
+                        <div class="col-lg-12 mt-3">
                             <div>
                                 <h5>Ticket Timeline</h5>
                                 <div class="horizontal-timeline my-3">
                                     <div class="swiper timelineSlider">
                                         <div class="swiper-wrapper">
-                                            @foreach(TicketHistory history in Model.History)
-                                            {
-                                            <div class="swiper-slide">
-                                                <div class="card pt-2 border-0 item-box text-center">
-                                                    <div class="timeline-content p-3 rounded">
-                                                        <div>
-                                                            <p class="text-muted fw-medium mb-0">@history.Created.ToShortDateString()</p>
-                                                            <h6 class="mb-0">@Html.Raw(history.Description)</h6>
-                                                        </div>
-                                                    </div>
-                                                    <div class="time"><span class="badge bg-success">@history.Created.ToShortTimeString()</span></div>
-                                                </div>
 
-                                            </div>
+                                            @foreach (TicketHistory history in Model.History.OrderByDescending(h => h.Created))
+                                            {
+                                                <div class="swiper-slide">
+                                                    <div class="card pt-2 border-0 item-box text-center">
+                                                        <div class="timeline-content p-3 rounded">
+                                                            <div>
+                                                                <p class="text-muted fw-medium mb-0">@history.Created.ToShortDateString()</p>
+                                                                <h6 class="mb-0">@Html.Raw(history.Description)</h6>
+                                                            </div>
+                                                        </div>
+                                                        <div class="time"><span class="badge bg-success">@history.Created.ToShortTimeString()</span></div>
+                                                    </div>
+                                                </div>
                                             }
-                                            <div class="swiper-button-next"></div>
-                                            <div class="swiper-button-prev"></div>
+
                                         </div>
+                                        <div class="swiper-button-next"></div>
+                                        <div class="swiper-button-prev"></div>
                                     </div><!--end timeline-->
                                 </div>
                             </div><!--end col-->
