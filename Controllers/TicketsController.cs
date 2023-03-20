@@ -120,12 +120,29 @@ namespace Hoist.Controllers
             return View();
         }
 
+        public async Task<IActionResult> CreateTicketForProject(int id)
+        {
+            //TODO: Add view
+            int companyId = User.Identity!.GetCompanyId();
+          
+            Project project = await _btProjectService.GetProjectAsync(id,companyId);
+            
+            IEnumerable<TicketPriority> priorities = await _btTicketService.GetTicketPriorities();
+
+
+            ViewData["Project"] = project; 
+            ViewData["TicketPriorityId"] = priorities;
+            ViewData["TicketStatusId"] = new SelectList(await _btTicketService.GetTicketStatuses(), "Id", "Name");
+            ViewData["TicketTypeId"] = new SelectList(await _btTicketService.GetTicketTypes(), "Id", "Name");
+            return View();
+        }
+
         // POST: Tickets/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,ProjectId,TicketTypeId,TicketStatusId,TicketPriorityId,DeveloperUserId,SubmitterUserId,Title,Description,Created,Archived,ArchivedByProject")] Ticket ticket)
+        public async Task<IActionResult> Create([Bind("Id,ProjectId,TicketTypeId,TicketStatusId,TicketPriorityId,DeveloperUserId,SubmitterUserId,Title,Description,Created,Archived,ArchivedByProject")] Ticket ticket, bool? fromProject)
         {
 
             int companyId = User.Identity!.GetCompanyId();
@@ -188,9 +205,10 @@ namespace Hoist.Controllers
                         await _btNotificationsService.SendAdminEmailNotificationAsync(notification, $"New Ticket Added for '{ticket.Project!.Name}'", companyId);
                     }
 
-
-                    //TODO: Add Notification
-
+                    if (fromProject == true)
+                    {
+                        return RedirectToAction("Details", "Projects", new { id = ticket.ProjectId });
+                    }
 
                     return RedirectToAction(nameof(Index));
                 }

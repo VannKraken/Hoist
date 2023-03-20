@@ -47,6 +47,12 @@ namespace Hoist.Services
                                                             .ThenInclude(t => t.DeveloperUser)
                                                           .Include(p => p.Tickets)
                                                             .ThenInclude(t => t.SubmitterUser)
+                                                          .Include(p => p.Tickets)
+                                                            .ThenInclude(t => t.TicketPriority)
+                                                          .Include(p => p.Tickets)
+                                                            .ThenInclude(t => t.TicketStatus)
+                                                          .Include(p => p.Tickets)
+                                                            .ThenInclude(t => t.TicketType)                                                          
                                                           .FirstOrDefaultAsync(m => m.Id == projectId && m.CompanyId == companyId);
 
                 return project;
