@@ -1,0 +1,162 @@
+﻿@model Hoist.Models.Project
+@using Hoist.Models.Enums;
+@using Hoist.Services.Interfaces;
+@inject IBTFileService _FileService
+@inject IBTRolesService _RolesService
+
+
+@{
+    double daysUntilDue;
+    string cardBackground;
+    string headerIcon;
+    daysUntilDue = (Model.EndDate - DateTime.Now).TotalDays;
+
+    cardBackground = string.Empty;
+    headerIcon = string.Empty;
+}
+
+
+
+       @if (Model.EndDate == null)
+        {
+            cardBackground = "bg-light";
+            headerIcon = "bi bi-question-lg text-dark";
+        }
+        else if (daysUntilDue >= 8)
+        {
+            cardBackground = "bg-soft-success";
+            headerIcon = "bi bi-calendar text-dark fs-20";
+        }
+        else if (daysUntilDue <= 7 && daysUntilDue >= 1)
+        {
+            cardBackground = "bg-warning bg-opacity-50";
+            headerIcon = "bi bi-flag-fill text-dark fs-20";
+        }
+        else if (daysUntilDue <= 0)
+        {
+            cardBackground = "bg-danger bg-opacity-50";
+            headerIcon = "bi bi-exclamation-triangle-fill text-dark fs-20";
+        }
+
+        <div class="col-xxl-3 col-sm-6 Model-card">
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="p-3 mt-n3 mx-n3 @cardBackground rounded-top ">
+                        <div class="d-flex gap-1 align-items-center justify-content-end my-n2">
+                            
+                            <div class="dropdown">
+                                <button class="btn btn-link text-muted p-1 mt-n1 py-0 text-decoration-none fs-15"
+                                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                    <i data-feather="more-horizontal" class="icon-sm"></i>
+                                </button>
+
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a class="dropdown-item" asp-action="details" asp-route-id="@Model.Id">
+                                        <i class="ri-eye-fill align-bottom me-2 text-muted"></i>
+                                        View
+                                    </a>
+                                    <a class="dropdown-item" asp-action="edit" asp-route-id="@Model.Id">
+                                        <i class="ri-pencil-fill align-bottom me-2 text-muted"></i>
+                                        Edit
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                   data-bs-target="#removeModelModal" onclick="setModelId(@Model.Id)">
+                                        <i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i>
+                                        Archive
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center pb-3">
+                            <i class="@headerIcon"></i>
+                        </div>
+                    </div>
+                    <div class="py-3">
+                        <h5 class="mb-3 fs-15">
+                            <a href="@Url.Action("Overview", "Models")"
+                           class="text-dark">@Model.Name</a>
+                        </h5>
+                        <div class="row gy-3">
+                            <div class="col-6">
+                                <div>
+                                    <p class="text-muted mb-1">Start Date</p>
+                                    <h5 class="fs-14">@Model.StartDate.ToString("dd MMM, yyyy")</h5>
+                                    
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div>
+                                    <p class="text-muted mb-1">Deadline</p>
+                                    <!--This checks the total days between the two dates and then colors the deadline accordingly.-->
+                                    @if (Model.EndDate == null)
+                                    {
+                                        <div class="badge badge-info fs-12">No Deadline Set</div>
+                                    }
+                                    else if (daysUntilDue >= 8)
+                                    {
+                                        <div class="badge badge-soft-success fs-12">@Model.EndDate.ToString("dd MMM, yyyy")</div>
+                                    }
+                                    else if (daysUntilDue <= 7 && daysUntilDue >= 1)
+                                    {
+                                        <div class="badge badge-soft-warning  fs-12">@Model.EndDate.ToString("dd MMM, yyyy")</div>
+                                    }
+                                    else if (daysUntilDue <= 0)
+                                    {
+                                        <div class="badge bg-danger fs-12">@Model.EndDate.ToString("dd MMM, yyyy")</div>
+                                    }
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center mt-3">
+                            <p class="text-muted mb-0 me-2">Team :</p>
+                            <div class="avatar-group">
+                            @if (Model.Members.Count() == 0)
+                            {
+                                <p class="text-muted mb-0 me-2">None Assigned</p>
+                            }
+                            else{
+                                @foreach (BTUser member in Model.Members)
+                                {
+                                    if (await _RolesService.IsUserInRoleAsync(member, nameof(BTRoles.ProjectManager)))
+                                    {
+                                        <a href="javascript: void(0);" class="avatar-group-item me-3"
+                               data-bs-toggle="tooltip" data-bs-trigger="hover"
+                               data-bs-placement="top" title="PM: @member.FullName">
+                                            <img src="@_FileService.ConvertByteArrayToFile(member.ImageFileData, member.ImageFileType, (int)DefaultImage.BTProjectManager)"
+                                     class="rounded-circle avatar-xxs">
+                                        </a>
+                                    }
+                                }
+                                @foreach (BTUser member in Model.Members)
+                                {
+                                   
+
+
+                                    if (!await _RolesService.IsUserInRoleAsync(member, nameof(BTRoles.ProjectManager)))
+                                    {
+                                        <a href="javascript: void(0);" class="avatar-group-item"
+                               data-bs-toggle="tooltip" data-bs-trigger="hover"
+                               data-bs-placement="top" title="@member.FullName">
+                                            <img src="@_FileService.ConvertByteArrayToFile(member.ImageFileData, member.ImageFileType, (int)DefaultImage.BTUserImage)"
+                                     class="rounded-circle avatar-xxs">
+                                        </a>
+                                    }
+                                }
+                                }
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                </div>
+                <!-- end card body -->
+            </div>
+
+            <!-- end card -->
+        </div>
+        <!-- end col -->

@@ -1,9 +1,9 @@
 ﻿@model Hoist.Models.Invite
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "New Invite";
 }
-<h1>Create</h1>
+
 <h4>Invite</h4>
 <hr />
 <div class="col-lg-6 col-md-12">
@@ -11,10 +11,10 @@
         <div class="card-body">
             <div>
                 <h6 class="main-content-label mb-1">Company Invite</h6>
-                <p class="text-muted card-sub-title">Invite a new user to join your Bug Tracker company.</p>
+                <p class="text-muted card-sub-title">Invite a new user to join your company.</p>
             </div>
             <form asp-action="Create" method="post">
-                <div class="row row-xs align-items-center mg-b-20">
+                <div class="row row-xs align-items-center mg-b-20 mb-3">
                     <div class="col-md-4">
                         <label class="mg-b-0">Email</label>
                     </div>
@@ -22,7 +22,7 @@
                         <input type="email" asp-for="InviteeEmail" class="form-control" placeholder="Enter email">
                     </div>
                 </div>
-                <div class="row row-xs align-items-center mg-b-20">
+                <div class="row row-xs align-items-center mg-b-20 mb-3">
                     <div class="col-md-4">
                         <label class="mg-b-0">Firstname</label>
                     </div>
@@ -30,7 +30,7 @@
                         <input type="text" asp-for="InviteeFirstName" class="form-control" placeholder="Enter first name">
                     </div>
                 </div>
-                <div class="row row-xs align-items-center mg-b-20">
+                <div class="row row-xs align-items-center mg-b-20 mb-3">
                     <div class="col-md-4">
                         <label class="mg-b-0">Lastname</label>
                     </div>
@@ -38,7 +38,7 @@
                         <input type="text" asp-for="InviteeLastName" class="form-control" placeholder="Enter last name">
                     </div>
                 </div>
-                <div class="row row-xs align-items-center mg-b-20">
+                <div class="row row-xs align-items-center mg-b-20 mb-3">
                     <div class="col-md-4">
                         <label class="mg-b-0">Select Project</label>
                     </div>
@@ -48,7 +48,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="row row-xs align-items-center mg-b-20">
+                <div class="row row-xs align-items-center mg-b-20 mb-3">
                     <div class="col-md-4">
                         <label class="mg-b-0">Message</label>
                     </div>
@@ -56,7 +56,7 @@
                         <textarea asp-for="Message" multiple="multiple" class="form-control"></textarea>
                     </div>
                 </div>
-                <div class="form-group row justify-content-end mb-0">
+                <div class="form-group row justify-content-end mb-3">
                     <div class="col-md-8 pl-md-2">
                         <input type="submit" class="btn ripple btn-primary pd-x-30 mg-r-5" value="Send Invite" />
                         <button class="btn ripple btn-secondary pd-x-30">Cancel</button>

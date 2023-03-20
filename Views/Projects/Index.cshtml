@@ -5,384 +5,361 @@
 @using X.PagedList.Mvc.Core;
 @using X.PagedList.Web.Common;
 
-@inject IBTFileService _fileService
+@inject IBTFileService _FileService
+@inject IBTRolesService _RolesService
 
 
 @{
-    ViewData["Title"] = "Index";
+    ViewBag.Title = "Project List";
+    ViewBag.pTitle = "Project List";
+    ViewBag.pageTitle = "Projects";
+    Layout = "_Layout";
 }
 
-<div class="content">
-    <div class="intro-y d-flex flex-column flex-sm-row align-items-center mt-8">
-        <h2 style="font-size: 4em;" class=" fw-medium me-auto">
-            Projects
-        </h2>
-        <div class="w-full w-sm-auto d-flex mt-4 mt-sm-0">
-            <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#new-order-modal" class="btn btn-primary shadow-md me-2">New Order</a>
-            <div class="pos-dropdown dropdown ms-auto ms-sm-0">
-                <button class="dropdown-toggle btn px-2 box text-gray-700 dark-text-gray-300" aria-expanded="false" data-bs-toggle="dropdown">
-                    <span class="w-5 h-5 d-flex align-items-center justify-content-center"> <i class="w-4 h-4" data-feather="chevron-down"></i> </span>
-                </button>
-                <div class="pos-dropdown__dropdown-menu dropdown-menu">
-                    <ul class="dropdown-content">
-                        <li>
-                            <a href="" class="dropdown-item"> <i data-feather="activity" class="w-4 h-4 me-2"></i> <span class="truncate">INV-0206020 - Christian Bale</span> </a>
-                        </li>
-                        <li>
-                            <a href="" class="dropdown-item"> <i data-feather="activity" class="w-4 h-4 me-2"></i> <span class="truncate">INV-0206022 - Al Pacino</span> </a>
-                        </li>
-                        <li>
-                            <a href="" class="dropdown-item"> <i data-feather="activity" class="w-4 h-4 me-2"></i> <span class="truncate">INV-0206021 - Brad Pitt</span> </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+@{
+    double daysUntilDue;
+    string cardBackground;
+    string headerIcon;
+
+    int totalProjects = Model.TotalItemCount;
+
+    bool isAdmin = User.IsInRole(nameof(BTRoles.Admin));
+    bool isProjectManager = User.IsInRole(nameof(BTRoles.ProjectManager));
+}
+
+<div class="row g-4 mb-3">
+    @if (isAdmin || isProjectManager)
+    {
+        
+    <div class="col-sm-auto">
+        <div>
+            <a href="@Url.Action("Create", "Projects")" class="btn btn-success">
+                <i class="ri-add-line align-bottom me-1"></i> Create
+            </a>
         </div>
     </div>
-    <div class="pos intro-y grid columns-12 gap-5 mt-5">
-        <!-- BEGIN: Item List -->
-        <div class="intro-y g-col-12 g-col-lg-8">
-            <div class="d-lg-flex intro-y">
-                <div class="position-relative text-gray-700 dark-text-gray-300">
-                    <input type="text" class="form-control py-3 px-4 w-full w-lg-64 box border-white dark-border-dark-3 pe-10 placeholder-theme-8" placeholder="Search item...">
-                    <i class="w-4 h-4 position-absolute my-auto top-0 bottom-0 me-3 end-0" data-feather="search"></i>
-                </div>
-                <select class="form-select py-3 px-4 box w-full dark-border-dark-3 w-lg-auto mt-3 mt-lg-0 ms-auto">
-                    <option>Sort By</option>
-                    <option>A to Z</option>
-                    <option>Z to A</option>
-                    <option>Lowest Price</option>
-                    <option>Highest Price</option>
-                </select>
-            </div>
-            @*<div class="grid grid-cols-12 gap-5 mt-5">
-            <div class="g-col-12 g-col-sm-4 g-col-xxl-3 box p-5 cursor-pointer zoom-in">
-            <div class="fw-medium fs-base">Soup</div>
-            <div class="text-gray-600">5 Items</div>
-            </div>
-            <div class="g-col-12 g-col-sm-4 g-col-xxl-3 box bg-theme-17 dark-bg-theme-17 p-5 cursor-pointer zoom-in">
-            <div class="fw-medium fs-base text-white">Pancake & Toast</div>
-            <div class="text-theme-33 dark-text-gray-400">8 Items</div>
-            </div>
-            <div class="g-col-12 g-col-sm-4 g-col-xxl-3 box p-5 cursor-pointer zoom-in">
-            <div class="fw-medium fs-base">Pasta</div>
-            <div class="text-gray-600">4 Items</div>
-            </div>
-            <div class="g-col-12 g-col-sm-4 g-col-xxl-3 box p-5 cursor-pointer zoom-in">
-            <div class="fw-medium fs-base">Waffle</div>
-            <div class="text-gray-600">3 Items</div>
-            </div>
-            <div class="g-col-12 g-col-sm-4 g-col-xxl-3 box p-5 cursor-pointer zoom-in">
-            <div class="fw-medium fs-base">Snacks</div>
-            <div class="text-gray-600">8 Items</div>
-            </div>
-            <div class="g-col-12 g-col-sm-4 g-col-xxl-3 box p-5 cursor-pointer zoom-in">
-            <div class="fw-medium fs-base">Deserts</div>
-            <div class="text-gray-600">8 Items</div>
-            </div>
-            <div class="g-col-12 g-col-sm-4 g-col-xxl-3 box p-5 cursor-pointer zoom-in">
-            <div class="fw-medium fs-base">Beverage</div>
-            <div class="text-gray-600">9 Items</div>
-            </div>
+    }
+    <div class="col-sm">
+        <div class="d-flex justify-content-sm-end gap-2">
+            @*<div class="search-box ms-2">
+                <input type="text" class="form-control" placeholder="Search...">
+                <i class="ri-search-line search-icon"></i>
             </div>*@
-            <div class="grid columns-12 gap-5 mt-5 pt-5 border-top border-theme-25 dark-border-dark-3">
-                @foreach (Project project in Model)
-                {
-                    <a asp-action="Details" asp-route-id="@project.Id" class="intro-y d-block g-col-12 g-col-sm-4 g-col-xxl-3">
-                        <div class="box rounded-2 p-3 position-relative zoom-in">
-                            <div class="d-block fw-medium text-center truncate mt-3" style="font-size: 2em;">@project.Name</div>
-                            <div class="flex-none pos-image position-relative d-block">
-                                <div class="pos-image__preview image-fit">
-                                    <img alt="Project Image" src="">
-                                </div>
-                            </div>
-                                
-                                
-                        </div>
-                        <div>
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <a asp-action="AssignProjectManager" asp-route-projectId="@project.Id">Edit</a>
-                            }
-                            <a asp-action="Edit" asp-route-id="@project.Id">Edit</a> |
-                            <a asp-action="Details" asp-route-id="@project.Id">Details</a> |
-                            <a asp-action="Delete" asp-route-id="@project.Id">Delete</a>
-                        </div>
-                    </a>
-                                    
-                }
-            </div>
-                <div class="mt-3 d-flex  justify-content-center">
-                    @*<div>
-                        Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
-                    </div>*@
 
-                    @Html.PagedListPager(Model, pageNum => Url.Action("Index", new {pageNum}),
-                    new PagedListRenderOptions
-                    {
-
-
-                        MaximumPageNumbersToDisplay = 3,
-                        DisplayEllipsesWhenNotShowingAllPageNumbers = true,
-                        UlElementClasses = new string[1] { "pagination" },
-                        LiElementClasses = new string[] {"page-item"},
-                        PageClasses = new string[] {"page-link"},
-                        
-                    }
-                    )
-                </div>
-
-        </div>
-        <!-- END: Item List -->
-        <!-- BEGIN: Ticket -->
-        <div class="g-col-12 g-col-lg-4">
-            <div class="intro-y pe-1">
-                <div class="box p-2">
-                    <ul class="pos__tabs nav nav-pills rounded-2" role="tablist">
-                        <li id="ticket-tab" class="nav-item flex-1" role="presentation">
-                            <button class="nav-link w-full pt-2 pb-2.5 active" data-bs-toggle="pill" data-bs-target="#ticket" type="button" role="tab" aria-controls="ticket-tab" aria-selected="true">Tickets</button>
-                        </li>
-                        <li id="details-tab" class="nav-item flex-1" role="presentation">
-                            <button class="nav-link w-full pt-2 pb-2.5" data-bs-toggle="pill" data-bs-target="#details" type="button" role="tab" aria-controls="details-tab" aria-selected="false">My Tickets</button>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div class="tab-content mt-5">
-                <div class="tab-pane fade show active" id="ticket" role="tabpanel" aria-labelledby="ticket-tab">
-                    <div class="box p-2 mt-5">
-                        
-                        <a href="javascript:;" data-toggle="modal" data-target="#add-item-modal" class="ticket-item d-flex align-items-center p-3 cursor-pointer bg-white dark-bg-dark-3 bg-gray-200-hover dark-bg-dark-1-hover rounded-2">
-                            <div class="ticket-item__item-name truncate me-1">Ticket Title</div>
-                            <div class="text-gray-600">x 1</div>
-                            <i data-feather="edit" class="w-4 h-4 text-gray-600 ms-2"></i>
-                            <div class="ms-auto fw-medium">Ticket Status</div>
-                        </a>
-                        
-                       
-                    </div>
-                    <div class="box d-flex p-5 mt-5">
-                        <input type="text" class="form-control py-3 px-4 w-full bg-gray-200 border-gray-200 dark-bg-dark-2 dark-border-dark-2 pe-10 placeholder-theme-8" placeholder="Use coupon code...">
-                        <button class="btn btn-primary ms-2">Apply</button>
-                    </div>
-                    <div class="box p-5 mt-5">
-                        <div class="d-flex">
-                            <div class="me-auto">Subtotal</div>
-                            <div class="fw-medium">$250</div>
-                        </div>
-                        <div class="d-flex mt-4">
-                            <div class="me-auto">Discount</div>
-                            <div class="fw-medium text-theme-24">-$20</div>
-                        </div>
-                        <div class="d-flex mt-4">
-                            <div class="me-auto">Tax</div>
-                            <div class="fw-medium">15%</div>
-                        </div>
-                        <div class="d-flex mt-4 pt-4 border-top border-gray-200 dark-border-dark-5">
-                            <div class="me-auto fw-medium fs-base">Total Charge</div>
-                            <div class="fw-medium fs-base">$220</div>
-                        </div>
-                    </div>
-                    <div class="d-flex mt-5">
-                        <button class="btn w-32 border-gray-400 dark-border-dark-5 text-gray-600 dark-text-gray-300">Clear Items</button>
-                        <button class="btn btn-primary w-32 shadow-md ms-auto">Charge</button>
-                    </div>
-                </div>
-                <div class="tab-pane fade" id="details" role="tabpanel" aria-labelledby="details-tab">
-                    <div class="box p-5 mt-5">
-                        <div class="d-flex align-items-center border-bottom border-gray-200 dark-border-dark-5 pb-5">
-                            <div>
-                                <div class="text-gray-600">Time</div>
-                                <div class="mt-1">02/06/20 02:10 PM</div>
-                            </div>
-                            <i data-feather="clock" class="w-4 h-4 text-gray-600 ms-auto"></i>
-                        </div>
-                        <div class="d-flex align-items-center border-bottom border-gray-200 dark-border-dark-5 py-5">
-                            <div>
-                                <div class="text-gray-600">Customer</div>
-                                <div class="mt-1">Leonardo DiCaprio</div>
-                            </div>
-                            <i data-feather="user" class="w-4 h-4 text-gray-600 ms-auto"></i>
-                        </div>
-                        <div class="d-flex align-items-center border-bottom border-gray-200 dark-border-dark-5 py-5">
-                            <div>
-                                <div class="text-gray-600">People</div>
-                                <div class="mt-1">3</div>
-                            </div>
-                            <i data-feather="users" class="w-4 h-4 text-gray-600 ms-auto"></i>
-                        </div>
-                        <div class="d-flex align-items-center pt-5">
-                            <div>
-                                <div class="text-gray-600">Table</div>
-                                <div class="mt-1">21</div>
-                            </div>
-                            <i data-feather="mic" class="w-4 h-4 text-gray-600 ms-auto"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- END: Ticket -->
-    </div>
-    <!-- BEGIN: New Order Modal -->
-    <div id="new-order-modal" class="modal fade" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <!-- BEGIN: Modal Header -->
-                <div class="modal-header">
-                    <h2 class="fw-medium fs-base me-auto">
-                        New Order
-                    </h2>
-                </div>
-                <!-- END: Modal Header -->
-                <!-- BEGIN: Modal Body -->
-                <div class="modal-body grid grid-cols-12 gap-4 gap-y-3">
-                    <div class="g-col-12">
-                        <label for="pos-form-1" class="form-label">Name</label>
-                        <input id="pos-form-1" type="text" class="form-control flex-1" placeholder="Customer name">
-                    </div>
-                    <div class="g-col-12">
-                        <label for="pos-form-2" class="form-label">Table</label>
-                        <input id="pos-form-2" type="text" class="form-control flex-1" placeholder="Customer table">
-                    </div>
-                    <div class="g-col-12">
-                        <label for="pos-form-3" class="form-label">Number of People</label>
-                        <input id="pos-form-3" type="text" class="form-control flex-1" placeholder="People">
-                    </div>
-                </div>
-                <!-- END: Modal Body -->
-                <!-- BEGIN: Modal Footer -->
-                <div class="modal-footer text-end">
-                    <button type="button" data-bs-dismiss="modal" class="btn btn-outline-secondary w-32 me-1">Cancel</button>
-                    <button type="button" class="btn btn-primary w-32">Create Ticket</button>
-                </div>
-                <!-- END: Modal Footer -->
-            </div>
+            <form method="get" asp-action="MyProjects">
+            <select class="form-control w-md" name="sortType" onchange="this.form.submit()" asp-items="ViewBag.SortTypes" data-choices data-choices-search-false>
+                <option value="" selected>Sorting by</option>
+            </select>
+            
+            </form>
         </div>
     </div>
-    <!-- END: New Order Modal -->
-    <!-- BEGIN: Add Item Modal -->
-    <div id="add-item-modal" class="modal fade" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <!-- BEGIN: Modal Header -->
-                <div class="modal-header">
-                    <h2 class="fw-medium fs-base me-auto">
-                        Fried Calamari
-                    </h2>
-                </div>
-                <!-- END: Modal Header -->
-                <!-- BEGIN: Modal Body -->
-                <div class="modal-body grid grid-cols-12 gap-4 gap-y-3">
-                    <div class="g-col-12">
-                        <label for="pos-form-4" class="form-label">Quantity</label>
-                        <div class="d-flex mt-2 flex-1">
-                            <button type="button" class="btn w-12 border-gray-300 bg-gray-200 dark-bg-dark-1 dark-border-dark-1 text-gray-600 dark-text-gray-300 me-1">-</button>
-                            <input id="pos-form-4" type="text" class="form-control w-24 text-center" placeholder="Item quantity" value="2">
-                            <button type="button" class="btn w-12 border-gray-300 bg-gray-200 dark-bg-dark-1 dark-border-dark-1 text-gray-600 dark-text-gray-300 ms-1">+</button>
-                        </div>
-                    </div>
-                    <div class="g-col-12">
-                        <label for="pos-form-5" class="form-label">Notes</label>
-                        <textarea id="pos-form-5" class="form-control w-full mt-2" placeholder="Item notes"></textarea>
-                    </div>
-                </div>
-                <!-- END: Modal Body -->
-                <!-- BEGIN: Modal Footer -->
-                <div class="modal-footer text-end">
-                    <button type="button" data-bs-dismiss="modal" class="btn btn-outline-secondary w-24 me-1">Cancel</button>
-                    <button type="button" class="btn btn-primary w-24">Add Item</button>
-                </div>
-                <!-- END: Modal Footer -->
-            </div>
-        </div>
-    </div>
-    <!-- END: Add Item Modal -->
 </div>
 
 
 
+<div class="row">
+    @foreach (Project project in Model)
+    {
+       daysUntilDue = (project.EndDate - DateTime.Now).TotalDays;        
 
-@*<h1>index</h1>
+        cardBackground = string.Empty;
+        headerIcon = string.Empty;
 
-<p>
-    <a asp-action="create">create new</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Created)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StartDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.EndDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Archived)
-            </th>
-            <th>
-                File
-            </th>
-
-            <th>
-                @Html.DisplayNameFor(model => model.Company)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ProjectPriority)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
+       @if (project.EndDate == null)
         {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelitem => item.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelitem => item.Description)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelitem => item.Created)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelitem => item.StartDate)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelitem => item.EndDate)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelitem => item.Archived)
-                </td>
-                <td>
-                    <div class="col-12">
-                        <img src="@_fileService.ConvertByteArrayToFile(item.FileData!, item.FileType!, (int)DefaultImage.ProjectImage)" alt="post images" style="height:400px; width:400px;" />
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                    @Html.DisplayFor(modelitem => item.Company.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelitem => item.ProjectPriority.Name)
-                </td>
-                <td>
-                    <a asp-action="edit" asp-route-id="@item.Id">edit</a> |
-                    <a asp-action="details" asp-route-id="@item.Id">details</a> |
-                    <a asp-action="delete" asp-route-id="@item.Id">delete</a>
-                </td>
-            </tr>
+            cardBackground = "bg-light";
+            headerIcon = "bi bi-question-lg text-dark";
         }
-    </tbody>
-</table>*@
+        else if (daysUntilDue >= 8)
+        {
+            cardBackground = "bg-soft-success";
+            headerIcon = "bi bi-calendar text-dark fs-20";
+        }
+        else if (daysUntilDue <= 7 && daysUntilDue >= 1)
+        {
+            cardBackground = "bg-warning bg-opacity-50";
+            headerIcon = "bi bi-flag-fill text-dark fs-20";
+        }
+        else if (daysUntilDue <= 0)
+        {
+            cardBackground = "bg-danger bg-opacity-50";
+            headerIcon = "bi bi-exclamation-triangle-fill text-dark fs-20";
+        }
+
+        <div class="col-xxl-3 col-sm-6 project-card">
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="p-3 mt-n3 mx-n3 @cardBackground rounded-top ">
+                        <div class="d-flex gap-1 align-items-center justify-content-end my-n2">
+                            
+                            <div class="dropdown">
+                                <button class="btn btn-link text-muted p-1 mt-n1 py-0 text-decoration-none fs-15"
+                                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                    <i data-feather="more-horizontal" class="icon-sm"></i>
+                                </button>
+
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a class="dropdown-item" asp-action="details" asp-route-id="@project.Id">
+                                        <i class="ri-eye-fill align-bottom me-2 text-muted"></i>
+                                        View
+                                    </a>
+                                    <a class="dropdown-item" asp-action="edit" asp-route-id="@project.Id">
+                                        <i class="ri-pencil-fill align-bottom me-2 text-muted"></i>
+                                        Edit
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                   data-bs-target="#removeProjectModal" onclick="setProjectId(@project.Id)">
+                                        <i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i>
+                                        Archive
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center pb-3">
+                            <i class="@headerIcon"></i>
+                        </div>
+                    </div>
+                    <div class="py-3">
+                        <h5 class="mb-3 fs-15">
+                            <a href="@Url.Action("Overview", "Projects")"
+                           class="text-dark">@project.Name</a>
+                        </h5>
+                        <div class="row gy-3">
+                            <div class="col-6">
+                                <div>
+                                    <p class="text-muted mb-1">Start Date</p>
+                                    <h5 class="fs-14">@project.StartDate.ToString("dd MMM, yyyy")</h5>
+                                    
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div>
+                                    <p class="text-muted mb-1">Deadline</p>
+                                    <!--This checks the total days between the two dates and then colors the deadline accordingly.-->
+                                    @if (project.EndDate == null)
+                                    {
+                                        <div class="badge badge-info fs-12">No Deadline Set</div>
+                                    }
+                                    else if (daysUntilDue >= 8)
+                                    {
+                                        <div class="badge badge-soft-success fs-12">@project.EndDate.ToString("dd MMM, yyyy")</div>
+                                    }
+                                    else if (daysUntilDue <= 7 && daysUntilDue >= 1)
+                                    {
+                                        <div class="badge badge-soft-warning  fs-12">@project.EndDate.ToString("dd MMM, yyyy")</div>
+                                    }
+                                    else if (daysUntilDue <= 0)
+                                    {
+                                        <div class="badge bg-danger fs-12">@project.EndDate.ToString("dd MMM, yyyy")</div>
+                                    }
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center mt-3">
+                            <p class="text-muted mb-0 me-2">Team :</p>
+                            <div class="avatar-group">
+                            @if (project.Members.Count() == 0)
+                            {
+                                <p class="text-muted mb-0 me-2">None Assigned</p>
+                            }
+                            else{
+                                @foreach (BTUser member in project.Members)
+                                {
+                                    if (await _RolesService.IsUserInRoleAsync(member, nameof(BTRoles.ProjectManager)))
+                                    {
+                                        <a href="javascript: void(0);" class="avatar-group-item me-3"
+                               data-bs-toggle="tooltip" data-bs-trigger="hover"
+                               data-bs-placement="top" title="PM: @member.FullName">
+                                            <img src="@_FileService.ConvertByteArrayToFile(member.ImageFileData, member.ImageFileType, (int)DefaultImage.BTProjectManager)"
+                                     class="rounded-circle avatar-xxs">
+                                        </a>
+                                    }
+                                }
+                                @foreach (BTUser member in project.Members)
+                                {
+                                   
+
+
+                                    if (!await _RolesService.IsUserInRoleAsync(member, nameof(BTRoles.ProjectManager)))
+                                    {
+                                        <a href="javascript: void(0);" class="avatar-group-item"
+                               data-bs-toggle="tooltip" data-bs-trigger="hover"
+                               data-bs-placement="top" title="@member.FullName">
+                                            <img src="@_FileService.ConvertByteArrayToFile(member.ImageFileData, member.ImageFileType, (int)DefaultImage.BTUserImage)"
+                                     class="rounded-circle avatar-xxs">
+                                        </a>
+                                    }
+                                }
+                                }
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                </div>
+                <!-- end card body -->
+            </div>
+
+            <!-- end card -->
+        </div>
+        <!-- end col -->
+        
+    }
+    <div class="mt-3">
+        
+            <div>
+                <p class="mb-sm-0 text-muted">
+                    Showing <span class="fw-semibold">@((Model.PageNumber - 1) * Model.PageSize + 1)</span> to <span class="fw-semibold">@Math.Min(Model.PageNumber * Model.PageSize, totalProjects)</span> of <span class="fw-semibold text-decoration-underline">@totalProjects</span> entries
+                </p>
+            </div>
+        
+        @*<div>
+            Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+        </div>*@
+
+        <!-- We use the a ViewData to grab the current sort type based on the one sent back from the form above.-->
+        @Html.PagedListPager(Model, pageNum => Url.Action("Index", new {pageNum, sortType = ViewBag.CurrentSortType}),
+        new PagedListRenderOptions
+        {
+        UlElementClasses = new string[] { "pagination", "pagination-separated", "justify-content-center", "justify-content-sm-end", "mb-sm-0" },
+        LiElementClasses = new string[] {"page-item"},
+        PageClasses = new string[] {"page-link"},
+        LinkToFirstPageFormat = "<<",
+        LinkToPreviousPageFormat = "Prev",
+        LinkToNextPageFormat = "Next",
+        LinkToLastPageFormat = ">>",
+        DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+        DisplayLinkToLastPage = PagedListDisplayMode.Always,
+        DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+        DisplayLinkToNextPage = PagedListDisplayMode.Always
+        }
+        )
+    </div>
+</div>
+<!-- end row -->
+
+
+
+
+@*<div class="row g-0 text-center text-sm-start align-items-center mb-4">
+    <div class="col-sm-6">
+        <div>
+            <p class="mb-sm-0 text-muted">
+                Showing <span class="fw-semibold">@((Model.PageNumber - 1) * Model.PageSize + 1)</span> to <span class="fw-semibold">@Math.Min(Model.PageNumber * Model.PageSize, totalProjects)</span> of <span class="fw-semibold text-decoration-underline">@totalProjects</span> entries
+            </p>
+        </div>
+    </div>
+    <!-- end col -->
+@*    <div class="col-sm-6">
+        <ul class="pagination pagination-separated justify-content-center justify-content-sm-end mb-sm-0">
+            <li class="page-item disabled">
+                <a href="#" class="page-link">Previous</a>
+            </li>
+            <li class="page-item active">
+                <a href="#" class="page-link">1</a>
+            </li>
+            <li class="page-item ">
+                <a href="#" class="page-link">2</a>
+            </li>
+            <li class="page-item">
+                <a href="#" class="page-link">3</a>
+            </li>
+            <li class="page-item">
+                <a href="#" class="page-link">4</a>
+            </li>
+            <li class="page-item">
+                <a href="#" class="page-link">5</a>
+            </li>
+            <li class="page-item">
+                <a href="#" class="page-link">Next</a>
+            </li>
+        </ul>
+    </div><!-- end col -->
+</div>*@
+<!-- end row -->
+<!-- removeProjectModal -->
+<div id="removeProjectModal" class="modal fade zoomIn" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                        id="close-modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mt-2 text-center">
+                    <lord-icon src="https://cdn.lordicon.com/jtibbqrq.json" trigger="loop"
+                               colors="primary:#f7b84b,secondary:#f06548" style="width:100px;height:100px"></lord-icon>
+                    <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
+                        <h4>Are you Sure ?</h4>
+                        <p class="text-muted mx-4 mb-0">Are you Sure You want to archive this Project ?</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 justify-content-center mt-4 mb-2">
+                    <button type="button" class="btn w-sm btn-light" data-bs-dismiss="modal">Close</button>
+                    <button onclick="archiveProject()" type="button" class="btn w-sm btn-danger" id="remove-project">Yes, Archive It!</button>
+                </div>
+            </div>
+
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+<!-- /.modal -->
+
+@section scripts{
+    <!-- project list init -->
+    <script src="~/assets/js/pages/project-list.init.js"></script>
+
+    <!-- App js -->
+    <script src="~/assets/js/app.js"></script>
+
+
+    <script>
+
+        let selectedProjectId;
+        function setProjectId(projectId)
+        {           
+         selectedProjectId = projectId;   
+        }
+   
+        function archiveProject()
+        {
+            //String interpolation to create the url needed to handle this particular project
+            let url = `/Projects/Archive/${selectedProjectId}`;
+
+            //Sending an AJAX request to the server
+                fetch(url, {
+                    method:'POST',
+                    headers: {
+                        'Content-Type' : 'application/json',
+                        'RequestVerifactionToken' : document.getElementsByName('__RequestVerificationToken')[0].value
+                },
+            })
+            .then(response => {
+                 if(response.ok) {
+                     //Handling the success by reloading the page
+                 location.reload()
+                 }
+                 else
+                 {
+                     //Handling the error
+                     console.error('Error when archiving project:', response.statusText);
+                 }
+            })
+            .catch(error => {
+                //Handling network errors
+                console.error('Network error: ', error);
+            });
+        }
+    </script>
+
+}
+
+
+

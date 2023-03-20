@@ -104,10 +104,47 @@ namespace Hoist.Services
 
 
         }
+        public async Task<IEnumerable<Project>> GetUserProjectsListAsync(int? companyId, string? userId)
+        {
+            try
+            {
+                IEnumerable<Project> projects = await _context.Projects
+                                            .Where(p => p.CompanyId == companyId && p.Archived == false)
+                                            .Include(p => p.Tickets)
+                                            .Include(p => p.Company)
+                                            .Include(p => p.ProjectPriority)
+                                            .Include(p => p.Members)
+                                            .Where(p => p.Members.Any(m => m.Id == userId)).ToListAsync();
+
+
+                //BTUser? user = await _context.Users.Include(u => u.Projects).FirstOrDefaultAsync(u => u.Id == userId && u.CompanyId == companyId);
+
+                return projects;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+
+        }
 
         public async Task UpdateProjectAsync(Project project)
         {
-            _context.Update(project);
+            var trackedEntity = _context.Projects.Local.SingleOrDefault(p => p.Id == project.Id);
+            if (trackedEntity != null)
+            {
+                _context.Entry(trackedEntity).State = EntityState.Detached;
+            }
+
+            _context.Entry(project).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        
+        }
+
+        public async Task SaveProjectAsync()
+        {
             await _context.SaveChangesAsync();
         }
 

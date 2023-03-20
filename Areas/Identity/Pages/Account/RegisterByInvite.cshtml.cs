@@ -96,9 +96,9 @@ namespace Hoist.Areas.Identity.Pages.Account
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Required]
+            
             [Display(Name = "Project Id")]
-            public int ProjectId { get; set; }
+            public int? ProjectId { get; set; }
 
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -174,7 +174,10 @@ namespace Hoist.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    await _btProjectService.AddMemberToProjectAsync(user, Input.ProjectId);
+                    if (Input.ProjectId != null)
+                    {
+                        await _btProjectService.AddMemberToProjectAsync(user, Input.ProjectId);
+                    }
 
                     await _userManager.AddToRoleAsync(user, nameof(BTRoles.Submitter));
 

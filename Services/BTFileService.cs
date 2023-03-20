@@ -7,8 +7,9 @@ namespace Hoist.Services
         #region Globals
         private readonly string[] suffixes = { "Bytes", "KB", "MB", "GB", "TB", "PB" };
         private readonly string _defaultBTUserImageSrc = "/img/DefaultUserImage.png";
-        private readonly string _defaultCompanyImageSrc = "/img/DefaultCompanyImage.png";
-        private readonly string _defaultProjectImageSrc = "/img/DefaultProjectImage.png";
+        private readonly string _defaultBTProjectManagerImageSrc = "~/img/DefaultProjectManagerImage.png";
+        private readonly string _defaultCompanyImageSrc = "~/img/DefaultCompanyImage.png";
+        private readonly string _defaultProjectImageSrc = "~/img/DefaultProjectImage.png";
         #endregion
 
         #region Convert Byte Array to File
@@ -20,10 +21,12 @@ namespace Hoist.Services
                 {
                     // BTUser Image based on the 'DefaultImage' Enum
                     case 1: return _defaultBTUserImageSrc;
+                    // ProjectManager Image based on the 'DefaultImage' Enum
+                    case 2: return _defaultBTProjectManagerImageSrc;
                     // Company Image based on the 'DefaultImage' Enum
-                    case 2: return _defaultCompanyImageSrc;
-                    // Project Image based on the 'DefaultImage' Enum
-                    case 3: return _defaultProjectImageSrc;
+                    case 3: return _defaultCompanyImageSrc;
+                    // Project
+                    case 4: return _defaultProjectImageSrc;
                 }
             }
             try

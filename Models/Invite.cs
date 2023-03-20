@@ -20,7 +20,7 @@ namespace Hoist.Models
         //FK
         public int CompanyId { get; set; }
 
-        public int ProjectId { get; set; }
+        public int? ProjectId { get; set; }
 
         [Required]
         public string? InvitorId { get; set; }

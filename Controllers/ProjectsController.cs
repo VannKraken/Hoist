@@ -129,18 +129,18 @@ namespace Hoist.Controllers
             ProjectMembersViewModel viewModel = new()
             {
                 Project = project,
-                UsersList =  new MultiSelectList(userList, "Id", "FullName", currentMembers)
-                
+                UsersList = new MultiSelectList(userList, "Id", "FullName", currentMembers)
+
             };
 
             return View(viewModel);
-    }
+        }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    [Authorize(Roles = "Admin, ProjectManager")]
-    public async Task<IActionResult> AssignProjectMembers(ProjectMembersViewModel viewModel)
-    {
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin, ProjectManager")]
+        public async Task<IActionResult> AssignProjectMembers(ProjectMembersViewModel viewModel)
+        {
 
             int companyId = User.Identity!.GetCompanyId();
 
@@ -155,7 +155,7 @@ namespace Hoist.Controllers
 
                 await _btProjectService.AddMembersToProjectAsync(viewModel.SelectedMembers, viewModel.Project.Id, companyId);
 
-                return RedirectToAction("Details", new { id = viewModel.Project!.Id});
+                return RedirectToAction("Details", new { id = viewModel.Project!.Id });
             }
 
             //REset the form
@@ -172,147 +172,147 @@ namespace Hoist.Controllers
             return View(viewModel);
         }
 
-    // GET: Projects
-    public async Task<IActionResult> Index(int? pageNum)
-    {
-
-        int pageSize = 8;  //Number per page
-        int page = pageNum ?? 1;  //Which page number clicked upon on the page.
-
-        int companyId = User.Identity!.GetCompanyId();
-
-        IPagedList<Project> projects = (await _btProjectService.GetProjectsAsync(companyId)).ToPagedList(page, pageSize);
-
-        return View(projects);
-    }
-
-    // GET: Projects/Details/5
-    public async Task<IActionResult> Details(int? id)
-    {
-        if (id == null)
+        // GET: Projects
+        public async Task<IActionResult> Index(int? pageNum, string? sortType)
         {
-            return NotFound();
+            int pageSize = 8;  //Number per page
+            int page = pageNum ?? 1;  //Which page number clicked upon on the page.
+
+            int companyId = User.Identity!.GetCompanyId();
+
+            List<string> sortingTypes = new()
+            {
+                "A - Z",
+                "Z - A",
+                "Priority, High",
+                "Priority, Low",
+                "My Projects"
+            };
+
+
+            if (string.IsNullOrEmpty(sortType))
+            {
+                IPagedList<Project> projectsDefault = (await _btProjectService.GetProjectsAsync(companyId)).ToPagedList(page, pageSize);
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+
+
+                return View(projectsDefault);
+            }
+
+            if (sortType == "A - Z")
+            {
+                IPagedList<Project> projectsAlphabetical = (await _btProjectService.GetProjectsAsync(companyId)).OrderBy(p => p.Name).ToPagedList(page, pageSize);
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+                ViewData["CurrentSortType"] = sortType;
+
+                return View(projectsAlphabetical);
+            }
+            if (sortType == "Z - A")
+            {
+                IPagedList<Project> projectsAlphabeticalRev = (await _btProjectService.GetProjectsAsync(companyId)).OrderByDescending(p => p.Name).ToPagedList(page, pageSize);
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+                ViewData["CurrentSortType"] = sortType;
+
+                return View(projectsAlphabeticalRev);
+            }
+            if (sortType == "Priority, High")
+            {
+                IPagedList<Project> projectsDeadline = (await _btProjectService.GetProjectsAsync(companyId)).OrderBy(p => p.EndDate).ToPagedList(page, pageSize);
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+                ViewData["CurrentSortType"] = sortType;
+
+                return View(projectsDeadline);
+            }
+            if (sortType == "Priority, Low")
+            {
+                IPagedList<Project> projectsDeadlineRev = (await _btProjectService.GetProjectsAsync(companyId)).OrderByDescending(p => p.EndDate).ToPagedList(page, pageSize);
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+                ViewData["CurrentSortType"] = sortType;
+
+                return View(projectsDeadlineRev);
+            }
+            if (sortType == "My Projects")
+            {
+                string? userId = _userManager.GetUserId(User);
+
+
+
+                IPagedList<Project> myProjects = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).ToPagedList(page, pageSize);
+
+
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+                ViewData["CurrentSortType"] = sortType;
+
+                return View(myProjects);
+            }
+
+
+
+            IPagedList<Project> projects = (await _btProjectService.GetProjectsAsync(companyId)).ToPagedList(page, pageSize);
+
+            ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+
+
+            return View(projects);
         }
 
-        int companyId = User.Identity!.GetCompanyId();
-
-        Project? project = await _btProjectService.GetProjectAsync(id.Value, companyId);
-        if (project == null)
+        // GET: Projects/Details/5
+        public async Task<IActionResult> Details(int? id)
         {
-            return NotFound();
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            int companyId = User.Identity!.GetCompanyId();
+
+            Project? project = await _btProjectService.GetProjectAsync(id.Value, companyId);
+            if (project == null)
+            {
+                return NotFound();
+            }
+
+            return View(project);
         }
 
-        return View(project);
-    }
-
-    // GET: Projects/Create
-    public async Task<IActionResult> Create()
-    {
-        IEnumerable<ProjectPriority> priorities = await _btProjectService.GetProjectPrioritiesAsync();
-
-
-        ViewData["ProjectPriorityId"] = new SelectList(priorities, "Id", "Name");
-        return View();
-    }
-
-    // POST: Projects/Create
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("Id,CompanyId,ProjectPriorityId,Name,Description,Created,StartDate,EndDate,Archived,FileData,FileType,FormFile")] Project project, IEnumerable<string> selected)
-    {
-        ModelState.Remove("CompanyId");
-
-        if (ModelState.IsValid)
+        // GET: Projects/Create
+        public async Task<IActionResult> Create()
         {
             int companyId = User.Identity!.GetCompanyId();
 
+            IEnumerable<ProjectPriority> priorities = (await _btProjectService.GetProjectPrioritiesAsync()).OrderBy(p => p.Id);
+            List<BTUser> submitters = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId);
+            List<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
+            List<BTUser> userList = submitters.Concat(developers).ToList();
+            IEnumerable<BTUser> projectManagers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId);
 
 
+            ViewData["ProjectPriorityId"] = new SelectList(priorities, "Id", "Name");
+            ViewData["MembersId"] = new MultiSelectList(userList, "Id", "FullName");
 
-            project.CompanyId = companyId;
+            ViewData["ProjectManagersId"] = new SelectList(projectManagers, "Id", "FullName");
+            return View();
+        }
 
+        // POST: Projects/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,CompanyId,ProjectPriorityId,Name,Description,Created,StartDate,EndDate,Archived,FileData,FileType,FormFile")] Project project, IEnumerable<string> selectedMembers, string? projectManagerId)
+        {
+            ModelState.Remove("CompanyId");
 
-            //TODO Created Date and date for post gres
-            project.Created = DataUtility.GetPostGresDate(DateTime.UtcNow);
-            project.StartDate = DataUtility.GetPostGresDate(project.StartDate);
-            project.EndDate = DataUtility.GetPostGresDate(project.EndDate);
-
-            //Archived
-            project.Archived = false;
-
-
-            //TODO File conversion
-            if (project.FormFile != null)
+            if (ModelState.IsValid)
             {
-                project.FileData = await _btFileService.ConvertFileToByteArrayAsync(project.FormFile);
-                project.FileType = project.FormFile.ContentType;
-            }
+                int companyId = User.Identity!.GetCompanyId();
 
-            await _btProjectService.AddProjectAsync(project);
-            if (selected != null)
-            {
-                await _btProjectService.AddMembersToProjectAsync(selected, project.Id, companyId);
-            }
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        IEnumerable<ProjectPriority> priorities = await _btProjectService.GetProjectPrioritiesAsync();
-
-        ViewData["ProjectPriorityId"] = new SelectList(priorities, "Id", "Name", project.ProjectPriorityId);
-        return View(project);
-    }
-
-    // GET: Projects/Edit/5
-    public async Task<IActionResult> Edit(int? id)
-    {
-        if (id == null)
-        {
-            return NotFound();
-        }
-        int companyId = User.Identity!.GetCompanyId();
-
-        Project? project = await _btProjectService.GetProjectAsync(id.Value, companyId);
-        if (project == null)
-        {
-            return NotFound();
-        }
-
-
-        IEnumerable<ProjectPriority> priorities = await _btProjectService.GetProjectPrioritiesAsync();
-
-        IEnumerable<BTUser> developers = await _btRolesService.GetUsersInRoleAsync("Developer", companyId);
-
-        IEnumerable<string> currentDevelopers = project.Members.Select(m => m.Id);
-
-        ViewData["Developers"] = new MultiSelectList(developers, "Id", "FullName", currentDevelopers);
-        ViewData["ProjectPriorityId"] = new SelectList(priorities, "Id", "Name");
-        return View(project);
-    }
-
-    // POST: Projects/Edit/5
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,ProjectPriorityId,Name,Description,Created,StartDate,EndDate,Archived,FileData,FileType,FormFile")] Project project, IEnumerable<string> selected)
-    {
-
-
-        if (id != project.Id)
-        {
-            return NotFound();
-        }
-        int companyId = User.Identity!.GetCompanyId();
-        ModelState.Remove("CompanyId");
-
-        if (ModelState.IsValid)
-        {
-
-            try
-            {
 
 
 
@@ -320,7 +320,7 @@ namespace Hoist.Controllers
 
 
                 //TODO Created Date and date for post gres
-                project.Created = DataUtility.GetPostGresDate(project.Created);
+                project.Created = DataUtility.GetPostGresDate(DateTime.UtcNow);
                 project.StartDate = DataUtility.GetPostGresDate(project.StartDate);
                 project.EndDate = DataUtility.GetPostGresDate(project.EndDate);
 
@@ -335,91 +335,272 @@ namespace Hoist.Controllers
                     project.FileType = project.FormFile.ContentType;
                 }
 
-                if (selected != null)
+                await _btProjectService.AddProjectAsync(project);
+
+                if (projectManagerId != null)
                 {
-                    await _btProjectService.AddMembersToProjectAsync(selected, project.Id, companyId);
+                    await _btProjectService.AddProjectManagerAsync(projectManagerId, project.Id);
+                }
+
+                if (selectedMembers != null)
+                {
+                    await _btProjectService.AddMembersToProjectAsync(selectedMembers, project.Id, companyId);
                 }
 
 
 
+                return RedirectToAction(nameof(Index));
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_btProjectService.ProjectExists(project.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            return RedirectToAction(nameof(Index));
+
+            IEnumerable<ProjectPriority> priorities = await _btProjectService.GetProjectPrioritiesAsync();
+
+            ViewData["ProjectPriorityId"] = new SelectList(priorities, "Id", "Name", project.ProjectPriorityId);
+            return View(project);
         }
 
-        IEnumerable<ProjectPriority> priorities = await _btProjectService.GetProjectPrioritiesAsync();
+        // GET: Projects/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            int companyId = User.Identity!.GetCompanyId();
 
-        ViewData["Developers"] = new MultiSelectList(await _btRolesService.GetUsersInRoleAsync("Developer", companyId));
-        ViewData["ProjectPriorityId"] = new SelectList(priorities, "Id", "Name", project.ProjectPriorityId);
-        return View(project);
-    }
+            Project? project = await _btProjectService.GetProjectAsync(id.Value, companyId);
+            if (project == null)
+            {
+                return NotFound();
+            }
 
-    // GET: Projects/Delete/5
-    public async Task<IActionResult> Delete(int id)
-    {
+            IEnumerable<ProjectPriority> priorities = (await _btProjectService.GetProjectPrioritiesAsync()).OrderBy(p => p.Id);
 
-        try
+            List<BTUser> submitters = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId);
+            List<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
+            List<BTUser> userList = submitters.Concat(developers).ToList();
+            IEnumerable<BTUser> projectManagers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId);
+
+
+            ProjectPriority currentPriority = project.ProjectPriority;
+            BTUser? currentProjectManager = await _btProjectService.GetProjectManagerAsync(project.Id);
+            IEnumerable<string> currentDevelopers = project.Members.Select(m => m.Id);
+
+
+            ViewData["ProjectPriorityId"] = new SelectList(priorities, "Id", "Name", currentPriority);
+            ViewData["MembersId"] = new MultiSelectList(userList, "Id", "FullName",currentDevelopers);
+
+            if (currentProjectManager != null) {
+            ViewData["ProjectManagersId"] = new SelectList(projectManagers, "Id", "FullName", currentProjectManager.Id);
+            }
+
+            ViewData["StartDate"] = project.StartDate;
+            ViewData["EndDate"] = project.EndDate;
+
+
+
+
+
+
+
+            ViewData["Developers"] = new MultiSelectList(userList, "Id", "FullName", currentDevelopers);
+
+            return View(project);
+        }
+
+        // POST: Projects/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,ProjectPriorityId,Name,Description,Created,StartDate,EndDate,Archived,FileData,FileType,FormFile")] Project project, IEnumerable<string> selectedMembers, string? projectManagerId)
+        {
+
+
+            if (id != project.Id)
+            {
+                return NotFound();
+            }
+            int companyId = User.Identity!.GetCompanyId();
+            ModelState.Remove("CompanyId");
+
+            if (ModelState.IsValid)
+            {
+
+                try
+                {
+
+
+
+                    project.CompanyId = companyId;
+
+
+                    //TODO Created Date and date for post gres
+                    project.Created = DataUtility.GetPostGresDate(project.Created);
+                    project.StartDate = DataUtility.GetPostGresDate(project.StartDate);
+                    project.EndDate = DataUtility.GetPostGresDate(project.EndDate);
+
+                    //Archived
+                    project.Archived = false;
+
+
+                    //TODO File conversion
+                    if (project.FormFile != null)
+                    {
+                        project.FileData = await _btFileService.ConvertFileToByteArrayAsync(project.FormFile);
+                        project.FileType = project.FormFile.ContentType;
+                    }
+
+                    if (selectedMembers != null)
+                    {
+                        await _btProjectService.AddMembersToProjectAsync(selectedMembers, project.Id, companyId);
+                    }
+                    if (projectManagerId != null)
+                    {
+                        await _btProjectService.AddProjectManagerAsync(projectManagerId, project.Id);
+                    }
+
+                    await _btProjectService.UpdateProjectAsync(project);
+
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_btProjectService.ProjectExists(project.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+
+            IEnumerable<ProjectPriority> priorities = await _btProjectService.GetProjectPrioritiesAsync();
+
+            ViewData["Developers"] = new MultiSelectList(await _btRolesService.GetUsersInRoleAsync("Developer", companyId));
+            ViewData["ProjectPriorityId"] = new SelectList(priorities, "Id", "Name", project.ProjectPriorityId);
+            return View(project);
+        }
+
+        // GET: Projects/Delete/5
+        public async Task<IActionResult> Archive(int id)
+        {
+
+            try
+            {
+                int companyId = User.Identity!.GetCompanyId();
+
+                Project project = await _btProjectService.GetProjectAsync(id, companyId);
+
+                await _btProjectService.ArchiveProjectAsync(project);
+
+                return RedirectToAction("Index");
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+        }
+
+        public async Task<IActionResult> MyProjects(int? pageNum, string? sortType)
+        {
+            int pageSize = 8;  //Number per page
+            int page = pageNum ?? 1;  //Which page number clicked upon on the page.
+
+            int companyId = User.Identity!.GetCompanyId();
+            string? userId = _userManager.GetUserId(User);
+
+            List<string> sortingTypes = new()
+            {
+                "A - Z",
+                "Z - A",
+                "Priority, High",
+                "Priority, Low",
+
+            };
+
+
+            if (string.IsNullOrEmpty(sortType))
+            {
+                IPagedList<Project> projectsDefault = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).ToPagedList(page, pageSize);
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+
+
+                return View(projectsDefault);
+            }
+
+            if (sortType == "A - Z")
+            {
+                IPagedList<Project> projectsAlphabetical = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).OrderBy(p => p.Name).ToPagedList(page, pageSize);
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+                ViewData["CurrentSortType"] = sortType;
+
+                return View(projectsAlphabetical);
+            }
+            if (sortType == "Z - A")
+            {
+                IPagedList<Project> projectsAlphabeticalRev = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).OrderByDescending(p => p.Name).ToPagedList(page, pageSize);
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+                ViewData["CurrentSortType"] = sortType;
+
+                return View(projectsAlphabeticalRev);
+            }
+            if (sortType == "Priority, High")
+            {
+                IPagedList<Project> projectsDeadline = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).OrderBy(p => p.EndDate).ToPagedList(page, pageSize);
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+                ViewData["CurrentSortType"] = sortType;
+
+                return View(projectsDeadline);
+            }
+            if (sortType == "Priority, Low")
+            {
+                IPagedList<Project> projectsDeadlineRev = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).OrderByDescending(p => p.EndDate).ToPagedList(page, pageSize);
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+                ViewData["CurrentSortType"] = sortType;
+
+                return View(projectsDeadlineRev);
+            }
+
+
+
+
+            IPagedList<Project> projects = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).ToPagedList(page, pageSize);
+
+            ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+
+
+            return View(projects);
+
+        }
+
+        public async Task<IActionResult> AddMemberToProject(int projectId)
         {
             int companyId = User.Identity!.GetCompanyId();
 
-            Project project = await _btProjectService.GetProjectAsync(id, companyId);
+            Project project = await _btProjectService.GetProjectAsync(projectId, companyId);
 
-            await _btProjectService.ArchiveProjectAsync(project);
+            ViewData["Developers"] = new MultiSelectList(await _btRolesService.GetUsersInRoleAsync("Developer", companyId));
+            return View(project);
 
-            return RedirectToAction(nameof(Index));
-        }
-        catch (Exception)
-        {
-
-            throw;
         }
 
-    }
 
-    public async Task<IActionResult> MyProjects()
-    {
-            string? userId = _userManager.GetUserId(User);
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> AddMemberToProject() 
+        //{
 
-            int? companyId =  User.Identity.GetCompanyId();
-
-            BTUser user = await _btProjectService.GetUserProjectsAsync(companyId.Value, userId);
-            
-
-
-
-        return View(user);
+        //    return View();
+        //}
 
     }
-
-    public async Task<IActionResult> AddMemberToProject(int projectId)
-    {
-        int companyId = User.Identity!.GetCompanyId();
-
-        Project project = await _btProjectService.GetProjectAsync(projectId, companyId);
-
-        ViewData["Developers"] = new MultiSelectList(await _btRolesService.GetUsersInRoleAsync("Developer", companyId));
-        return View(project);
-
-    }
-
-
-    //[HttpPost]
-    //[ValidateAntiForgeryToken]
-    //public async Task<IActionResult> AddMemberToProject() 
-    //{
-
-    //    return View();
-    //}
-
-}
 }

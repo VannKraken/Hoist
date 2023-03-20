@@ -4,160 +4,152 @@
     ViewData["Title"] = "Create";
 }
 
-
-<div class="content">
-    <div class="intro-y d-flex flex-column flex-sm-row align-items-center mt-8">
-        <h2 class="fs-lg fw-medium me-auto">
-            Add New Project
-        </h2>
-    </div>
-    <form asp-action="Create" enctype="multipart/form-data">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <div class="pos intro-y grid columns-12 gap-5 mt-5">
-            <!-- BEGIN: Post Content -->
-            <div class="intro-y g-col-12 g-col-lg-8">
-                <input asp-for="Name" type="text" class="intro-y form-control py-3 px-4 box border-white dark-border-dark-3 pe-10 placeholder-theme-8" placeholder="Title">
-                <span asp-validation-for="Name" class="text-danger"></span>
-                <div class="post intro-y overflow-hidden box mt-5">
-                    <ul class="post__tabs nav nav-tabs flex-column flex-sm-row bg-gray-300 dark-bg-dark-2 text-gray-600" role="tablist">
-                        <li id="content-tab" class="nav-item" role="presentation">
-                            <button class="tooltip nav-link d-flex justify-content-center align-items-center w-full w-sm-40 py-4 active" title="Fill in the article content" data-bs-toggle="pill" data-bs-target="#content" type="button" role="tab" aria-controls="content-tab" aria-selected="true"> <i data-feather="file-text" class="w-4 h-4 me-2"></i> Content </button>
-                        </li>
-                    </ul>
-                    <div class="post__content tab-content">
-                        <div class="tab-pane p-5 fade show active" id="content" role="tabpanel" aria-labelledby="content-tab">
-                            <div class="border border-gray-200 dark-border-dark-5 rounded-2 p-5">
-                                <div class="fw-medium d-flex align-items-center border-bottom border-gray-200 dark-border-dark-5 pb-5"> <i data-feather="chevron-down" class="w-4 h-4 me-2"></i> Project Content </div>
-                                <div class="mt-5">
-                                    <textarea asp-for="Description" class="editor">
-                                    </textarea>
-                                </div>
-                            </div>
-                            <div class="border border-gray-200 dark-border-dark-5 rounded-2 p-5 mt-5">
-                                <div class="fw-medium d-flex align-items-center border-bottom border-gray-200 dark-border-dark-5 pb-5"> <i data-feather="chevron-down" class="w-4 h-4 me-2"></i> Caption & Images </div>
-                                <div class="form-group">
-                                    <label asp-for="FormFile" class="control-label">File</label>
-                                    <img class="img-fluid border rounded-3 m-2" style="max-height: 250px;" src="~/img/DefaultBlogImage.svg" id="fileIcon">
-                                    <input asp-for="FormFile" type="file" class="form-control mt-3 pt-2" accept=".png,.jpg,.jpeg,.gif,.txt"
-                                           onchange="document.getElementById('fileIcon').src = window.URL.createObjectURL(this.files[0])" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- END: Post Content -->
-            <!-- BEGIN: Post Info -->
-            <div class="g-col-12 g-col-lg-4">
-                <div class="intro-y box p-5">
-                    <div class="mb-3">
-                        <div class="form-group">
-                            <label asp-for="ProjectPriorityId" class="control-label">Priority</label>
-                            <select asp-for="ProjectPriorityId" class="form-control" asp-items="ViewBag.ProjectPriorityId"></select>
-                        </div>
-                    </div>
-                    <div class="row align-items-center justify-content-sm-center ">
-                        <div class="form-group mb-3">
-                            <label asp-for="StartDate" class="control-label"></label>
-                            <input asp-for="StartDate" class="form-control" />
-                            <span asp-validation-for="StartDate" class="text-danger"></span>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="EndDate" class="control-label"></label>
-                            <input asp-for="EndDate" class="form-control" />
-                            <span asp-validation-for="EndDate" class="text-danger"></span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <input type="submit" value="Create" class="btn btn-primary" />
-                    </div>
-          @*          <div class="mt-3">
-                        <label for="post-form-3" class="form-label">Categories</label>
-                        <select data-placeholder="Select categories" class="tom-select w-full" id="post-form-3" multiple>
-                            <option value="1" selected>Horror</option>
-
-                        </select>
-                    </div>
-                    <div class="mt-3">
-                        <label for="post-form-4" class="form-label">Tags</label>
-                        <select data-placeholder="Select your favorite actors" class="tom-select w-full" id="post-form-4" multiple>
-                        </select>
-                    </div>
-                    <div class="form-check form-switch flex-column align-items-start ps-0 mt-3">
-                        <label for="post-form-5" class="form-check-label ms-0 mb-2">Published</label>
-                        <input id="post-form-5" class="form-check-input ms-0" type="checkbox">
-                    </div>
-                    <div class="form-check form-switch flex-column align-items-start ps-0 mt-3">
-                        <label for="post-form-6" class="form-check-label ms-0 mb-2">Show Author Name</label>
-                        <input id="post-form-6" class="form-check-input ms-0" type="checkbox">
-                    </div>*@
-                </div>
-            </div>
-            
-            <!-- END: Post Info -->
-    </form>
-</div>
-</div>
-
-
-@*<h4>Project</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            <div class="form-group">
-                <label asp-for="ProjectPriorityId" class="control-label">Priority</label>
-                <select asp-for="ProjectPriorityId" class="form-control" asp-items="ViewBag.ProjectPriorityId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="StartDate" class="control-label"></label>
-                <input asp-for="StartDate" class="form-control" />
-                <span asp-validation-for="StartDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EndDate" class="control-label"></label>
-                <input asp-for="EndDate" class="form-control" />
-                <span asp-validation-for="EndDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="FormFile" class="control-label">File</label>
-                <img class="img-fluid border rounded-3 m-2" style="max-height: 250px;" src="~/img/DefaultBlogImage.svg" id="fileIcon">
-                <input asp-for="FormFile" type="file" class="form-control mt-3 pt-2" accept=".png,.jpg,.jpeg,.gif,.txt"
-                       onchange="document.getElementById('fileIcon').src = window.URL.createObjectURL(this.files[0])" />
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}*@
-
-@section Scripts {
-    @{
-        <script src="~/dist/js/ckeditor-classic.js"></script>
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+@{
+    ViewBag.Title = "Create Project";
+    ViewBag.pTitle = "Create Project";
+    ViewBag.pageTitle = "Projects";
+    Layout = "_Layout";
 }
+
+@section styles{
+    <!-- Plugins css -->
+    <link href="~/assets/libs/dropzone/dropzone.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+}
+
+<form asp-action="Create" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label" for="project-title-input">Project Title</label>
+                        <input asp-for="Name" type="text" class="form-control" id="project-title-input"
+                               placeholder="Enter project title">
+                    </div>                   
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Project Description</label>
+                        <textarea asp-for="Description" id="ckeditor-classic"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="mb-3 mb-lg-0">
+                                <label asp-for="ProjectPriorityId" for="choices-priority-input" class="form-label">Priority</label>
+                                <select asp-for="ProjectPriorityId" class="form-select" asp-items="ViewBag.ProjectPriorityId" data-choices data-choices-search-false
+                                        id="choices-priority-input" required>                                    
+                                </select>
+                            </div>
+                        </div>
+                       
+                        <div class="col-lg-4">
+                            <div>
+                                <label asp-for="StartDate" class="form-label">Start Date</label>
+                                <input asp-for="StartDate" type="text" class="form-control" id="datepicker-deadline-input" placeholder="Enter due date" data-provider="flatpickr">
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div>
+                                <label asp-for="EndDate" class="form-label">Deadline</label>
+                                <input asp-for="EndDate" type="text" class="form-control" id="datepicker-deadline-input" placeholder="Enter due date" data-provider="flatpickr">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- end card body -->
+            </div>
+            <!-- end card -->
+
+         
+
+            <div class="text-end mb-4">
+                <button type="submit" class="btn btn-success w-sm">Create</button>
+            </div>
+        </div>
+        <!-- end col -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Members</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="choices-lead-input" class="form-label">Team Lead</label>
+                        <select class="form-select" asp-items="ViewBag.ProjectManagersId" name="projectManagerId"
+                                id="choices-lead-input">
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Team Members</label>
+                        <div class="avatar-group">
+                            <a href="javascript: void(0);" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Add Members">
+                                
+                                    <select id="mySelect" multiple="multiple" name="selectedMembers" asp-items="ViewBag.MembersId">
+                                    </select>
+                                    
+                             
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- end card body -->
+        </div>
+        <!-- end card -->
+    </div>
+    <!-- end col -->
+    </div>
+</form>
+<!-- end row -->
+
+<!-- end modal -->
+@section scripts{
+    <!-- ckeditor -->
+    <script src="~/assets/libs/ckeditor/ckeditor5-build-classic/build/ckeditor.js"></script>
+
+    <!-- dropzone js -->
+    <script src="~/assets/libs/dropzone/dropzone-min.js"></script>
+    <!-- project-create init -->
+    <script src="~/assets/js/pages/project-create.init.js"></script>
+
+    <!-- App js -->
+    <script src="~/assets/js/app.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- multi.js -->
+    <script src="~/assets/libs/multi.js/multi.min.js"></script>
+    <!-- autocomplete js -->
+    <script src="~/assets/libs/tarekraafat/autocomplete.js/autoComplete.min.js"></script>
+
+    <!-- init js -->
+    <script src="~/assets/js/pages/form-advanced.init.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#mySelect').select2({
+                placeholder: 'Select options',
+                closeOnSelect: false,
+                templateResult: formatState,
+                templateSelection: formatState
+            });
+
+            function formatState(state) {
+                if (!state.id) {
+                    return state.text;
+                }
+                var $state = $(
+                    '<span><input type="checkbox" class="mr-2" /> ' + state.text + '</span>'
+                );
+                return $state;
+            }
+        });
+    </script>
+
+}
+
+

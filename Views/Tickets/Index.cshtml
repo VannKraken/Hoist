@@ -1,9 +1,10 @@
-﻿@using Microsoft.AspNetCore.Identity;
-@model IEnumerable<Hoist.Models.Ticket>
+﻿@model IEnumerable<Hoist.Models.Ticket>
+@using Hoist.Models.Enums;
+@using Microsoft.AspNetCore.Identity;
 @inject UserManager<BTUser> _UserManager 
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Tickets";
     Layout = "_Layout";
 }
 
@@ -14,6 +15,14 @@
     IEnumerable<Ticket> inProgTickets = Model.Where(t => t.Archived == false && t.DeveloperUserId != null);
     IEnumerable<Ticket> assignedTickets = Model.Where(t => t.Archived == false && t.DeveloperUserId == userId);
     IEnumerable<Ticket> archivedTickets = Model.Where(t => t.Archived == true);
+
+
+
+
+    bool isAdmin = User.IsInRole("Admin");
+    
+   
+
 }
 
 
@@ -136,41 +145,7 @@
                     </div>
                 </div>
             </div>
-            @*<div class="card-body border border-dashed border-end-0 border-start-0">
-                <form class="tablelist-form" autocomplete="off">
-                    <div class="row g-3">
-                        <div class="col-xxl-5 col-sm-12">
-                            <div class="search-box">
-                                <input type="text" class="form-control search bg-light border-light" placeholder="Search for ticket details or something...">
-                                <i class="ri-search-line search-icon"></i>
-                            </div>
-                        </div><!--end col-->
 
-                        <div class="col-xxl-3 col-sm-4">
-                            <input type="text" class="form-control bg-light border-light" data-provider="flatpickr" data-date-format="d M, Y" data-range-date="true" id="demo-datepicker" placeholder="Select date range">
-                        </div><!--end col-->
-
-                        <div class="col-xxl-3 col-sm-4">
-                            <div class="input-light">
-                                <select class="form-control" data-choices data-choices-search-false name="choices-single-default" id="idStatus">
-                                    <option value="">Status</option>
-                                    <option value="all" selected>All</option>
-                                    <option value="Open">Open</option>
-                                    <option value="Inprogress">Inprogress</option>
-                                    <option value="Closed">Closed</option>
-                                    <option value="New">New</option>
-                                </select>
-                            </div>
-                        </div><!--end col-->
-                        <div class="col-xxl-1 col-sm-4">
-                            <button type="button" class="btn btn-info w-100" onclick="SearchData();">
-                                <i class="ri-equalizer-fill me-1 align-bottom"></i>
-                                Filters
-                            </button>
-                        </div><!--end col-->
-                    </div><!--end row-->
-                </form>
-            </div><!--end card-body-->*@
             <div class="card-body">
                 <div class="table-responsive overflow-hidden   mb-4">
 
@@ -198,6 +173,9 @@
                             {
                                 int priorityId = ticket.TicketPriorityId;
                                 int statusId = ticket.TicketStatusId;
+                                bool isSubmitter = ticket.SubmitterUserId == userId;
+                                bool isDeveloper = ticket.DeveloperUserId == userId;
+                                bool isProjectManager = (User.IsInRole(nameof(BTRoles.ProjectManager)) && ticket.Project.Members.Any(m => m.Id == userId));
 
                                 <tr>
                                     <th scope="row">
@@ -271,16 +249,22 @@
                                                         <i class="ri-eye-fill align-bottom me-2 text-muted"></i> View
                                                     </a>
                                                 </li>
-                                                <li>
-                                                    <a class="dropdown-item edit-item-btn" href="#showModal" data-bs-toggle="modal">
-                                                        <i class="ri-pencil-fill align-bottom me-2 text-muted"></i> Edit
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item remove-item-btn" data-bs-toggle="modal" href="#deleteOrder">
-                                                        <i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> Delete
-                                                    </a>
-                                                </li>
+                                                @if (isAdmin || isProjectManager || isSubmitter || isDeveloper)
+                                                {
+                                                    <li>
+                                                        <a class="dropdown-item edit-item-btn" href="#showModal" data-bs-toggle="modal">
+                                                            <i class="ri-pencil-fill align-bottom me-2 text-muted"></i> Edit
+                                                        </a>
+                                                    </li>
+                                                }
+                                                @if (isAdmin || isProjectManager)
+                                                {
+                                                    <li>
+                                                        <a class="dropdown-item remove-item-btn" asp-controller="Tickets" asp-action="Archive">
+                                                            <i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> Archive
+                                                        </a>
+                                                    </li>
+                                                }
                                             </ul>
                                         </div>
                                     </td>
@@ -289,148 +273,6 @@
 
                         </tbody>
                     </table>
-
-
-
-
-
-                    @* <table id="alternative-pagination" class="table nowrap dt-responsive align-middle table-hover table-bordered" >
-                    <thead>
-                    <tr>
-                    <th scope="col" style="width: 40px;">
-                    <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="checkAll" value="option">
-                    </div>
-                    </th>
-                    <th class="sort" data-sort="ticket_title">Title</th>
-                    <th class="sort" data-sort="ticket_description">Description</th>
-                    <th class="sort" data-sort="submitter">Submitter</th>
-                    <th class="sort" data-sort="assignedto">Assigned To</th>
-                    <th class="sort" data-sort="create_date">Create Date</th>
-                    <th class="sort" data-sort="update">Updated</th>
-                    <th class="sort" data-sort="status">Status</th>
-                    <th class="sort" data-sort="priority">Priority</th>
-                    <th class="sort" data-sort="action">Action</th>
-                    </tr>
-                    </thead>
-                    <tbody class="list form-check-all" id="ticket-list-data">
-                    @foreach(Ticket ticket in Model)
-                    {
-                    int priorityId = ticket.TicketPriorityId;
-                    int statusId = ticket.TicketStatusId;
-
-                    <tr>
-                    <th scope="row">
-                    <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="checkAll" value="option1">
-                    </div>
-                    </th>
-                    <td class="ticket_title text-truncate">@ticket.Title</td>
-                    <td class="ticket_description">@Html.Raw(ticket.Description)</td>
-                    <td class="submitter">@ticket.SubmitterUser.FullName</td>
-                    <td class="assignedto text-truncate">@(!string.IsNullOrEmpty(ticket.DeveloperUserId) ? ticket.DeveloperUser.FullName : "Not assigned")</td>
-                    <td class="create_date">@ticket.Created.ToLocalTime().ToShortDateString()</td>
-                    <td class="due_date">@(ticket.Updated != null ? ticket.Updated.ToString() : " - / - / -")</td>
-
-
-                    @switch(statusId)
-                    {
-
-                    case 2:
-                    <td class="status" data-order="@ticket.TicketStatusId"><span class="badge badge-soft-info text-uppercase">@ticket.TicketStatus.Name</span></td>
-                    break;
-
-                    case 3:
-                    <td class="status" data-order="@ticket.TicketStatusId"><span class="badge badge-soft-warning text-uppercase">@ticket.TicketStatus.Name</span></td>
-                    break;
-
-                    case 4:
-                    <td class="status" data-order="@ticket.TicketStatusId"><span class="badge badge-soft-danger text-uppercase">@ticket.TicketStatus.Name</span></td>
-                    break;
-
-                    default:
-                    <td class="status" data-order="@ticket.TicketStatusId"><span class="badge badge-soft-success text-uppercase">@ticket.TicketStatus.Name</span></td>
-                    break;
-
-
-                    }
-
-                    @switch(priorityId)
-                    {
-                    case 2:
-                    <td class="priority" data-order="@ticket.TicketPriorityId"><span class="badge bg-info text-uppercase">@ticket.TicketPriority.Name</span></td>
-                    break;
-
-                    case 3:
-                    <td class="priority" data-order="@ticket.TicketPriorityId">
-                    <span class="badge bg-warning text-uppercase">@ticket.TicketPriority.Name</span>
-
-                    </td>
-                    break;
-
-                    case 4:
-                    <td class="priority" data-order="@ticket.TicketPriorityId">
-                    <span class="badge bg-danger text-uppercase">@ticket.TicketPriority.Name</span>
-
-                    </td>
-                    break;
-
-                    default:
-                    <td class="priority" data-order="@ticket.TicketPriorityId">
-                    <span class="badge bg-light text-uppercase">@ticket.TicketPriority.Name</span>
-
-                    </td>
-                    break;
-                    }
-                    <td>
-                    <div class="dropdown">
-                    <button class="btn btn-soft-secondary btn-sm dropdown" type="button" data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                    <i class="ri-more-fill align-middle"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                    <button class="dropdown-item" onclick="location.href = '/SupportTickets/TicketDetails';">
-                    <i class="ri-eye-fill align-bottom me-2 text-muted"></i> View
-                    </button>
-                    </li>
-                    <li>
-                    <a class="dropdown-item edit-item-btn" href="#showModal" data-bs-toggle="modal">
-                    <i class="ri-pencil-fill align-bottom me-2 text-muted"></i> Edit
-                    </a>
-                    </li>
-                    <li>
-                    <a class="dropdown-item remove-item-btn" data-bs-toggle="modal" href="#deleteOrder">
-                    <i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> Delete
-                    </a>
-                    </li>
-                    </ul>
-                    </div>
-                    </td>
-                    </tr>
-                    }
-                    </tbody>
-                    </table>*@
-              @*      <div class="noresult" style="display: none">
-                        <div class="text-center">
-                            <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#121331,secondary:#08a88a" style="width:75px;height:75px">
-                            </lord-icon>
-                            <h5 class="mt-2">Sorry! No Result Found</h5>
-                            <p class="text-muted mb-0">We've searched more than 150+ Tickets We did not find any Tickets for you search.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-end mt-2">
-                    <div class="pagination-wrap hstack gap-2">
-                        <a class="page-item pagination-prev disabled" href="#">
-                            Previous
-                        </a>
-                        <ul class="pagination listjs-pagination mb-0"></ul>
-                        <a class="page-item pagination-next" href="#">
-                            Next
-                        </a>
-                    </div>
-                </div>*@
 
                 <!-- Modal -->
                 <div class="modal fade flip" id="deleteOrder" tabindex="-1" aria-hidden="true">
@@ -537,34 +379,7 @@
     </div>
 </div>
 
-@*@section scripts{
-    <!-- list.js min js -->
-    <script src="~/assets/libs/list.js/list.min.js"></script>
 
-    <!--list pagination js-->
-    <script src="~/assets/libs/list.pagination.js/list.pagination.min.js"></script>
-
-    <!-- titcket init js -->
-    <script src="~/assets/js/pages/ticketlist.init.js"></script>
-
-    <!-- Sweet Alerts js -->
-    <script src="~/assets/libs/sweetalert2/sweetalert2.min.js"></script>
-
-    <!-- App js -->
-    <script src="~/assets/js/app.js"></script>    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('#ticketsTable').DataTable();
-        });
-    </script>
-
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.js"></script>
-    <script>
-        $(document).ready(function () {
-                $('#alternative-pagination').DataTable();
-        });
-    </script>
-}*@
 
 
 
@@ -596,78 +411,3 @@
 
 
     }
-
-
-
-
-
-
-
-
-
-
-
-@*<link href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.css">
-
-<div class="content">
-    <div class="intro-y box mt-5">
-        <div class="d-flex flex-column flex-sm-row align-items-center p-5 border-bottom border-gray-200 dark-border-dark-5">
-            <h2 class="fw-medium fs-base me-auto">
-                All Tickets
-            </h2>
-        </div>
-        <div id="hoverable-table" class="p-5">
-            <div class="preview">
-                <div class="overflow-x-auto">
-                    <table class="table table-bordered table-hover table-responsive" id="ticketsTable">
-                        <thead>
-                            <tr>
-                                <th class="text-nowrap">Title</th>
-                                <th class="text-nowrap">Submitter</th>
-                                <th class="text-nowrap">Developer</th>
-                                <th class="text-nowrap">Type</th>
-                                <th class="text-nowrap">Priority</th>
-                                <th class="text-nowrap">Status</th>
-                                <th class="text-nowrap">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (Ticket ticket in Model)
-                            {
-                                <tr>
-                                    <td>@ticket.Title</td>
-                                    <td>@ticket.SubmitterUser.FullName</td>
-                                    @if (ticket.DeveloperUser == null)
-                                    {
-                                        <td class="fw-bold text-center"><strong>...</strong></td>
-                                    }
-                                    else
-                                    {
-
-                                        <td>@ticket.DeveloperUser?.FullName</td>
-                                    }
-                                    <td>@ticket.TicketType.Name</td>
-                                    <td>@ticket.TicketPriority.Name</td>
-                                    <td>@ticket.TicketStatus.Name</td>
-                                    <td>
-                                        <a asp-action="Edit" asp-route-id="@ticket.Id"><i class="bi bi-pencil-square"></i>Edit</a> |
-                                        <a asp-action="Details" asp-route-id="@ticket.Id">Details</a> |
-                                        <a asp-action="Archive" asp-route-id="@ticket.Id">Archive</a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="source-code d-none">
-                <button data-target="#copy-hoverable-table" class="copy-code btn py-1 px-2 btn-outline-secondary"> <i data-feather="file" class="w-4 h-4 me-2"></i> Copy example code </button>
-                <div class="overflow-y-auto mt-3 rounded-2">
-                    <pre class="source-preview" id="copy-hoverable-table"> <code class="fs-xs p-0 rounded-2 html ps-5 pt-8 pb-4 mb-n10 mt-n10"> HTMLOpenTagdiv class=&quot;overflow-x-auto&quot;HTMLCloseTag HTMLOpenTagtable class=&quot;table table-bordered table-hover&quot;HTMLCloseTag HTMLOpenTagtheadHTMLCloseTag HTMLOpenTagtrHTMLCloseTag HTMLOpenTagth class=&quot;text-nowrap&quot;HTMLCloseTag#HTMLOpenTag/thHTMLCloseTag HTMLOpenTagth class=&quot;text-nowrap&quot;HTMLCloseTagFirst NameHTMLOpenTag/thHTMLCloseTag HTMLOpenTagth class=&quot;text-nowrap&quot;HTMLCloseTagLast NameHTMLOpenTag/thHTMLCloseTag HTMLOpenTagth class=&quot;text-nowrap&quot;HTMLCloseTagUsernameHTMLOpenTag/thHTMLCloseTag HTMLOpenTag/trHTMLCloseTag HTMLOpenTag/theadHTMLCloseTag HTMLOpenTagtbodyHTMLCloseTag HTMLOpenTagtrHTMLCloseTag HTMLOpenTagtdHTMLCloseTag1HTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTagAngelinaHTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTagJolieHTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTag@angelinajolieHTMLOpenTag/tdHTMLCloseTag HTMLOpenTag/trHTMLCloseTag HTMLOpenTagtrHTMLCloseTag HTMLOpenTagtdHTMLCloseTag2HTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTagBradHTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTagPittHTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTag@bradpittHTMLOpenTag/tdHTMLCloseTag HTMLOpenTag/trHTMLCloseTag HTMLOpenTagtrHTMLCloseTag HTMLOpenTagtdHTMLCloseTag3HTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTagCharlieHTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTagHunnamHTMLOpenTag/tdHTMLCloseTag HTMLOpenTagtdHTMLCloseTag@charliehunnamHTMLOpenTag/tdHTMLCloseTag HTMLOpenTag/trHTMLCloseTag HTMLOpenTag/tbodyHTMLCloseTag HTMLOpenTag/tableHTMLCloseTag HTMLOpenTag/divHTMLCloseTag </code> </pre>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>*@
-
-

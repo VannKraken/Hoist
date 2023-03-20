@@ -74,6 +74,8 @@ namespace Hoist.Services
                                                                 .Include(t => t.Project)
                                                                     .ThenInclude(p => p.Company)
                                                                     .Where(t => t.Project!.CompanyId == companyId)
+                                                                .Include(t => t.Project)
+                                                                    .ThenInclude(p => p.Members)
                                                                 .Include(t => t.SubmitterUser)
                                                                 .Include(t => t.TicketPriority)
                                                                 .Include(t => t.TicketStatus)

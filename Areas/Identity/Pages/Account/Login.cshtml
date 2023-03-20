@@ -34,7 +34,7 @@
                         <div class="text-center mt-sm-5 mb-4 text-white-50">
                             <div>
                                 <a href="@Url.Action("Index", "Home")" class="d-inline-block auth-logo">
-                                    
+
                                     <img src="~/assets/images/logo-light.png" alt="" height="50">
                                 </a>
                             </div>
@@ -81,26 +81,34 @@
                                             <button class="btn btn-info w-100" type="submit">Sign In</button>
                                         </div>
 
-                                        @*<div class="mt-4 text-center">
-                                            <div class="signin-other-title">
-                                                <h5 class="fs-13 mb-4 title">Sign In with</h5>
+                                        <section>
+                                            <h3>Or use one of the Demo Accounts to log in. </h3>
+                                            <hr />
+
+                                            <div class="mb-1 text-center">
+                                                <form class="" id="account" method="post">
+                                                    <div class="form-group">
+                                                        <div class="row">
+                                                            <div class="col-8 btn-block">
+                                                                <button type="submit" style="width:inherit;height:min-content" class="btn btn-primary p-10 m-2" name="demoEmail" value="DemoAdminEmail">Demo Admin</button>
+                                                                <button type="submit" style="width:inherit;height:min-content" class="btn btn-primary p-10 m-2" name="demoEmail" value="DemoPMEmail">Demo PM</button>
+                                                                <button type="submit" style="width:inherit;height:min-content" class="btn btn-primary p-10 m-2" name="demoEmail" value="DemoDevEmail">Demo Developer</button>
+                                                                <button type="submit" style="width:inherit;height:min-content" class="btn btn-primary p-10 m-2" name="demoEmail" value="DemoSubEmail">Demo Submitter</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
                                             </div>
-                                            <div>
-                                                <button type="button" class="btn btn-primary btn-icon waves-effect waves-light"><i class="ri-facebook-fill fs-16"></i></button>
-                                                <button type="button" class="btn btn-danger btn-icon waves-effect waves-light"><i class="ri-google-fill fs-16"></i></button>
-                                                <button type="button" class="btn btn-dark btn-icon waves-effect waves-light"><i class="ri-github-fill fs-16"></i></button>
-                                                <button type="button" class="btn btn-info btn-icon waves-effect waves-light"><i class="ri-twitter-fill fs-16"></i></button>
-                                            </div>
-                                        </div>*@
+
+                                        </section>
                                     </form>
                                 </div>
                             </div>
                             <!-- end card body -->
                         </div>
                         <!-- end card -->
-
                         @*<div class="mt-4 text-center">
-                            <p class="mb-0">Don't have an account ? <a href="@Url.Action("SignUpBasic", "Authentication")" class="fw-semibold text-primary text-decoration-underline"> Signup </a> </p>
+                        <p class="mb-0">Don't have an account ? <a href="@Url.Action("SignUpBasic", "Authentication")" class="fw-semibold text-primary text-decoration-underline"> Signup </a> </p>
                         </div>*@
 
                     </div>
