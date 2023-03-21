@@ -11,7 +11,6 @@ using Hoist.Models;
 using Hoist.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Hoist.Models.Enums;
-using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Hoist.Services;
 using Hoist.Extensions;
@@ -110,11 +109,15 @@ namespace Hoist.Controllers
             BTUser? btUser = await _userManager.GetUserAsync(User);
 
             IEnumerable<Project> projects = await _btProjectService.GetProjectsAsync(companyId);
-            IEnumerable<TicketPriority> priorities = await _btTicketService.GetTicketPriorities();
+            IEnumerable<TicketPriority> priorities = (await _btTicketService.GetTicketPriorities()).OrderBy(p => p.Id);
+
+            IEnumerable<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
+
 
 
             ViewData["ProjectId"] = new SelectList(projects, "Id", "Name");
-            ViewData["TicketPriorityId"] = priorities;
+            ViewData["DevelopersId"] = new SelectList(developers, "Id", "FullName");
+            ViewData["TicketPriorityId"] = new SelectList(priorities.OrderBy(p => p.Id), "Id", "Name");
             ViewData["TicketStatusId"] = new SelectList(await _btTicketService.GetTicketStatuses(), "Id", "Name");
             ViewData["TicketTypeId"] = new SelectList(await _btTicketService.GetTicketTypes(), "Id", "Name");
             return View();
@@ -128,14 +131,19 @@ namespace Hoist.Controllers
             Project project = await _btProjectService.GetProjectAsync(id,companyId);
             
             IEnumerable<TicketPriority> priorities = await _btTicketService.GetTicketPriorities();
+            IEnumerable<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
 
 
-            ViewData["Project"] = project; 
-            ViewData["TicketPriorityId"] = priorities;
+            ViewBag.Project = project;
+            ViewData["DevelopersId"] = new SelectList(developers, "Id", "FullName");
+            ViewData["TicketPriorityId"] = new SelectList(priorities.OrderBy(p => p.Id), "Id", "Name");
             ViewData["TicketStatusId"] = new SelectList(await _btTicketService.GetTicketStatuses(), "Id", "Name");
             ViewData["TicketTypeId"] = new SelectList(await _btTicketService.GetTicketTypes(), "Id", "Name");
             return View();
         }
+
+        //public async Task<IActionResult> CreateTicketForProject()
+        //{ }
 
         // POST: Tickets/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -230,7 +238,7 @@ namespace Hoist.Controllers
             IEnumerable<TicketPriority> priorities = await _btTicketService.GetTicketPriorities();
 
             ViewData["ProjectId"] = new SelectList(projects, "Id", "Name");
-            ViewData["TicketPriorityId"] = priorities;
+            ViewData["TicketPriorityId"] = new SelectList(priorities.OrderBy(p => p.Id), "Id", "Name");
             ViewData["TicketStatusId"] = new SelectList(await _btTicketService.GetTicketStatuses(), "Id", "Name");
             ViewData["TicketTypeId"] = new SelectList(await _btTicketService.GetTicketTypes(), "Id", "Name");
             return View(ticket);
@@ -251,21 +259,38 @@ namespace Hoist.Controllers
             }
 
 
+            int companyId = User.Identity!.GetCompanyId();
             BTUser? btUser = await _userManager.GetUserAsync(User);
-            int companyId = btUser!.CompanyId;
 
             IEnumerable<Project> projects = await _btProjectService.GetProjectsAsync(companyId);
+            IEnumerable<TicketPriority> priorities = (await _btTicketService.GetTicketPriorities()).OrderBy(p => p.Id);
 
             IEnumerable<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
 
-            IEnumerable<TicketPriority> priorities = await _btTicketService.GetTicketPriorities();
-            IEnumerable<TicketStatus> statuses = await _btTicketService.GetTicketStatuses();
 
-            ViewData["DeveloperUserId"] = new SelectList(developers, "Id", "FullName", ticket.DeveloperUserId);
-            ViewData["ProjectId"] = new SelectList(projects, "Id", "Name");
-            ViewData["TicketPriorityId"] = priorities;
-            ViewData["TicketStatusId"] = statuses;
+
+            
+            ViewData["DevelopersId"] = new SelectList(developers, "Id", "FullName", ticket.DeveloperUserId);
+            ViewData["TicketPriorityId"] = new SelectList(priorities.OrderBy(p => p.Id), "Id", "Name");
+            ViewData["TicketStatusId"] = new SelectList(await _btTicketService.GetTicketStatuses(), "Id", "Name");
             ViewData["TicketTypeId"] = new SelectList(await _btTicketService.GetTicketTypes(), "Id", "Name");
+
+
+            //BTUser? btUser = await _userManager.GetUserAsync(User);
+            //int companyId = btUser!.CompanyId;
+
+            //IEnumerable<Project> projects = await _btProjectService.GetProjectsAsync(companyId);
+
+            //IEnumerable<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
+
+            //IEnumerable<TicketPriority> priorities = await _btTicketService.GetTicketPriorities();
+            //IEnumerable<TicketStatus> statuses = await _btTicketService.GetTicketStatuses();
+
+            //ViewData["DeveloperUserId"] = new SelectList(developers, "Id", "FullName", ticket.DeveloperUserId);
+            //ViewData["ProjectId"] = new SelectList(projects, "Id", "Name");
+            //ViewData["TicketPriorityId"] = priorities;
+            //ViewData["TicketStatusId"] = statuses;
+            //ViewData["TicketTypeId"] = new SelectList(await _btTicketService.GetTicketTypes(), "Id", "Name");
 
 
 

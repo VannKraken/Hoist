@@ -109,7 +109,7 @@ namespace Hoist.Controllers
                        <a href=""{callbackUrl}"">COLLABORATE</a>";
 
                     string? destination = invite.InviteeEmail;
-                    Company companyInstance = await _bTCompanyService.GetCompanyInfoAsync(companyId);
+                    Company companyInstance = await _bTCompanyService.GetEverythingForCompanyAsync(companyId);
 
                     string? subject = $"Hoist: {companyInstance.Name} invites you to raise the flag.";
 

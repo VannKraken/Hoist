@@ -2,141 +2,168 @@
 
 @{
     ViewData["Title"] = "Create";
+    ViewBag.Title = "Create Ticket";
+    ViewBag.pTitle = "Create Ticket";
+    ViewBag.pageTitle = "Tickets";
+    ViewBag.Url = "/Tickets/Index";
+    Layout = "_Layout";
 }
 
 
 
+@section styles{
 
-<div class="content">
-    <div class="intro-y d-flex align-items-center mt-8">
-    </div>
-    <div class="row gap-y-6 mt-5 justify-content-center">
-        <div class="intro-y col-12 col-lg-6">
-            <!-- BEGIN: Input -->
-            <div class="intro-y box">
-                <div class="d-flex flex-column flex-sm-row align-items-center p-5 border-bottom border-gray-200 dark-border-dark-5">
-                    <h2 class="fs-xl fw-medium me-auto">
-                        New Ticket
-                    </h2>
+    <!-- Plugins css -->
+    <link href="~/assets/libs/dropzone/dropzone.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+}
+
+
+    <form asp-action="Create" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label" for="project-title-input">Ticket Title</label>
+                            <input asp-for="Title" type="text" class="form-control" id="project-title-input"
+                                   placeholder="Enter ticket title">
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Ticket Description</label>
+                            <textarea asp-for="Description" id="ckeditor-classic"></textarea>
+                        </div>
+                        <div class="row">
+                        <div class="col-lg-4">
+                            <div class="mb-3 mb-lg-0">
+                                <label asp-for="ProjectId" for="choices-priority-input" class="form-label">Project</label>
+                                <select asp-for="ProjectId" class="form-select" asp-items="ViewBag.ProjectId" data-choices data-choices-search-false
+                                        id="choices-priority-input" required>
+                                    <option value="" selected disabled>Project</option>
+                                </select>
+                            </div>
+                        </div>
+                            <div class="col-lg-4">
+                                <div class="mb-3 mb-lg-0">
+                                    <label asp-for="TicketPriorityId" for="choices-priority-input" class="form-label">Priority</label>
+                                    <select asp-for="TicketPriorityId" class="form-select" asp-items="ViewBag.TicketPriorityId" data-choices data-choices-search-false
+                                            id="choices-priority-input" required>
+                                        <option value="" selected disabled>Ticket Priority</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="mb-3 mb-lg-0">
+                                    <label asp-for="TicketTypeId" for="choices-priority-input" class="form-label">Type</label>
+                                    <select asp-for="TicketTypeId" class="form-select" asp-items="ViewBag.TicketTypeId" data-choices data-choices-search-false
+                                            id="choices-priority-input" required>
+                                        <option value="" selected disabled>Ticket Type</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end card body -->
                 </div>
-                <form asp-action="Create" enctype="multipart/form-data">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <div id="input" class="p-5">
-                        <div class="mb-3">
-                            <label class="fs-lg">Project</label>
-                            <div class="mt-2">
-                                <select asp-for="ProjectId" class="form-control" asp-items="ViewBag.ProjectId" data-placeholder="Select your Project" class="tom-select w-full">
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="fs-lg">Type</label>
-                            <div class="mt-2">
-                                <select asp-for="TicketTypeId" class="form-control" asp-items="ViewBag.TicketTypeId" data-placeholder="Select your Project" class="tom-select w-full">
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="fs-lg">Priority</label>
-                            @foreach (TicketPriority item in ViewBag.TicketPriorityId)
-                            {
+                <!-- end card -->
 
-                                <div class="form-check mt-2">
-                                    <input asp-for="TicketPriorityId" id="radio-switch-1" class="form-check-input" type="radio" value="@item.Id">
-                                    <label class="form-check-label" for="radio-switch-1">@item.Name</label>
-                                </div>
-                            }
-                        </div>
-                        <div class="mt-3">
-                            <label>Title</label>
-                            <div class="mt-2">
-                                <input asp-for="Title" id="regular-form-2" type="text" class="form-control" placeholder="Title">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="source-code d-none">
-                        <button data-target="#copy-input" class="copy-code btn py-1 px-2 btn-outline-secondary"> <i data-feather="file" class="w-4 h-4 me-2"></i> Copy example code </button>
-                        <div class="overflow-y-auto mt-3 rounded-2">
-                            <pre id="copy-input" class="source-preview"> <code class="fs-xs p-0 rounded-2 html ps-5 pt-8 pb-4 mb-n10 mt-n10"> HTMLOpenTagdivHTMLCloseTag HTMLOpenTaglabel for=&quot;regular-form-1&quot; class=&quot;form-label&quot;HTMLCloseTagInput TextHTMLOpenTag/labelHTMLCloseTag HTMLOpenTaginput id=&quot;regular-form-1&quot; type=&quot;text&quot; class=&quot;form-control&quot; placeholder=&quot;Input text&quot;HTMLCloseTag HTMLOpenTag/divHTMLCloseTag HTMLOpenTagdiv class=&quot;mt-3&quot;HTMLCloseTag HTMLOpenTaglabel for=&quot;regular-form-2&quot; class=&quot;form-label&quot;HTMLCloseTagRoundedHTMLOpenTag/labelHTMLCloseTag HTMLOpenTaginput id=&quot;regular-form-2&quot; type=&quot;text&quot; class=&quot;form-control form-control-rounded&quot; placeholder=&quot;Rounded&quot;HTMLCloseTag HTMLOpenTag/divHTMLCloseTag HTMLOpenTagdiv class=&quot;mt-3&quot;HTMLCloseTag HTMLOpenTaglabel for=&quot;regular-form-3&quot; class=&quot;form-label&quot;HTMLCloseTagWith HelpHTMLOpenTag/labelHTMLCloseTag HTMLOpenTaginput id=&quot;regular-form-3&quot; type=&quot;text&quot; class=&quot;form-control&quot; placeholder=&quot;With help&quot;HTMLCloseTag HTMLOpenTagdiv class=&quot;form-help&quot;HTMLCloseTagLorem Ipsum is simply dummy text of the printing and typesetting industry.HTMLOpenTag/divHTMLCloseTag HTMLOpenTag/divHTMLCloseTag HTMLOpenTagdiv class=&quot;mt-3&quot;HTMLCloseTag HTMLOpenTaglabel for=&quot;regular-form-4&quot; class=&quot;form-label&quot;HTMLCloseTagPasswordHTMLOpenTag/labelHTMLCloseTag HTMLOpenTaginput id=&quot;regular-form-4&quot; type=&quot;password&quot; class=&quot;form-control&quot; placeholder=&quot;Password&quot;HTMLCloseTag HTMLOpenTag/divHTMLCloseTag HTMLOpenTagdiv class=&quot;mt-3&quot;HTMLCloseTag HTMLOpenTaglabel for=&quot;regular-form-5&quot; class=&quot;form-label&quot;HTMLCloseTagDisabledHTMLOpenTag/labelHTMLCloseTag HTMLOpenTaginput id=&quot;regular-form-5&quot; type=&quot;text&quot; class=&quot;form-control&quot; placeholder=&quot;Disabled&quot; disabledHTMLCloseTag HTMLOpenTag/divHTMLCloseTag </code> </pre>
-                        </div>
-                    </div>
-                    <div class="row gap-y-6 mt-5">
-                        <!-- BEGIN: Classic Editor -->
-                        <div class="intro-y col-12">
-                            <div class="box">
-                                <div class="d-flex flex-column flex-sm-row align-items-center p-5 border-bottom border-gray-200 dark-border-dark-5">
-                                    <h2 class="fw-medium fs-base me-auto">
-                                        Description
-                                    </h2>
-                                </div>
-                                <div class="p-5" id="classic-editor">
-                                    <div class="preview">
-                                        <textarea asp-for="Description" class="editor form-control"></textarea>
-                                        <span asp-validation-for="Description" class="text-danger"></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- END: Classic Editor -->
-                    </div>
-                    <div class="text-center">
-                        <button class="btn btn-primary w-24 me-1 mb-2">Submit</button>
-                    </div>
-                </form>
+
+
+                <div class="text-end mb-4">
+                    <button type="submit" class="btn btn-success w-sm">Create</button>
+                </div>
             </div>
+            <!-- end col -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Assign Developer</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="choices-lead-input" class="form-label">Developer</label>
+                            <select class="form-select" asp-items="ViewBag.DevelopersId" asp-for="DeveloperUserId"
+                                    id="choices-lead-input">
+                                <option value="" selected>Assign a Developer</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <!-- end card body -->
 
+                @*<div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Attachments</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center border border-dashed p-2 rounded">
+                            <div>
+                                <label>
+                                    File Description
+                                    <textarea  name="FileDescription" type="text" class="form-control" style="max-height: 200px; width: 292px; resize: none;" ></textarea>
+                                </label>
+
+                                <label class="btn btn-outline-primary btn-sm">
+                                    <input  name="FormFile" type="file" class="form-control-file" />
+                                </label>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>*@
+
+            </div>
         </div>
+    </form>
 
-    </div>
-</div>
+<!-- end row -->
+<!-- end modal -->
+@section scripts{
+    <!-- ckeditor -->
+    <script src="~/assets/libs/ckeditor/ckeditor5-build-classic/build/ckeditor.js"></script>
 
-<!-- END: Content -->
-@*<h4>Ticket</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="ProjectId" class="control-label"></label>
-                <select asp-for="ProjectId" class ="form-control" asp-items="ViewBag.ProjectId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="TicketTypeId" class="control-label"></label>
-                <select asp-for="TicketTypeId" class ="form-control" asp-items="ViewBag.TicketTypeId"></select>
-            </div>
+    <!-- dropzone js -->
+    <script src="~/assets/libs/dropzone/dropzone-min.js"></script>
+    <!-- project-create init -->
+    <script src="~/assets/js/pages/project-create.init.js"></script>
 
-            <div class="form-group">
-                <label asp-for="TicketPriorityId" class="control-label"></label>
-                <select asp-for="TicketPriorityId" class ="form-control" asp-items="ViewBag.TicketPriorityId"></select>
-            </div>
+    <!-- App js -->
+    <script src="~/assets/js/app.js"></script>
 
-            <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
+    <!-- multi.js -->
+    <script src="~/assets/libs/multi.js/multi.min.js"></script>
+    <!-- autocomplete js -->
+    <script src="~/assets/libs/tarekraafat/autocomplete.js/autoComplete.min.js"></script>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>*@
+    <!-- init js -->
+    <script src="~/assets/js/pages/form-advanced.init.js"></script>
 
-@section Scripts {
-    @{
-        <script src="~/dist/js/ckeditor-classic.js"></script>
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#mySelect').select2({
+                placeholder: 'Select options',
+                closeOnSelect: false,
+                templateResult: formatState,
+                templateSelection: formatState
+            });
+
+            function formatState(state) {
+                if (!state.id) {
+                    return state.text;
+                }
+                var $state = $(
+                    '<span><input type="checkbox" class="mr-2" /> ' + state.text + '</span>'
+                );
+                return $state;
+            }
+        });
+    </script>
+
 }

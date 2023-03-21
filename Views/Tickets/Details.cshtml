@@ -28,24 +28,12 @@
     <link href="~/assets/libs/swiper/swiper-bundle.min.css" rel="stylesheet" type="text/css" />
 }
 
-<!doctype html>
-<html lang="en" data-layout="vertical" data-layout-style="detached" data-sidebar="light" data-topbar="dark" data-sidebar-size="lg">
-<head>
-    @Html.Partial("~/Views/Shared/_title_meta.cshtml")
-
-    @Html.Partial("~/Views/Shared/_head_css.cshtml")
-</head>
-<body>
-    <!-- Begin page -->
-    <div id="layout-wrapper">
-        @Html.Partial("~/Views/Shared/_menu.cshtml")
 
         <!-- ============================================================== -->
         <!-- Start right Content here -->
         <!-- ============================================================== -->
-        <div class="main-content">
 
-            <div class="page-content">
+
                 <div class="container-fluid">
 
                     <div class="row">
@@ -123,26 +111,7 @@
                                                     </div><!--end col-->
                                                 </div><!--end row-->
                                             </div><!--end col-->
-                                            <div class="col-md-auto mt-md-0 mt-4">
-                                                <div class="hstack gap-1 flex-wrap">
-                                                    <button type="button" class="btn avatar-xs mt-n1 p-0 favourite-btn active">
-                                                        <span class="avatar-title bg-transparent fs-15">
-                                                            <i class="ri-star-fill"></i>
-                                                        </span>
-                                                    </button>
-                                                    <button type="button" class="btn py-0 fs-16 text-body" id="settingDropdown" data-bs-toggle="dropdown">
-                                                        <i class="ri-share-line"></i>
-                                                    </button>
-                                                    <ul class="dropdown-menu" aria-labelledby="settingDropdown">
-                                                        <li><a class="dropdown-item" href="#"><i class="ri-eye-fill align-bottom me-2 text-muted"></i> View</a></li>
-                                                        <li><a class="dropdown-item" href="#"><i class="ri-share-forward-fill align-bottom me-2 text-muted"></i> Share with</a></li>
-                                                        <li><a class="dropdown-item" href="#"><i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> Delete</a></li>
-                                                    </ul>
-                                                    <button type="button" class="btn py-0 fs-16 text-body">
-                                                        <i class="ri-flag-line"></i>
-                                                    </button>
-                                                </div>
-                                            </div><!--end col-->
+                                           
                                         </div><!--end row-->
                                     </div><!-- end card body -->
                                 </div>
@@ -412,24 +381,22 @@
                     </div>
                 </div>
                 @Html.Partial("~/Views/Shared/_footer.cshtml")
-            </div>
 
-        </div>
 
 
         @Html.Partial("~/Views/Shared/_vendor_scripts.cshtml")
 
-        <!-- ticketdetail init js -->
-        <script src="~/assets/js/pages/ticketdetail.init.js"></script>
-
-        <!-- App js -->
-        <script src="~/assets/js/app.js"></script>
+        
 
 
-</body>
-</html>
+
+
+
 
 @section scripts{
+
+        <!-- ticketdetail init js -->
+        <script src="~/assets/js/pages/ticketdetail.init.js"></script>
     <script src="~/assets/libs/swiper/swiper-bundle.min.js"></script>
 
     <script src="~/assets/js/pages/timeline.init.js"></script>

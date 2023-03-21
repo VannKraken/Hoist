@@ -4,7 +4,7 @@
 
 @{
     ViewData["Title"] = "Tickets";
-    Layout = "_Layout";
+    Layout = "_LayoutDashboard";
 }
 
 @{
@@ -238,7 +238,7 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a class="dropdown-item edit-item-btn" href="#showModal" data-bs-toggle="modal">
+                                                    <a class="dropdown-item edit-item-btn" asp-action="Edit" asp-route-id="@ticket.Id">
                                                         <i class="ri-pencil-fill align-bottom me-2 text-muted"></i> Edit
                                                     </a>
                                                 </li>

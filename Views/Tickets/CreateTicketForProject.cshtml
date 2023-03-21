@@ -1,5 +1,181 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model Hoist.Models.Ticket
+@using Hoist.Models.Enums;
+@using Microsoft.AspNetCore.Identity;
+@inject UserManager<BTUser> _UserManager;
+
 @{
+    ViewData["Title"] = "Create";
+    ViewBag.Title = "Create Ticket";
+    ViewBag.pTitle = $"Create Ticket for \"{ViewBag.Project.Name}\"";
+    ViewBag.pageTitle = "Tickets";
+    ViewBag.Url = "/Tickets/Index";
+    Layout = "_Layout";
+}
+
+
+
+@section styles{
+
+    <!-- Plugins css -->
+    <link href="~/assets/libs/dropzone/dropzone.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+}
+
+@{
+    Project project = (Project)ViewBag.Project;
+
+    string? userId = _UserManager.GetUserId(User);
+    bool isAdmin = User.IsInRole("Admin");
+    bool isProjectManager = (User.IsInRole(nameof(BTRoles.ProjectManager)) && project.Members.Any(m => m.Id == userId));
+    bool fromProject = true;
+}
+
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="ProjectId" value="@project.Id" />
+    <input type="hidden" name="fromProject" value="@fromProject.ToString()" />
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label" for="project-title-input">Ticket Title</label>
+                        <input asp-for="Title" type="text" class="form-control" id="project-title-input"
+                               placeholder="Enter ticket title">
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Ticket Description</label>
+                        <textarea asp-for="Description" id="ckeditor-classic"></textarea>
+                    </div>
+                    <div class="row">                        
+                        <div class="col-lg-4">
+                            <div class="mb-3 mb-lg-0">
+                                <label asp-for="TicketPriorityId" for="choices-priority-input" class="form-label">Priority</label>
+                                <select asp-for="TicketPriorityId" class="form-select" asp-items="ViewBag.TicketPriorityId" data-choices data-choices-search-false
+                                        id="choices-priority-input" required>
+                                    <option value="" selected disabled>Ticket Priority</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="mb-3 mb-lg-0">
+                                <label asp-for="TicketTypeId" for="choices-priority-input" class="form-label">Type</label>
+                                <select asp-for="TicketTypeId" class="form-select" asp-items="ViewBag.TicketTypeId" data-choices data-choices-search-false
+                                        id="choices-priority-input" required>
+                                    <option value="" selected disabled>Ticket Type</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- end card body -->
+            </div>
+            <!-- end card -->
+
+
+
+
+            <div class="text-end mb-4">
+                <button type="submit" class="btn btn-success w-sm">Create</button>
+            </div>
+        </div>
+        <!-- end col -->
+        
+        @if (isAdmin || isProjectManager)
+        {
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Assign Developer</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="choices-lead-input" class="form-label">Developer</label>
+                            <select class="form-select" asp-items="@ViewBag.DevelopersId" asp-for="DeveloperUserId"
+                                id="choices-lead-input">
+                                <option value="" selected>Assign a Developer</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>    
+        }
+
+        
+
+
+        <!-- end card body -->
+            @*<div class="card">
+            <div class="card-header">
+            <h5 class="card-title mb-0">Attachments</h5>
+            </div>
+            <div class="card-body">
+            <div class="d-flex align-items-center border border-dashed p-2 rounded">
+            <div>
+            <label>
+            File Description
+            <textarea  name="FileDescription" type="text" class="form-control" style="max-height: 200px; width: 292px; resize: none;" ></textarea>
+            </label>
+
+            <label class="btn btn-outline-primary btn-sm">
+            <input  name="FormFile" type="file" class="form-control-file" />
+            </label>
+
+            </div>
+            </div>
+            </div>
+            </div>*@
+
+    </div>
+</form>
+
+<!-- end row -->
+<!-- end modal -->
+@section scripts{
+    <!-- ckeditor -->
+    <script src="~/assets/libs/ckeditor/ckeditor5-build-classic/build/ckeditor.js"></script>
+
+    <!-- dropzone js -->
+    <script src="~/assets/libs/dropzone/dropzone-min.js"></script>
+    <!-- project-create init -->
+    <script src="~/assets/js/pages/project-create.init.js"></script>
+
+    <!-- App js -->
+    <script src="~/assets/js/app.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- multi.js -->
+    <script src="~/assets/libs/multi.js/multi.min.js"></script>
+    <!-- autocomplete js -->
+    <script src="~/assets/libs/tarekraafat/autocomplete.js/autoComplete.min.js"></script>
+
+    <!-- init js -->
+    <script src="~/assets/js/pages/form-advanced.init.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#mySelect').select2({
+                placeholder: 'Select options',
+                closeOnSelect: false,
+                templateResult: formatState,
+                templateSelection: formatState
+            });
+
+            function formatState(state) {
+                if (!state.id) {
+                    return state.text;
+                }
+                var $state = $(
+                    '<span><input type="checkbox" class="mr-2" /> ' + state.text + '</span>'
+                );
+                return $state;
+            }
+        });
+    </script>
+
 }

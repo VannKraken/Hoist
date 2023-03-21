@@ -278,6 +278,13 @@ namespace Hoist.Controllers
                 return NotFound();
             }
 
+            List<BTUser> submitters = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId);
+            List<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
+            List<BTUser> userList = submitters.Concat(developers).ToList();
+            IEnumerable<BTUser> projectManagers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId);
+
+            ViewData["ProjectManagersId"] = new SelectList(projectManagers, "Id", "FullName");
+            ViewData["MembersId"] = userList;
             return View(project);
         }
 
@@ -582,14 +589,34 @@ namespace Hoist.Controllers
 
         }
 
-        public async Task<IActionResult> AddMemberToProject(int projectId)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddMemberToProject(int projectId, IEnumerable<string> selectedMembers)
         {
             int companyId = User.Identity!.GetCompanyId();
 
-            Project project = await _btProjectService.GetProjectAsync(projectId, companyId);
+            if (selectedMembers != null)
+            {
 
-            ViewData["Developers"] = new MultiSelectList(await _btRolesService.GetUsersInRoleAsync("Developer", companyId));
-            return View(project);
+                //remove members
+
+                await _btProjectService.RemoveMembersFromProjectAsync(projectId, companyId);
+
+                //Add members
+
+                await _btProjectService.AddMembersToProjectAsync(selectedMembers, projectId, companyId);
+
+                return RedirectToAction("Details", new { id = projectId });
+            }
+
+            List<BTUser> submitters = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId);
+            List<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
+            List<BTUser> userList = submitters.Concat(developers).ToList();
+            IEnumerable<BTUser> projectManagers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId);
+
+            ViewData["ProjectManagersId"] = new SelectList(projectManagers, "Id", "FullName");
+            ViewData["MembersId"] = new MultiSelectList(userList, "Id", "FullName");
+            return RedirectToAction("Detail", new { id = projectId});
 
         }
 
