@@ -261,6 +261,82 @@ namespace Hoist.Controllers
 
             return View(projects);
         }
+        public async Task<IActionResult> MyProjects(int? pageNum, string? sortType)
+        {
+            int pageSize = 8;  //Number per page
+            int page = pageNum ?? 1;  //Which page number clicked upon on the page.
+
+            int companyId = User.Identity!.GetCompanyId();
+            string? userId = _userManager.GetUserId(User);
+
+            List<string> sortingTypes = new()
+            {
+                "A - Z",
+                "Z - A",
+                "Priority, High",
+                "Priority, Low",
+
+            };
+
+
+            if (string.IsNullOrEmpty(sortType))
+            {
+                IPagedList<Project> projectsDefault = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).ToPagedList(page, pageSize);
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+
+
+                return View(projectsDefault);
+            }
+
+            if (sortType == "A - Z")
+            {
+                IPagedList<Project> projectsAlphabetical = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).OrderBy(p => p.Name).ToPagedList(page, pageSize);
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+                ViewData["CurrentSortType"] = sortType;
+
+                return View(projectsAlphabetical);
+            }
+            if (sortType == "Z - A")
+            {
+                IPagedList<Project> projectsAlphabeticalRev = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).OrderByDescending(p => p.Name).ToPagedList(page, pageSize);
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+                ViewData["CurrentSortType"] = sortType;
+
+                return View(projectsAlphabeticalRev);
+            }
+            if (sortType == "Priority, High")
+            {
+                IPagedList<Project> projectsDeadline = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).OrderBy(p => p.EndDate).ToPagedList(page, pageSize);
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+                ViewData["CurrentSortType"] = sortType;
+
+                return View(projectsDeadline);
+            }
+            if (sortType == "Priority, Low")
+            {
+                IPagedList<Project> projectsDeadlineRev = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).OrderByDescending(p => p.EndDate).ToPagedList(page, pageSize);
+
+                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+                ViewData["CurrentSortType"] = sortType;
+
+                return View(projectsDeadlineRev);
+            }
+
+
+
+
+            IPagedList<Project> projects = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).ToPagedList(page, pageSize);
+
+            ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+
+
+            return View(projects);
+
+        }
 
         // GET: Projects/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -512,82 +588,6 @@ namespace Hoist.Controllers
 
         }
 
-        public async Task<IActionResult> MyProjects(int? pageNum, string? sortType)
-        {
-            int pageSize = 8;  //Number per page
-            int page = pageNum ?? 1;  //Which page number clicked upon on the page.
-
-            int companyId = User.Identity!.GetCompanyId();
-            string? userId = _userManager.GetUserId(User);
-
-            List<string> sortingTypes = new()
-            {
-                "A - Z",
-                "Z - A",
-                "Priority, High",
-                "Priority, Low",
-
-            };
-
-
-            if (string.IsNullOrEmpty(sortType))
-            {
-                IPagedList<Project> projectsDefault = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).ToPagedList(page, pageSize);
-
-                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
-
-
-                return View(projectsDefault);
-            }
-
-            if (sortType == "A - Z")
-            {
-                IPagedList<Project> projectsAlphabetical = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).OrderBy(p => p.Name).ToPagedList(page, pageSize);
-
-                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
-                ViewData["CurrentSortType"] = sortType;
-
-                return View(projectsAlphabetical);
-            }
-            if (sortType == "Z - A")
-            {
-                IPagedList<Project> projectsAlphabeticalRev = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).OrderByDescending(p => p.Name).ToPagedList(page, pageSize);
-
-                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
-                ViewData["CurrentSortType"] = sortType;
-
-                return View(projectsAlphabeticalRev);
-            }
-            if (sortType == "Priority, High")
-            {
-                IPagedList<Project> projectsDeadline = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).OrderBy(p => p.EndDate).ToPagedList(page, pageSize);
-
-                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
-                ViewData["CurrentSortType"] = sortType;
-
-                return View(projectsDeadline);
-            }
-            if (sortType == "Priority, Low")
-            {
-                IPagedList<Project> projectsDeadlineRev = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).OrderByDescending(p => p.EndDate).ToPagedList(page, pageSize);
-
-                ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
-                ViewData["CurrentSortType"] = sortType;
-
-                return View(projectsDeadlineRev);
-            }
-
-
-
-
-            IPagedList<Project> projects = (await _btProjectService.GetUserProjectsListAsync(companyId, userId)).ToPagedList(page, pageSize);
-
-            ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
-
-
-            return View(projects);
-
-        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]

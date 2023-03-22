@@ -31,6 +31,25 @@
 
     @*@Html.Partial("~/Views/Shared/_vendor_scripts.cshtml")*@
 
+
+    @*Function for js to automatically change to dark mode based on time of day *@
+@*    <script>
+        function updateLayoutMode() {
+            const currentTime = new Date();
+            const currentHour = currentTime.getHours();
+            const htmlElement = document.querySelector('html');
+
+            if (currentHour >= 6 && currentHour < 18) {
+                htmlElement.setAttribute('data-layout-mode', 'light');
+            } else {
+                htmlElement.setAttribute('data-layout-mode', 'dark');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', updateLayoutMode);
+</script>*@
+
+
     @RenderSection("scripts", required: false)
 
 
@@ -42,4 +61,5 @@
  @section scripts
  {
 
+     
  }

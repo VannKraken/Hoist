@@ -1,19 +1,4 @@
-:root {
-    --vk-primary-color: #44195e;
-    --vk-secondary-color: #aad1f1;
-    --vk-tertiary-color: #8faebf;
-    --vk-highlight-color: #f9d877;
-    --vk-nav-toggler-color: var(--vk-highlight-color);
-    --vk-nav-toggler-glow: rgba(250, 225, 120, .55);
-    --vk-dark-color: #0f2029;
-    --vk-light-color: #d2e8f8;
-    --vk-background-color: #e7f2f7;
-    --vk-title-font: 'Bebas Neue', sans-serif;
-    --vk-subtitle-font: 'Fira Sans', sans-serif;
-    --vk-heading-font: 'Bebas Neue', sans-serif;
-    --vk-body-font: 'Roboto', sans-serif;
-    --vk-font-size: 1.2rem;
-    --vk-font-weight: 400;
-    --vk-line-height: 1.5rem;
-    --vk-title-color: #f9d877;
+table.dataTable > thead .sorting:after,
+table.dataTable > thead .sorting:before {
+    display: none;
 }

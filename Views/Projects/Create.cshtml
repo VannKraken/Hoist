@@ -8,7 +8,7 @@
     ViewBag.Title = "Create Project";
     ViewBag.pTitle = "Create Project";
     ViewBag.pageTitle = "Projects";
-    Layout = "_Layout";
+    Layout = "_LayoutDashboard";
 }
 
 @section styles{
@@ -143,7 +143,7 @@
                     return state.text;
                 }
                 var $state = $(
-                    '<span><input type="checkbox" class="mr-2" /> ' + state.text + '</span>'
+                    '<span>' + state.text + '</span>'
                 );
                 return $state;
             }
