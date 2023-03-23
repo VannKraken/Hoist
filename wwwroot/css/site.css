@@ -2,3 +2,7 @@ table.dataTable > thead .sorting:after,
 table.dataTable > thead .sorting:before {
     display: none;
 }
+
+.choices__inner {
+    width: 200px !important;
+}

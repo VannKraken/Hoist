@@ -212,8 +212,8 @@
                                                     <td class="fw-semibold">Assigned To:</td>
                                                     <td>
                                                         <div class="avatar-group">
-                                                            <a href="javascript:void(0);" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" data-bs-original-title="@Model.DeveloperUser.FullName">
-                                                                <img src="@_FileService.ConvertByteArrayToFile(Model.DeveloperUser.ImageFileData, Model.DeveloperUser.ImageFileType, (int)DefaultImage.BTUserImage)" alt="" class="rounded-circle avatar-xs" />
+                                                            <a href="javascript:void(0);" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" data-bs-original-title="@Model.DeveloperUser?.FullName">
+                                                                <img src="@_FileService.ConvertByteArrayToFile(Model.DeveloperUser?.ImageFileData, Model.DeveloperUser?.ImageFileType, (int)DefaultImage.BTUserImage)" alt="" class="rounded-circle avatar-xs" />
                                                             </a>
                                                         </div>
                                                     </td>

@@ -30,27 +30,27 @@
 <div class="row g-4 mb-3">
     @if (isAdmin || isProjectManager)
     {
-        
-    <div class="col-sm-auto">
-        <div>
-            <a href="@Url.Action("Create", "Projects")" class="btn btn-success">
-                <i class="ri-add-line align-bottom me-1"></i> Create
-            </a>
+
+        <div class="col-sm-auto">
+            <div>
+                <a href="@Url.Action("Create", "Projects")" class="btn btn-success">
+                    <i class="ri-add-line align-bottom me-1"></i> Create
+                </a>
+            </div>
         </div>
-    </div>
     }
     <div class="col-sm">
         <div class="d-flex justify-content-sm-end gap-2">
             @*<div class="search-box ms-2">
-                <input type="text" class="form-control" placeholder="Search...">
-                <i class="ri-search-line search-icon"></i>
+            <input type="text" class="form-control" placeholder="Search...">
+            <i class="ri-search-line search-icon"></i>
             </div>*@
 
             <form method="get" asp-action="Index">
-            <select class="form-control w-md" name="sortType" onchange="this.form.submit()" asp-items="ViewBag.SortTypes" data-choices data-choices-search-false>
-                <option value="" selected>Sorting by</option>
-            </select>
-            
+                <select class="form-control w-md"  name="sortType" onchange="this.form.submit()" asp-items="ViewBag.SortTypes" data-choices data-choices-search-false>
+                    <option value="" selected>Sorting by</option>
+                </select>
+
             </form>
         </div>
     </div>
@@ -61,17 +61,18 @@
 <div class="row">
     @foreach (Project project in Model)
     {
-       daysUntilDue = (project.EndDate - DateTime.Now).TotalDays;        
+        daysUntilDue = (project.EndDate - DateTime.Now).TotalDays;
+        int priorityId = project.ProjectPriorityId;
 
         cardBackground = string.Empty;
         headerIcon = string.Empty;
 
-       @if (project.EndDate == null)
+@*        @if (project.EndDate == null)
         {
             cardBackground = "bg-light";
             headerIcon = "bi bi-question-lg text-dark";
         }
-        else if (daysUntilDue >= 8)
+        else if (daysUntilDue > 7)
         {
             cardBackground = "bg-soft-success";
             headerIcon = "bi bi-calendar text-dark fs-20";
@@ -81,10 +82,31 @@
             cardBackground = "bg-warning bg-opacity-50";
             headerIcon = "bi bi-flag-fill text-dark fs-20";
         }
-        else if (daysUntilDue <= 0)
+        else if (daysUntilDue < 1)
         {
             cardBackground = "bg-danger bg-opacity-50";
             headerIcon = "bi bi-exclamation-triangle-fill text-dark fs-20";
+        }*@
+
+        @switch (priorityId)
+        {
+            case 2:
+                cardBackground = "bg-info bg-opacity-75";
+                headerIcon = "bi bi-question-lg text-dark fs-20";
+                break;
+            case 3:
+                cardBackground = "bg-warning bg-opacity-75";
+            headerIcon = "bi bi-calendar text-dark fs-20";
+                break;
+            case 4:
+                cardBackground = "bg-danger bg-opacity-50";
+            headerIcon = "bi bi-flag-fill text-dark fs-20";
+                break;
+            default:
+                cardBackground = "bg-soft-dark" ;
+                headerIcon = "bi bi-exclamation-triangle-fill text-dark fs-20";
+                break;
+
         }
 
         <div class="col-xxl-3 col-sm-6 project-card">
@@ -93,7 +115,7 @@
                 <div class="card-body">
                     <div class="p-3 mt-n3 mx-n3 @cardBackground rounded-top ">
                         <div class="d-flex gap-1 align-items-center justify-content-end my-n2">
-                            
+
                             <div class="dropdown">
                                 <button class="btn btn-link text-muted p-1 mt-n1 py-0 text-decoration-none fs-15"
                                     data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
@@ -132,18 +154,23 @@
                                 <div>
                                     <p class="text-muted mb-1">Start Date</p>
                                     <h5 class="fs-14">@project.StartDate.ToString("dd MMM, yyyy")</h5>
-                                    
+
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div>
                                     <p class="text-muted mb-1">Deadline</p>
                                     <!--This checks the total days between the two dates and then colors the deadline accordingly.-->
+
+                                    
+
+
+
                                     @if (project.EndDate == null)
                                     {
                                         <div class="badge badge-info fs-12">No Deadline Set</div>
                                     }
-                                    else if (daysUntilDue >= 8)
+                                    else if (daysUntilDue > 7)
                                     {
                                         <div class="badge badge-soft-success fs-12">@project.EndDate.ToString("dd MMM, yyyy")</div>
                                     }
@@ -151,7 +178,7 @@
                                     {
                                         <div class="badge badge-soft-warning  fs-12">@project.EndDate.ToString("dd MMM, yyyy")</div>
                                     }
-                                    else if (daysUntilDue <= 0)
+                                    else if (daysUntilDue < 1)
                                     {
                                         <div class="badge bg-danger fs-12">@project.EndDate.ToString("dd MMM, yyyy")</div>
                                     }
@@ -160,47 +187,71 @@
                             </div>
                         </div>
 
-                        <div class="d-flex align-items-center mt-3">
-                            <p class="text-muted mb-0 me-2">Team :</p>
-                            <div class="avatar-group">
-                            @if (project.Members.Count() == 0)
-                            {
-                                <p class="text-muted mb-0 me-2">None Assigned</p>
-                            }
-                            else{
-                                @foreach (BTUser member in project.Members)
-                                {
-                                    if (await _RolesService.IsUserInRoleAsync(member, nameof(BTRoles.ProjectManager)))
+                        <div class="row align-items-center">
+                            <div class=col-4>
+                                <div>
+                                    <p class="text-muted mb-1">Priority</p>
+                                    @switch (priorityId)
                                     {
-                                        <a href="javascript: void(0);" class="avatar-group-item me-3"
-                               data-bs-toggle="tooltip" data-bs-trigger="hover"
-                               data-bs-placement="top" title="PM: @member.FullName">
-                                            <img src="@_FileService.ConvertByteArrayToFile(member.ImageFileData, member.ImageFileType, (int)DefaultImage.BTProjectManager)"
-                                     class="rounded-circle avatar-xxs">
-                                        </a>
+                                        case 2:
+                                            <div class=" badge badge-pill badge-soft-info fs-14">@project.ProjectPriority.Name</div>
+                                            break;
+                                        case 3:
+                                            <div class=" badge badge-pill badge-soft-warning fs-14">@project.ProjectPriority.Name</div>
+                                            break;
+                                        case 4:
+                                            <div class=" badge badge-pill badge-soft-danger fs-14">@project.ProjectPriority.Name</div>
+                                            break;
+                                        default:
+                                            <div class=" badge badge-pill badge-soft-dark fs-14">@project.ProjectPriority.Name</div>
+                                            break;
+
                                     }
-                                }
-                                @foreach (BTUser member in project.Members)
-                                {
-                                   
+                                </div>
+                            </div>
+                            <div class="d-flex col-8  align-items-center mt-3">
+                                <p class="text-muted mb-0 me-2">Team :</p>
+                                <div class="avatar-group">
+                                    @if (project.Members.Count() == 0)
+                                    {
+                                        <p class=" text-muted mb-0 me-2">None Assigned</p>
+                                    }
+                                    else
+                                    {
+                                        @foreach (BTUser member in project.Members)
+                                        {
+                                            if (await _RolesService.IsUserInRoleAsync(member, nameof(BTRoles.ProjectManager)))
+                                            {
+                                                <a href="javascript: void(0);" class="avatar-group-item me-3"
+                                   data-bs-toggle="tooltip" data-bs-trigger="hover"
+                                   data-bs-placement="top" title="PM: @member.FullName">
+                                                    <img src="@_FileService.ConvertByteArrayToFile(member.ImageFileData, member.ImageFileType, (int)DefaultImage.BTProjectManager)"
+                                         class="rounded-circle avatar-xxs">
+                                                </a>
+                                            }
+                                        }
+                                        @foreach (BTUser member in project.Members)
+                                        {
 
 
-                                    if (!await _RolesService.IsUserInRoleAsync(member, nameof(BTRoles.ProjectManager)))
-                                    {
-                                        <a href="javascript: void(0);" class="avatar-group-item"
-                               data-bs-toggle="tooltip" data-bs-trigger="hover"
-                               data-bs-placement="top" title="@member.FullName">
-                                            <img src="@_FileService.ConvertByteArrayToFile(member.ImageFileData, member.ImageFileType, (int)DefaultImage.BTUserImage)"
-                                     class="rounded-circle avatar-xxs">
-                                        </a>
+
+                                            if (!await _RolesService.IsUserInRoleAsync(member, nameof(BTRoles.ProjectManager)))
+                                            {
+                                                <a href="javascript: void(0);" class="avatar-group-item"
+                                   data-bs-toggle="tooltip" data-bs-trigger="hover"
+                                   data-bs-placement="top" title="@member.FullName">
+                                                    <img src="@_FileService.ConvertByteArrayToFile(member.ImageFileData, member.ImageFileType, (int)DefaultImage.BTUserImage)"
+                                         class="rounded-circle avatar-xxs">
+                                                </a>
+                                            }
+                                        }
                                     }
-                                }
-                                }
-                                
+
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
+
 
                 </div>
                 <!-- end card body -->
@@ -209,18 +260,17 @@
             <!-- end card -->
         </div>
         <!-- end col -->
-        
     }
     <div class="mt-3">
-        
-            <div>
-                <p class="mb-sm-0 text-muted">
-                    Showing <span class="fw-semibold">@((Model.PageNumber - 1) * Model.PageSize + 1)</span> to <span class="fw-semibold">@Math.Min(Model.PageNumber * Model.PageSize, totalProjects)</span> of <span class="fw-semibold text-decoration-underline">@totalProjects</span> entries
-                </p>
-            </div>
-        
+
+        <div>
+            <p class="mb-sm-0 text-muted">
+                Showing <span class="fw-semibold">@((Model.PageNumber - 1) * Model.PageSize + 1)</span> to <span class="fw-semibold">@Math.Min(Model.PageNumber * Model.PageSize, totalProjects)</span> of <span class="fw-semibold text-decoration-underline">@totalProjects</span> entries
+            </p>
+        </div>
+
         @*<div>
-            Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+        Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
         </div>*@
 
         <!-- We use the a ViewData to grab the current sort type based on the one sent back from the form above.-->
@@ -243,10 +293,6 @@
     </div>
 </div>
 <!-- end row -->
-
-
-
-
 @*<div class="row g-0 text-center text-sm-start align-items-center mb-4">
     <div class="col-sm-6">
         <div>
@@ -311,7 +357,6 @@
 </div>
 
 <!-- /.modal -->
-
 @section scripts{
     <!-- project list init -->
     <script src="~/assets/js/pages/project-list.init.js"></script>
@@ -323,39 +368,36 @@
     <script>
 
         let selectedProjectId;
-        function setProjectId(projectId)
-        {           
-         selectedProjectId = projectId;   
+        function setProjectId(projectId) {
+            selectedProjectId = projectId;
         }
-   
-        function archiveProject()
-        {
+
+        function archiveProject() {
             //String interpolation to create the url needed to handle this particular project
             let url = `/Projects/Archive/${selectedProjectId}`;
 
             //Sending an AJAX request to the server
-                fetch(url, {
-                    method:'POST',
-                    headers: {
-                        'Content-Type' : 'application/json',
-                        'RequestVerifactionToken' : document.getElementsByName('__RequestVerificationToken')[0].value
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerifactionToken': document.getElementsByName('__RequestVerificationToken')[0].value
                 },
             })
-            .then(response => {
-                 if(response.ok) {
-                     //Handling the success by reloading the page
-                 location.reload()
-                 }
-                 else
-                 {
-                     //Handling the error
-                     console.error('Error when archiving project:', response.statusText);
-                 }
-            })
-            .catch(error => {
-                //Handling network errors
-                console.error('Network error: ', error);
-            });
+                .then(response => {
+                    if (response.ok) {
+                        //Handling the success by reloading the page
+                        location.reload()
+                    }
+                    else {
+                        //Handling the error
+                        console.error('Error when archiving project:', response.statusText);
+                    }
+                })
+                .catch(error => {
+                    //Handling network errors
+                    console.error('Network error: ', error);
+                });
         }
     </script>
 
