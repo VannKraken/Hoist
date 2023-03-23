@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace Hoist.Controllers
 {
 
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class CompaniesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -178,9 +178,20 @@ namespace Hoist.Controllers
 
         private bool CompanyExists(int id)
         {
-          return (_context.Companies?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Companies?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
+
+        [AllowAnonymous]
+        public async Task<IActionResult> Info()
+        {
+            return View();
+        }
+        [AllowAnonymous]
+        public async Task<IActionResult> Members()
+        {
+            return View();
+        }
 
 
         #region Manage User Roles

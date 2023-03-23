@@ -13,6 +13,8 @@ namespace Hoist.Services.Interfaces
 
         public  Task<List<Notification>> GetMemberNotifications(string? userId, int? companyId);
 
+        public Task UpdateMemberAsync(IFormFile imageFile, BTUser member);
+
 
 
 

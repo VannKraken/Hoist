@@ -13,7 +13,7 @@ namespace Hoist.Services
         #endregion
 
         #region Convert Byte Array to File
-        public string ConvertByteArrayToFile(byte[] fileData, string extension, int? imageType)
+        public string ConvertByteArrayToFile(byte[]? fileData, string? extension, int? imageType)
         {
             if ((fileData == null || fileData.Length == 0))
             {

@@ -68,13 +68,14 @@
                             </li>
                             @if (isAdmin || isProjectManager)
                             {
-                             <li class="nav-item">
-                                <a href="@Url.Action("ArchivedProjects", "Projects")" class="nav-link" data-key="t-chat"> Archived Projects </a>
-                            </li>   
+                                <li class="nav-item">
+                                    <a href="@Url.Action("ArchivedProjects", "Projects")" class="nav-link" data-key="t-chat"> Archived Projects </a>
+                                </li>
                             }
                         </ul>
 
                     </div>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarLayouts" data-bs-toggle="collapse" role="button"
                        aria-expanded="false" aria-controls="sidebarLayouts">
@@ -83,32 +84,48 @@
                     <div class="collapse menu-dropdown" id="sidebarLayouts">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="@Url.Action("Index", "Tickets")"  class="nav-link" data-key="t-horizontal">All Tickets</a>
+                                <a href="@Url.Action("Index", "Tickets")" class="nav-link" data-key="t-horizontal">All Tickets</a>
                             </li>
                             <li class="nav-item">
-                                <a href="@Url.Action("MyTickets", "Tickets")"  class="nav-link" data-key="t-detached">My Tickets</a>
+                                <a href="@Url.Action("MyTickets", "Tickets")" class="nav-link" data-key="t-detached">My Tickets</a>
                             </li>
-                                @if (isAdmin || isProjectManager)
-                                {
+                            @if (isAdmin || isProjectManager)
+                            {
                                 <li class="nav-item">
                                     <a href="@Url.Action("ArchivedTickets", "Tickets")" class="nav-link" data-key="t-detached">Archived Tickets</a>
                                 </li>
-                                }
+                            }
 
                         </ul>
                     </div>
                 </li>
-                
-                    @if (isAdmin)
-                    {
-                        
-                    <li class="nav-item">
-                    <a class="nav-link menu-link pe-0" href="@Url.Action( "Create", "Invites")" role="button"
-                       aria-expanded="false" aria-controls="sidebarDashboards">
-                        <i class="ri-mail-add-line"></i> <span>Invite to Company</span>
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarApps" data-bs-toggle="collapse"
+                       role="button" aria-expanded="false" aria-controls="sidebarApps">
+                        <i class="ri-pages-line"></i> <span data-key="t-apps">Company</span>
                     </a>
+                    <div class="collapse menu-dropdown" id="sidebarApps">
+                        <ul class="nav nav-sm flex-column">
+                            @if (isAdmin)
+                            {
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Create", "Invites")" class="nav-link" data-key="t-chat"> Invite Member </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="@Url.Action("ManageUserRoles", "Companies")" class="nav-link" data-key="t-chat"> Manage Roles </a>
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <a href="@Url.Action("Info", "Companies")" class="nav-link" data-key="t-calendar"> Company Info </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="@Url.Action("Members", "Companies")" class="nav-link" data-key="t-chat"> Company Members </a>
+                            </li>
+                        </ul>
+
+                    </div>
                 </li>
-                    }
+
                 <!-- end Dashboard Menu -->
 
                 <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-pages">Pages</span></li>

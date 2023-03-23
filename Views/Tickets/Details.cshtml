@@ -154,7 +154,7 @@
                                             <div class="row g-3">
                                                 <div class="col-lg-12">
                                                     <label for="exampleFormControlTextarea1" class="form-label">Leave a Comment</label>
-                                                    <textarea class="form-control bg-light border-light" id="exampleFormControlTextarea1" rows="3" name="Comment" placeholder="Thoughts?"></textarea>
+                                                    <textarea class="form-control bg-light border-light editor" id="ckeditor-classic"  name="Comment" placeholder="Thoughts?"></textarea>
                                                 </div>
                                                 <div class="col-lg-12 text-end">
                                                     <input type="submit" value="Post Comment" class="btn btn-success"/>
@@ -325,6 +325,11 @@
 
                                     @foreach (TicketAttachment attachment in Model.Attachments)
                                     {
+                                        int fileSizeInBytes = attachment.FileData.Length;
+                                        double fileSizeInKilobytes = fileSizeInBytes / 1024.0;
+                                        double fileSizeInMegaBytes = fileSizeInKilobytes / 1024.0;
+
+
                                         <div class="d-flex align-items-center border border-dashed p-2 rounded">
                                             <div class="flex-shrink-0 avatar-sm">
                                                 <div class="avatar-title bg-light rounded">
@@ -333,7 +338,7 @@
                                             </div>
                                             <div class="flex-grow-1 ms-3">
                                                 <h6 class="mb-1"><a href="javascript:void(0);">@attachment.FileName</a></h6>
-                                                <small class="text-muted">3.2 MB</small>
+                                                <small class="text-muted">@Math.Floor(fileSizeInKilobytes) KB</small>
                                             </div>
                                             <div class="hstack gap-3 fs-16">
                                                 <a asp-action="ShowFile" asp-controller="Tickets" asp-route-Id="@attachment.Id" class="text-muted"><i class="ri-download-2-line"></i></a>
@@ -399,11 +404,30 @@
         <script src="~/assets/js/pages/ticketdetail.init.js"></script>
     <script src="~/assets/libs/swiper/swiper-bundle.min.js"></script>
 
-    <script src="~/assets/js/pages/timeline.init.js"></script>
+     <script src="~/assets/libs/ckeditor/ckeditor5-build-classic/build/ckeditor.js"></script>
+
+    <!-- dropzone js -->
+    <script src="~/assets/libs/dropzone/dropzone-min.js"></script>
+    <!-- project-create init -->
+    <script src="~/assets/js/pages/project-create.init.js"></script>
 
     <!-- App js -->
     <script src="~/assets/js/app.js"></script>
-}
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- multi.js -->
+    <script src="~/assets/libs/multi.js/multi.min.js"></script>
+    <!-- autocomplete js -->
+    <script src="~/assets/libs/tarekraafat/autocomplete.js/autoComplete.min.js"></script>
+
+    <!-- init js -->
+    <script src="~/assets/js/pages/form-advanced.init.js"></script>
+
+    <script src="~/assets/js/pages/timeline.init.js"></script>
+    }
+
 
 @*<h1>Details</h1>
 

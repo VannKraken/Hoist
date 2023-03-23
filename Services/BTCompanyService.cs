@@ -8,10 +8,12 @@ namespace Hoist.Services
     public class BTCompanyService : IBTCompanyService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IBTFileService _btFileService;
 
-        public BTCompanyService(ApplicationDbContext context) 
-        { 
-            _context = context; 
+        public BTCompanyService(ApplicationDbContext context, IBTFileService btFileService)
+        {
+            _context = context;
+            _btFileService = btFileService;
         }
 
         public async Task<Company> GetEverythingForCompanyAsync(int? companyId)
@@ -83,6 +85,20 @@ namespace Hoist.Services
                 .FirstOrDefaultAsync(u => u.Id == userId && u.CompanyId == companyId);
 
             return member;
+        }
+
+        public async Task UpdateMemberAsync(IFormFile imageFile, BTUser member)
+        {
+            if (imageFile != null)
+            {
+                member.ImageFileData = await _btFileService.ConvertFileToByteArrayAsync(imageFile);
+                member.ImageFileType = member.ImageFormFile?.ContentType;
+            }
+
+
+
+            _context.Users.Update(member);
+            await _context.SaveChangesAsync();
         }
     }
 }
