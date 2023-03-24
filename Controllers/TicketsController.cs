@@ -31,9 +31,10 @@ namespace Hoist.Controllers
         private readonly IBTRolesService _btRolesService;
         private readonly IBTTicketHistoryService _btTicketHistoryService;
         private readonly IBTNotifications _btNotificationsService;
+        private readonly IBTCompanyService _btCompanyService;
         private readonly ApplicationDbContext _context;
 
-        public TicketsController(UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, IBTFileService btFileService, IBTTicketService btTicketService, IBTProjectService btProjectService, IBTRolesService btRolesService, IBTTicketHistoryService btTicketHistoryService, IBTNotifications btNotificationsService, ApplicationDbContext context)
+        public TicketsController(UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, IBTFileService btFileService, IBTTicketService btTicketService, IBTProjectService btProjectService, IBTRolesService btRolesService, IBTTicketHistoryService btTicketHistoryService, IBTNotifications btNotificationsService, ApplicationDbContext context, IBTCompanyService btCompanyService)
         {
 
             _userManager = userManager;
@@ -45,6 +46,7 @@ namespace Hoist.Controllers
             _btTicketHistoryService = btTicketHistoryService;
             _btNotificationsService = btNotificationsService;
             _context = context;
+            _btCompanyService = btCompanyService;
         }
 
         // GET: Tickets
@@ -59,30 +61,7 @@ namespace Hoist.Controllers
 
 
 
-    //    Tabulator
-    //    public IActionResult TicketData()
-    //    {
-    //        var data = _context.Tickets.Include(t => t.DeveloperUser)
-    //                                   .Include(t => t.Project)
-    //                                   .Include(t => t.SubmitterUser)
-    //                                   .Include(t => t.TicketPriority)
-    //                                   .Include(t => t.TicketStatus)
-    //                                   .Include(t => t.TicketType)
-    //                                   .Select(t => new
-    //                                   {
-    //                                       title = t.Title,
-    //                                       description = t.Description.Truncate(40),
-    //                                       submitter = t.SubmitterUser!.FullName,
-    //                                       developer = t.DeveloperUser!.FullName,
-    //                                       type = t.TicketType.Name,
-    //                                       status = t.TicketStatus.Name,
-    //                                       priority = t.TicketPriority.Name,
-    //                                       created = t.Created.ToString("yyyy/MM/dd"),
-    //                                       id = t.Id.ToString()
-    //                                   }).ToList();
 
-    //        return new JsonResult(data);
-    //}
 
     // GET: Tickets/Details/5
     public async Task<IActionResult> Details(int? id)
@@ -160,8 +139,7 @@ namespace Hoist.Controllers
             return View();
         }
 
-        //public async Task<IActionResult> CreateTicketForProject()
-        //{ }
+      
 
         // POST: Tickets/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -262,10 +240,21 @@ namespace Hoist.Controllers
             return View(ticket);
         }
 
+        
         // GET: Tickets/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            //Check for user role
+            //Check for submitter id
+
             int companyId = User.Identity.GetCompanyId();
+            string userId = _userManager.GetUserId(User);
+
+            BTUser user = await _btCompanyService.GetMemberAsync(userId, companyId);
+
+            
+
+
             if (id == null)
             {
                 return NotFound();

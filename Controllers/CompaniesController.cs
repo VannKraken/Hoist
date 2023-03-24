@@ -19,7 +19,7 @@ using X.PagedList;
 namespace Hoist.Controllers
 {
 
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public class CompaniesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -183,16 +183,17 @@ namespace Hoist.Controllers
         }
 
 
-        
+        [Authorize]
         public async Task<IActionResult> Info()
         {
             int companyId = User.Identity.GetCompanyId();
 
-            Company company =  await _btCompanyService.GetCompanyInfo(companyId);
+            Company company = await _btCompanyService.GetCompanyInfo(companyId);
 
             return View(company);
         }
-       
+
+        [Authorize]
         public async Task<IActionResult> Members(int? pageNum)
         {
             int pageSize = 20;  //Number per page
@@ -201,7 +202,7 @@ namespace Hoist.Controllers
             int companyId = User.Identity!.GetCompanyId();
             string? userId = _userManager.GetUserId(User);
 
-           
+
 
             IPagedList<BTUser> members = (await _btCompanyService.GetMembersAsync(companyId)).ToPagedList(page, pageSize);
 
@@ -210,9 +211,10 @@ namespace Hoist.Controllers
         }
 
 
-        
+
 
         #region Manage User Roles
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> ManageUserRoles()
         {
@@ -250,7 +252,7 @@ namespace Hoist.Controllers
 
         }
 
-
+        [Authorize(Roles ="Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ManageUserRoles(ManageUserRolesViewModel viewModel)

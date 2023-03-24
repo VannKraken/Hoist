@@ -7,6 +7,7 @@ namespace Hoist.Services.Interfaces
 
 
         public Task AddNotificationAsync(Notification? notification);
+       
         public Task AdminNotificationAsync(Notification? notification, int? companyId);
         public Task<List<Notification>> GetNotificationByUserId(string? userId);
         public Task<bool> SendAdminEmailNotificationAsync(Notification? notification, string? emailSubject, int? companyId);
