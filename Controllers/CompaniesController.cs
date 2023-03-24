@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Identity;
 using Hoist.Services;
 using Hoist.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
+using X.PagedList;
 
 namespace Hoist.Controllers
 {
@@ -182,17 +183,34 @@ namespace Hoist.Controllers
         }
 
 
-        [AllowAnonymous]
+        
         public async Task<IActionResult> Info()
         {
-            return View();
+            int companyId = User.Identity.GetCompanyId();
+
+            Company company =  await _btCompanyService.GetCompanyInfo(companyId);
+
+            return View(company);
         }
-        [AllowAnonymous]
-        public async Task<IActionResult> Members()
+       
+        public async Task<IActionResult> Members(int? pageNum)
         {
-            return View();
+            int pageSize = 20;  //Number per page
+            int page = pageNum ?? 1;  //Which page number clicked upon on the page.
+
+            int companyId = User.Identity!.GetCompanyId();
+            string? userId = _userManager.GetUserId(User);
+
+           
+
+            IPagedList<BTUser> members = (await _btCompanyService.GetMembersAsync(companyId)).ToPagedList(page, pageSize);
+
+
+            return View(members);
         }
 
+
+        
 
         #region Manage User Roles
         [HttpGet]

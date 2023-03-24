@@ -1,4 +1,7 @@
-﻿@{
+﻿@page
+@model LoginDemoModel
+
+@{
     ViewBag.Title = "Demo Lander";
     Layout = null;
 }
@@ -55,7 +58,6 @@
                                                             <p class="fs-15 fst-italic">" I give this 5 stars. <i class="bi bi-star-fill text-warning"></i><i class="bi bi-star-fill text-warning"></i> <i class="bi bi-star-fill text-warning"></i> <i class="bi bi-star-fill text-warning"></i> <i class="bi bi-star-fill text-warning"></i> " </p>
                                                         </div>
                                                     </div>
-
                                                 </div>
                                                 <!-- end carousel -->
                                             </div>
@@ -68,11 +70,22 @@
                                     <div class="p-lg-5 p-4">
                                         <div>
                                             <h5 class="text-primary">Welcome to <span class="fs-20">Hoist</span></h5>
-                                            <p class="text-muted">Introducing Hoist, a cutting-edge project and ticket management web application that streamlines your company's workflow. With its powerful ASP.NET MVC and C# backend, Hoist is built to ensure efficiency in tracking projects and handling tickets. The user-friendly interface, designed with JavaScript and Bootstrap, makes navigation a breeze. Raise the Flag and take your project management to new heights with Hoist - the ultimate solution for seamless collaboration and productivity.</p>
+                                            <p class="text-muted">Try one of our demo accounts below.</p>
                                         </div>
 
                                         <div class="mt-4">
-                                            <a asp-area="Identity" asp-page="/Account/LoginDemo" style="width:inherit;height:min-content" class="btn btn-info mt-2">Try it out.</a>
+                                            <form class="" id="demo-accounts" method="post">
+                                                <div class="form-group">
+                                                    <div class="row">
+                                                        <div class="col-12 btn-block w-100">
+                                                            <button type="submit" style="width:inherit;height:min-content" class="btn btn-info mt-2" name="demoEmail" value="DemoAdminEmail">Demo Admin</button>
+                                                            <button type="submit" style="width:inherit;height:min-content" class="btn btn-info mt-2" name="demoEmail" value="DemoPMEmail">Demo PM</button>
+                                                            <button type="submit" style="width:inherit;height:min-content" class="btn btn-info mt-2" name="demoEmail" value="DemoDevEmail">Demo Developer</button>
+                                                            <button type="submit" style="width:inherit;height:min-content" class="btn btn-info mt-2" name="demoEmail" value="DemoSubEmail">Demo Submitter</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
 
                                         </div>
 

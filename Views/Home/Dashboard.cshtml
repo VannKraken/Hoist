@@ -36,12 +36,12 @@
     // Gather unassigned members and then filter the admins out to get a count of employees not assigned to a project.
     IEnumerable<BTUser> unassignedMembers = Model.Members
                                                  .Where(m => m.Projects
-                                                                .Where(p => p.Archived == false).Count() == 0 );
+                                                                .Where(p => p.Archived == false).Count() == 0);
 
 
-    
 
-    
+
+
 
 
     IEnumerable<Project> projects = Model.Projects.ToList();
@@ -153,7 +153,9 @@
                         </a>
                     </li><!-- end -->
                     <li class="list-group-item px-0">
-                        <div class="d-flex">
+                        <a asp-controller="companies" asp-action="CompanyMembers">
+
+                            <div class="d-flex">
                             <div class="flex-shrink-0 avatar-xs">
                                 <span class="avatar-title bg-soft-warning p-1 rounded-circle">
                                     <i class="bi bi-person-workspace text-dark"></i>
@@ -170,6 +172,8 @@
                                 <p class="text-success fs-12 mb-0">@unassignedMembers.Count()</p>
                             </div>
                         </div>
+
+                        </a>
                     </li><!-- end -->
                     <li class="list-group-item px-0 pb-0">
                         <div class="d-flex text-center">
@@ -203,7 +207,7 @@
                         <div class="card-body">
                             <table id="scroll-vertical_wrapper" class="table table-bordered dt-responsive nowrap align-middle mdl-data-table" style="width:100%">
                                 <thead>
-                                        <tr>
+                                    <tr>
                                         <th>Sent</th>
                                         <th>Type</th>
                                         <th>Title</th>
@@ -212,32 +216,32 @@
                                         <th></th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    @foreach(Notification notification in notifications)
+                                <tbody >
+                                    @foreach (Notification notification in notifications.Where(n => n.HasBeenViewed == false).OrderByDescending(n => n.Created))
                                     {
-                                    <tr>
-                                        <td>@notification.Created.ToShortDateString()</td>
-                                        <td>@notification.NotificationType.Name</td>
-                                        <td>@notification.Title</td>
-                                        <td><a href="#!">@notification.Message</a></td>
-                                        <td>@notification.Sender.FullName</td>
-                                        <td>
-                                                <button class="btn btn-sm btn-soft-info"><i class="bi bi-eye-fill"></i></button>
-                                        </td>
-                                        
-                                    </tr>
+                                        <tr>
+                                            <td>@notification.Created.ToShortDateString()</td>
+                                            <td>@notification.NotificationType.Name</td>
+                                            <td>@notification.Title</td>
+                                            <td><a href="#!">@notification.Message</a></td>
+                                            <td>@notification.Sender.FullName</td>
+                                            <td>
+                                                <a type="button" asp-action="Viewed" asp-controller="Notifications" asp-route-id="@notification.Id"  class="btn btn-sm btn-soft-info"><i class="bi bi-eye-fill"></i></a>
+                                            </td>
+
+                                        </tr>
                                     }
-                                    </tbody>
+                                </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
 
-    </div><!-- end col -->
-</div><!-- end row -->
-@section scripts{
-    <!-- apexcharts -->
+        </div><!-- end col -->
+    </div><!-- end row -->
+    @section scripts{
+        <!-- apexcharts -->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 
         <!--datatable js-->
@@ -253,21 +257,25 @@
 
         <script src="~/assets/js/pages/datatables.init.js"></script>
 
-    <!-- Swiper Js -->
-    <script src="~/assets/libs/swiper/swiper-bundle.min.js"></script>
+        <!-- Swiper Js -->
+        <script src="~/assets/libs/swiper/swiper-bundle.min.js"></script>
 
-    <!-- CRM js -->
-    <script src="~/assets/js/pages/dashboard-crypto.init.js"></script>
+        <!-- CRM js -->
+        <script src="~/assets/js/pages/dashboard-crypto.init.js"></script>
 
-    <!-- App js -->
-    <script src="~/assets/js/app.js"></script>
+        <!-- App js -->
+        <script src="~/assets/js/app.js"></script>
 
         <script>
             $(document).ready(function () {
-                f
-                $('#scroll-vertical_wrapper').DataTable();
+                $('#scroll-vertical_wrapper').DataTable({
+                    scrollY: '300px', // Set the height of the scrollable area
+                    scrollCollapse: true, // Optionally, enable or disable collapsing the table when the displayed data fits within the given height
+                    paging: true, // Optionally, disable pagination if you want to show all the data in the scrollable area
+                    order: [[0, 'desc']]
+                });
             });
         </script>
 
 
-}
+    }

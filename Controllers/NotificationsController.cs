@@ -186,6 +186,25 @@ namespace Hoist.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public async Task<IActionResult> Viewed(int id)
+        {
+            if (id == null)
+            {
+                   return NotFound();   
+            }
+
+            Notification? notification = await _context.Notifications.FirstOrDefaultAsync(n => n.Id == id);
+
+            notification.HasBeenViewed = true;
+
+            _context.Update(notification);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Dashboard", "Home");
+
+
+        }
+
         private bool NotificationExists(int id)
         {
           return (_context.Notifications?.Any(e => e.Id == id)).GetValueOrDefault();

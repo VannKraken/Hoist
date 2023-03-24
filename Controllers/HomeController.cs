@@ -24,6 +24,11 @@ namespace Hoist.Controllers
         {
             return View();
         }
+
+        public IActionResult LoginDemo()
+        {
+            return View();
+        }
         public async Task<IActionResult> Dashboard()
         {
 

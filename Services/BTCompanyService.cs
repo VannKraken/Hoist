@@ -16,6 +16,23 @@ namespace Hoist.Services
             _btFileService = btFileService;
         }
 
+        public async Task<Company> GetCompanyInfo(int? companyId)
+        {
+            try
+            {
+                Company? company = await _context.Companies.Include(c => c.Members)
+                                                           .Include(c => c.Projects)
+                                                           .FirstOrDefaultAsync(c => c.Id == companyId);
+
+                return company;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
         public async Task<Company> GetEverythingForCompanyAsync(int? companyId)
         {
 
@@ -57,11 +74,11 @@ namespace Hoist.Services
                                                  
         }
 
-        public async Task<List<BTUser>> GetMembersAsync(int? companyId)
+        public async Task<IEnumerable<BTUser>> GetMembersAsync(int? companyId)
         {
 
 
-            List<BTUser> members = await _context.Users.Where(u => u.CompanyId == companyId)
+            IEnumerable<BTUser> members = await _context.Users.Where(u => u.CompanyId == companyId)
                                                                .Include( u => u.Projects)
                                                                .ThenInclude(p => p.Tickets)
                                                                .ToListAsync();

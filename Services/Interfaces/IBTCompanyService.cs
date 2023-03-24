@@ -9,7 +9,7 @@ namespace Hoist.Services.Interfaces
 
         public Task<BTUser> GetMemberAsync(string? userId, int? companyId);
 
-        public Task<List<BTUser>> GetMembersAsync(int? companyId);
+        public Task<IEnumerable<BTUser>> GetMembersAsync(int? companyId);
 
         public  Task<List<Notification>> GetMemberNotifications(string? userId, int? companyId);
 
@@ -17,7 +17,7 @@ namespace Hoist.Services.Interfaces
 
 
 
-
+        public Task<Company> GetCompanyInfo(int? companyId);
 
     }
 }
