@@ -7,7 +7,7 @@ namespace Hoist.Services.Interfaces
         #region Ticket CRUD
         public Task AddTicketAsync(Ticket ticket);
 
-        public Task<Ticket> GetTicketAsync(int? ticketId);
+        public Task<Ticket> GetTicketAsync(int? ticketId, int? companyId);
         public Task<Ticket> GetTicketSnapshotAsync(int? ticketId, int? companyId);
 
         public Task<IEnumerable<Ticket>> GetCompanyTicketsAsync(int? companyId);

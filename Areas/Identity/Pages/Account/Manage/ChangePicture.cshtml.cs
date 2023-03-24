@@ -13,25 +13,13 @@ namespace Hoist.Areas.Identity.Pages.Account.Manage
     public class ChangePictureModel : PageModel
     {
         private readonly UserManager<BTUser> _userManager;
-        private readonly SignInManager<BTUser> _signInManager;
-  
-        private readonly ILogger<ChangePasswordModel> _logger;
-        private readonly IBTFileService _btFileService;
         private readonly IBTCompanyService _btCompanyService;
 
         public ChangePictureModel(
             UserManager<BTUser> userManager,
-            SignInManager<BTUser> signInManager,
-            ILogger<ChangePasswordModel> logger,
-            IBTFileService btFileService,
-         
             IBTCompanyService btCompanyService)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
-            _logger = logger;
-            _btFileService = btFileService;
-
             _btCompanyService = btCompanyService;
         }
 
@@ -40,7 +28,7 @@ namespace Hoist.Areas.Identity.Pages.Account.Manage
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         [BindProperty]
-        public InputModel Input { get; set; } = new InputModel();
+        public InputModel Input { get; set; }
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -68,22 +56,10 @@ namespace Hoist.Areas.Identity.Pages.Account.Manage
             public virtual IFormFile? ImageFormFile { get; set; }
         }
 
-        private async Task LoadAsync(BTUser user)
-        {
-            byte[]? imageData = user.ImageFileData;
-            string? imageType = user.ImageFileType;
-
-
-            Input = new InputModel
-            { 
-                ImageFileType = imageType,
-                ImageFileData = imageData
-            };
-        }
 
         public async Task<IActionResult> OnGetAsync()
         {
-            string? userId =  _userManager.GetUserId(User);
+            string? userId = _userManager.GetUserId(User);
 
             int companyId = User.Identity.GetCompanyId();
 
@@ -103,6 +79,21 @@ namespace Hoist.Areas.Identity.Pages.Account.Manage
             ViewData["CurrentUser"] = user;
             return Page();
         }
+
+        private async Task LoadAsync(BTUser user)
+        {
+            byte[]? imageData = user.ImageFileData;
+            string? imageType = user.ImageFileType;
+
+
+            Input = new InputModel
+            { 
+                ImageFileType = imageType,
+                ImageFileData = imageData
+            };
+        }
+
+
 
         public async Task<IActionResult> OnPostAsync(IFormFile imageFormFile)
         {

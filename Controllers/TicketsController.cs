@@ -86,13 +86,15 @@ namespace Hoist.Controllers
 
     // GET: Tickets/Details/5
     public async Task<IActionResult> Details(int? id)
+
         {
+            int companyId = User.Identity.GetCompanyId();  
             if (id == null)
             {
                 return NotFound();
             }
 
-            Ticket? ticket = await _btTicketService.GetTicketAsync(id);
+            Ticket? ticket = await _btTicketService.GetTicketAsync(id, companyId);
             if (ticket == null)
             {
                 return NotFound();
@@ -108,14 +110,30 @@ namespace Hoist.Controllers
             int companyId = User.Identity!.GetCompanyId();
             BTUser? btUser = await _userManager.GetUserAsync(User);
 
+            bool isAdmin = await _btRolesService.IsUserInRoleAsync(btUser, nameof(BTRoles.Admin));
+
             IEnumerable<Project> projects = await _btProjectService.GetProjectsAsync(companyId);
+            IEnumerable<Project> userProjects = projects.Where(p => p.Members.Any(m => m.Id == btUser.Id));
+
+            if (isAdmin)
+            {
+                ViewData["ProjectId"] = new SelectList(projects, "Id", "Name");
+            }
+            else
+            {
+                ViewData["ProjectId"] = new SelectList(userProjects, "Id", "Name");
+            }
+
+
+
+
             IEnumerable<TicketPriority> priorities = (await _btTicketService.GetTicketPriorities()).OrderBy(p => p.Id);
 
             IEnumerable<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
 
 
 
-            ViewData["ProjectId"] = new SelectList(projects, "Id", "Name");
+            
             ViewData["DevelopersId"] = new SelectList(developers, "Id", "FullName");
             ViewData["TicketPriorityId"] = new SelectList(priorities.OrderBy(p => p.Id), "Id", "Name");
             ViewData["TicketStatusId"] = new SelectList(await _btTicketService.GetTicketStatuses(), "Id", "Name");
@@ -189,7 +207,7 @@ namespace Hoist.Controllers
 
                         TicketId = ticket.Id,
                         Title = "New Ticket Added",
-                        Message = $"New Ticket: `{ticket.Title}` was {user.FullName} ",
+                        Message = $"New Ticket: `{ticket.Title}` by {user.FullName} ",
                         Created = DataUtility.GetPostGresDate(DateTime.Now),
                         ProjectId= ticket.ProjectId,
                         SenderId = user.Id,
@@ -247,19 +265,20 @@ namespace Hoist.Controllers
         // GET: Tickets/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            int companyId = User.Identity.GetCompanyId();
             if (id == null)
             {
                 return NotFound();
             }
 
-            Ticket? ticket = await _btTicketService.GetTicketAsync(id);
+            Ticket? ticket = await _btTicketService.GetTicketAsync(id, companyId);
             if (ticket == null)
             {
                 return NotFound();
             }
 
 
-            int companyId = User.Identity!.GetCompanyId();
+            
             BTUser? btUser = await _userManager.GetUserAsync(User);
 
             IEnumerable<Project> projects = await _btProjectService.GetProjectsAsync(companyId);
@@ -368,12 +387,13 @@ namespace Hoist.Controllers
         // GET: Tickets/Delete/5
         public async Task<IActionResult> Archive(int? id)
         {
+            int companyId = User.Identity.GetCompanyId();
             if (id == null)
             {
                 return NotFound();
             }
 
-            Ticket? ticket = await _btTicketService.GetTicketAsync(id);
+            Ticket? ticket = await _btTicketService.GetTicketAsync(id, companyId);
             if (ticket == null)
             {
                 return NotFound();
@@ -387,8 +407,9 @@ namespace Hoist.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ArchiveConfirmed(int id)
         {
+            int companyId = User.Identity.GetCompanyId();
 
-            Ticket? ticket = await _btTicketService.GetTicketAsync(id);
+            Ticket? ticket = await _btTicketService.GetTicketAsync(id, companyId);
             await _btTicketService.ArchiveTicketAsync(ticket);
             return RedirectToAction(nameof(Index));
         }
@@ -400,6 +421,7 @@ namespace Hoist.Controllers
         {
 
             int ticketId = ticketComment.TicketId;
+            int companyId = User.Identity.GetCompanyId();
 
             ModelState.Remove("BTUserId");
             if (ModelState.IsValid)
@@ -479,7 +501,7 @@ namespace Hoist.Controllers
 
             int companyId = User.Identity!.GetCompanyId();
 
-            Ticket ticket = await _btTicketService.GetTicketAsync(ticketId);
+            Ticket ticket = await _btTicketService.GetTicketAsync(ticketId, companyId);
 
             List<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
 
@@ -522,7 +544,7 @@ namespace Hoist.Controllers
 
                 try
                 {
-                    Ticket? ticket = await _btTicketService.GetTicketAsync(viewModel.Ticket?.Id);
+                    Ticket? ticket = await _btTicketService.GetTicketAsync(viewModel.Ticket?.Id, companyId);
 
                     ticket.DeveloperUserId = viewModel.DeveloperId;
                     await _btTicketService.UpdateTicketAsync(ticket);

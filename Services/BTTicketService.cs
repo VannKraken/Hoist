@@ -124,7 +124,7 @@ namespace Hoist.Services
         //   return
         //}
 
-        public async Task<Ticket> GetTicketAsync(int? ticketId)
+        public async Task<Ticket> GetTicketAsync(int? ticketId, int? companyId)
         {
             Ticket? ticket = await _context.Tickets
                 .Include(t => t.Project)
@@ -138,7 +138,7 @@ namespace Hoist.Services
                 .Include(t => t.TicketType)
                 .Include(t => t.Attachments)
                 .Include(t => t.History)
-                .FirstOrDefaultAsync(m => m.Id == ticketId); ;
+                .FirstOrDefaultAsync(m => m.Id == ticketId && m.SubmitterUser.CompanyId == companyId); ;
 
             return ticket;
         }

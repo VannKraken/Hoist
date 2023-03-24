@@ -6,3 +6,19 @@ table.dataTable > thead .sorting:before {
 .choices__inner {
     width: 200px !important;
 }
+
+
+.userIcon {
+    display: inline-block;
+    object-fit: cover;
+    position: center;
+    width: 200px;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 50%;
+}
+
+    .userIcon img {
+        width: auto;
+        height: 100%;
+    }

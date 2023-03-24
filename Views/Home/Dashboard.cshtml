@@ -4,6 +4,8 @@
 @model Hoist.Models.Company
 @using Hoist.Models.Enums
 @using Microsoft.EntityFrameworkCore;
+@using System.Text.Json;
+@using System.Text.Json.Serialization;
 
 @inject UserManager<BTUser> _UserManager
 @inject ApplicationDbContext _Context
@@ -16,7 +18,14 @@
     Layout = "_LayoutDashboard";
 }
 
+@section styles{
+    <!-- gridjs css -->
+    <link rel="stylesheet" href="~/assets/libs/gridjs/theme/mermaid.min.css">
+}
+
 @{
+
+
     BTUser user = await _UserManager.GetUserAsync(User);
     bool isAdmin = User.IsInRole(nameof(BTRoles.Admin));
 
@@ -24,6 +33,15 @@
     bool isProjectManager = User.IsInRole(nameof(BTRoles.ProjectManager));
     bool isDeveloper = User.IsInRole(nameof(BTRoles.Developer));
 
+    // Gather unassigned members and then filter the admins out to get a count of employees not assigned to a project.
+    IEnumerable<BTUser> unassignedMembers = Model.Members
+                                                 .Where(m => m.Projects
+                                                                .Where(p => p.Archived == false).Count() == 0 );
+
+
+    
+
+    
 
 
     IEnumerable<Project> projects = Model.Projects.ToList();
@@ -35,11 +53,14 @@
     IEnumerable<Ticket> userActiveTickets = activeTickets.Where(t => t.SubmitterUserId == user.Id || t.DeveloperUserId == user.Id);
 
 
-    IEnumerable<Notification> notificatons = _Context.Notifications
+    IEnumerable<Notification> notifications = _Context.Notifications
                                                      .Include(n => n.NotificationType)
                                                      .Include(n => n.Sender)
                                                      .Where(n => n.RecipientId == user.Id)
+                                                     .OrderByDescending(n => n.Created)
                                                      .ToList();
+
+
     int activeTicketCount = activeTickets.Count();
 
 
@@ -60,522 +81,193 @@
     DateTime lateNight = DateTime.Today.AddHours(3);
 }
 
-<div class="row project-wrapper align-items-center">
 
-    <div class="col-xxl-8">
-        <div class="card p-3">
-            <div class="row align-items-center">
-                <div class="col-4 d-flex ms-0 px-0 justify-content-center text-center">
-                    <!--Insert User Image Here-->
-                    <div class="rounded-circle overflow-hidden mb-3   w-75">
-                        <img class="w-100 h-50" src="@_FileService.ConvertByteArrayToFile(user.ImageFileData, user.ImageFileType, (int)DefaultImage.BTUserImage)" />
-                    </div>
-                </div>
-                <div class="col-8 text-center">
-                    <div class="card-header border-0 align-items-center d-flex-column">
-                        @if (currentTime > lunchTimeStart && currentTime < lunchTimeEnd)
-                        {
-                            <span class="card-title mb-0  badge badge-soft-warning flex-grow-1" style="font-size: 2rem;">A working lunch,</span>
-                            <br />
-                            <span class=" mb-0 text-nowrap " style="font-size: 4rem;">@user.FullName?</span>
-                        }
-                        else if (currentTime >= workingLate || currentTime <= lateNight)
-                        {
-                            <span class="card-title mb-0  badge badge-soft-dark flex-grow-1" style="font-size: 2rem;">Working late,</span>
-                            <br />
-                            <span class=" mb-0 text-nowrap " style="font-size: 4rem;">@user.FullName?</span>
-                        }
-                        else if (isMorning)
-                        {
-                            <span class="card-title mb-0  badge badge-soft-primary text-primary flex-grow-1" style="font-size: 2rem;">Good Morning,</span>
-                            <br />
-                            <span class=" mb-0 text-nowrap " style="font-size: 4rem;">@user.FullName</span>
-                            <br />
-                            <span></span>
-                        }
-                        else
-                        {
-
-                            <span class="card-title mb-0  badge badge-soft-info flex-grow-1" style="font-size: 2rem;">Welcome Back,</span>
-                            <br />
-                            <span class=" mb-0 text-nowrap " style="font-size: 4rem;">@user.FullName</span>
-                        }
-                       
-                    </div>
-                    <!-- end card header -->
-                    <div class="card-body p-0 pb-2">
-                    </div><!-- end card body -->
-                </div><!-- end card -->
-            </div><!-- end col -->
-            <!-- end row -->
-            <hr />
-            <div class="row">
-
-                @if (isAdmin)
-                {
-                    <div class=" offset-1 col-4">
-                        <div class="card card-animate">
-                            <a asp-controller="Projects" asp-action="Index">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-sm flex-shrink-0">
-                                            <span class="avatar-title bg-soft-primary text-primary rounded-2 fs-2">
-                                                <i data-feather="layers" class="text-primary"></i>
-                                            </span>
-                                        </div>
-                                        <div class="flex-grow-1 overflow-hidden ms-3">
-                                            <p class="text-uppercase fw-medium text-muted text-truncate mb-3">Active Projects</p>
-                                            <div class="d-flex align-items-center mb-3">
-                                                <h4 class="fs-4 flex-grow-1 mb-0"><span class="counter-value" data-target="@activeProjects.Count()">0</span></h4>
-                                                @*<span class="badge badge-soft-danger fs-12"><i class="ri-arrow-down-s-line fs-13 align-middle me-1"></i>5.02 %</span>*@
-                                            </div>
-                                           @* <p class="text-muted text-truncate mb-0">Projects this month</p>*@
-                                        </div>
-                                    </div>
-                                </div><!-- end card body -->
-                            </a>
-                        </div>
-                    </div>
-                    <div class=" offset-1 col-4">
-                        <div class="card card-animate">
-                            <a asp-controller="Tickets" asp-action="Index">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-sm flex-shrink-0">
-                                            <span class="avatar-title bg-soft-success text-warning rounded-2 fs-2">
-                                                <i data-feather="layout" class="text-success"></i>
-                                            </span>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <p class="text-uppercase fw-medium text-muted mb-3">Active Tickets</p>
-                                            <div class="d-flex align-items-center mb-3">
-                                                <h4 class="fs-4 flex-grow-1 mb-0"><span class="counter-value" data-target="@activeTicketCount">0</span></h4>
-@*                                                <span class="badge badge-soft-success fs-12"><i class="ri-arrow-up-s-line fs-13 align-middle me-1"></i>3.58 %</span>
-*@                                            </div>
-                                            @*<p class="text-muted mb-0">Leads this month</p>*@
-                                        </div>
-                                    </div>
-                                </div><!-- end card body -->
-                            </a>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <div class=" offset-1 col-4">
-                        <div class="card card-animate">
-                            <a asp-controller="Projects" asp-action="MyProjects">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-sm flex-shrink-0">
-                                            <span class="avatar-title bg-soft-primary text-primary rounded-2 fs-2">
-                                                <i data-feather="layers" class="text-primary"></i>
-                                            </span>
-                                        </div>
-                                        <div class="flex-grow-1 overflow-hidden ms-3">
-                                            <p class="text-uppercase fw-medium text-muted text-truncate mb-3"> Assigned Projects</p>
-                                            <div class="d-flex align-items-center mb-3">
-                                                <h4 class="fs-4 flex-grow-1 mb-0"><span class="counter-value" data-target="@userActiveProjCount">0</span></h4>
-@*                                                <span class="badge badge-soft-danger fs-12"><i class="ri-arrow-down-s-line fs-13 align-middle me-1"></i>5.02 %</span>
-*@                                            </div>
-                                            @*<p class="text-muted text-truncate mb-0">Projects this month</p>*@
-                                        </div>
-                                    </div>
-                                </div><!-- end card body -->
-                            </a>
-                        </div>
-                    </div>
-                    <div class=" offset-1 col-4">
-                        <div class="card card-animate">
-                            <a asp-controller="Tickets" asp-action="MyTickets">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-sm flex-shrink-0">
-                                            <span class="avatar-title bg-soft-success text-warning rounded-2 fs-2">
-                                                <i data-feather="layout" class="text-success"></i>
-                                            </span>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <p class="text-uppercase fw-medium text-muted mb-3">Your Active Tickets</p>
-                                            <div class="d-flex align-items-center mb-3">
-                                                <h4 class="fs-4 flex-grow-1 mb-0"><span class="counter-value" data-target="@userActiveTickets.Count()">0</span></h4>
-@*                                                <span class="badge badge-soft-success fs-12"><i class="ri-arrow-up-s-line fs-13 align-middle me-1"></i>3.58 %</span>
-*@                                            </div>
-                                          @*  <p class="text-muted mb-0">Leads this month</p>*@
-                                        </div>
-                                    </div>
-                                </div><!-- end card body -->
-                            </a>
-                        </div>
-                    </div>
-                }
-
-                @*<div class="card-header p-0 border-0 bg-soft-light">
-                <div class="row g-0 text-center">
-                <div class="col-6 col-sm-3">
-                <div class="p-3 border border-dashed border-start-0">
-                <h5 class="mb-1"><span class="counter-value" data-target="@projects.Where(p => p.Archived == false).Count()">0</span></h5>
-
-                <p class="text-muted mb-0">Company Projects</p>
-                </div>
-                </div><!--end col-->
-                <div class="col-6 col-sm-3">
-                <div class="p-3 border border-dashed border-start-0">
-                <a asp-controller="Projects" asp-action="MyProjects">
-                <h5 class="mb-1"><span class="counter-value" data-target="@projects.Where(p => p.Members.Any(m => m.Id == user.Id)).Count()">0</span></h5>
-                <p class="text-muted mb-0">Current Projects</p>
-                </a>
-                </div>
-                </div><!--end col-->
-
-                <div class="col-6 col-sm-3">
-                <div class="p-3 border border-dashed border-start-0">
-                <h5 class="mb-1"><span class="counter-value" data-target="@tickets.Where(t => t.Archived == false).Count()">0</span></h5>
-                <p class="text-muted mb-0">Total Tickets</p>
-                </div>
-                </div><!--end col-->
-                <div class="col-6 col-sm-3">
-                <div class="p-3 border border-dashed border-start-0 border-end-0">
-                <h5 class="mb-1 text-muted"><span class="counter-value" data-target="@tickets.Where(t => t.DeveloperUserId == user.Id).Count()">0</span></h5>
-                <p class="text-muted mb-0">Tickets Assigned</p>
-                </div>
-                </div><!--end col-->
-                </div>
-                </div><!-- end card header -->*@
-
-            </div>
-        </div>
-    </div>
-<div class="col-xxl-4">
-    <div class="card card-animate">
-            <a style="pointer-events: none;" class="weatherwidget-io" href="https://forecast7.com/en/36d10n80d24/winston-salem/?unit=us" data-label_1="WINSTON-SALEM" data-label_2="WEATHER" data-icons="Climacons Animated" data-theme="weather_one">WINSTON-SALEM WEATHER</a>
-            <script>
-                !function (d, s, id) { var js, fjs = d.getElementsByTagName(s)[0]; if (!d.getElementById(id)) { js = d.createElement(s); js.id = id; js.src = 'https://weatherwidget.io/js/widget.min.js'; fjs.parentNode.insertBefore(js, fjs); } }(document, 'script', 'weatherwidget-io-js');
-            </script>
-    </div>
-</div><!-- end col -->
-</div><!-- end col -->
-
-<!-- end row -->
 
 <div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="email-content">
-                <div class="p-4 pb-0">
-                    <div class="border-bottom border-bottom-dashed">
-                        <div class="row mt-n2 mb-3 mb-sm-0">
-                            <div class="col col-sm-auto order-1 d-block d-lg-none">
-                                <button type="button" class="btn btn-soft-success btn-icon btn-sm fs-16 email-menu-btn">
-                                    <i class="ri-menu-2-fill align-bottom"></i>
-                                </button>
-                            </div>
-                            @*<div class="col-sm order-3 order-sm-2">
-                                <div class="hstack gap-sm-1 align-items-center flex-wrap email-topbar-link">
-                                    <div class="form-check fs-14 m-0">
-                                        <input class="form-check-input" type="checkbox" value="" id="checkall">
-                                        <label class="form-check-label" for="checkall"></label>
-                                    </div>
-                                    <div id="email-topbar-actions">
-                                        <div class="hstack gap-sm-1 align-items-center flex-wrap">
-                                            <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm fs-16" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Archive">
-                                                <i class="ri-inbox-archive-fill align-bottom"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm fs-16" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Report Spam">
-                                                <i class="ri-error-warning-fill align-bottom"></i>
-                                            </button>
-                                            <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Trash">
-                                                <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm fs-16" data-bs-toggle="modal" data-bs-target="#removeItemModal">
-                                                    <i class="ri-delete-bin-5-fill align-bottom"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="vr align-self-center mx-2"></div>
-                                    <div class="dropdown">
-                                        <button class="btn btn-ghost-secondary btn-icon btn-sm fs-16" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="ri-price-tag-3-fill align-bottom"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <a class="dropdown-item" href="#">Support</a>
-                                            <a class="dropdown-item" href="#">Freelance</a>
-                                            <a class="dropdown-item" href="#">Social</a>
-                                            <a class="dropdown-item" href="#">Friends</a>
-                                            <a class="dropdown-item" href="#">Family</a>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown">
-                                        <button class="btn btn-ghost-secondary btn-icon btn-sm fs-16" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="ri-more-2-fill align-bottom"></i>
-                                        </button>
-                                        <div class="dropdown-menu dropdown-menu-end">
-                                            <a class="dropdown-item" href="#" id="mark-all-read">Mark all as Read</a>
-                                        </div>
-                                    </div>
-                                    <div class="alert alert-warning alert-dismissible unreadConversations-alert px-4 fade show " id="unreadConversations" role="alert">
-                                        No Unread Conversations
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-auto order-2 order-sm-3">
-                                <div class="d-flex gap-sm-1 email-topbar-link">
-                                    <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm fs-16">
-                                        <i class="ri-refresh-line align-bottom"></i>
-                                    </button>
-                                    <div class="dropdown">
-                                        <button class="btn btn-ghost-secondary btn-icon btn-sm fs-16" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="ri-more-2-fill align-bottom"></i>
-                                        </button>
-                                        <div class="dropdown-menu dropdown-menu-end">
-                                            <a class="dropdown-item" href="#">Mark as Unread</a>
-                                            <a class="dropdown-item" href="#">Mark as Important</a>
-                                            <a class="dropdown-item" href="#">Add to Tasks</a>
-                                            <a class="dropdown-item" href="#">Add Star</a>
-                                            <a class="dropdown-item" href="#">Mute</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>*@
-                        </div>
+    <div class="col-xxl-3">
+        <div class="card card-height-100">
+            <div class="card-header border-0 align-items-center d-flex">
+                <h4 class="card-title mb-0 flex-grow-1">Welcome back,<br /> @user.FullName</h4>
+                <div>
+                    <div class="dropdown">
+                        <button class="btn btn-soft-primary btn-sm" data-bs-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                            <span class="text-uppercase align-items-center">
+                                <i class="bi bi-three-dots"></i><i class="mdi mdi-chevron-down align-middle ms-1"></i>
+                            </span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Settings</a>
 
-                        <div class="row align-items-end mt-3">
-                            <div class="col">
-                                <div id="mail-filter-navlist">
-                                    <ul class="nav nav-tabs nav-tabs-custom nav-primary gap-1 text-center border-bottom-0" role="tablist">
-                                        <li class="nav-item align-items-center">
-                                            <i class="bx bx-bell align-center d-inline-block" style="font-size: 1.8em;"></i>
-                                                <h3 class="ms-1  d-none d-sm-inline-block">Notifications</h3>
-                                        </li>
-                                      @*  <li class="nav-item">
-                                            <button class="nav-link fw-semibold" id="pills-social-tab" data-bs-toggle="pill" data-bs-target="#pills-social" type="button" role="tab" aria-controls="pills-social" aria-selected="false">
-                                                <i class="ri-group-fill align-bottom d-inline-block"></i>
-                                                <span class="ms-1 d-none d-sm-inline-block">Social</span>
-                                            </button>
-                                        </li>
-                                        <li class="nav-item">
-                                            <button class="nav-link fw-semibold" id="pills-promotions-tab" data-bs-toggle="pill" data-bs-target="#pills-promotions" type="button" role="tab" aria-controls="pills-promotions" aria-selected="false">
-                                                <i class="ri-price-tag-3-fill align-bottom d-inline-block"></i>
-                                                <span class="ms-1 d-none d-sm-inline-block">Promotions</span>
-                                            </button>
-                                        </li>*@
-                                    </ul>
-                                </div>
-
-                            </div>
-                            <div class="col-auto">
-                                <div class="text-muted mb-2">1-50 of 154</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="tab-content">
-                        <div class="tab-pane fade show active" id="pills-primary" role="tabpanel" aria-labelledby="pills-primary-tab">
-                            <div class="message-list-content mx-n4 px-4 message-list-scroll" data-simplebar>
-                                <div id="elmLoader">
-                                    <div class="spinner-border text-primary avatar-sm" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
-                                </div>
-                                <ul class="message-list" id="mail-list">
-                                    
-                                    @*<li class="">
-                                        
-                                        <div class="col-mail col-mail-1">
-                                            
-                                            <div class="form-check checkbox-wrapper-mail fs-14">
-                                                
-                                                <input class="form-check-input" type="checkbox" value="notifId" id="checkbox-notifId">
-                                                <label class="form-check-label" for="checkbox-notifId"></label>
-                                            </div>
-                                            <input type="hidden" value=' + mailData.userImg + ' class="mail-userimg" />
-                                            <button type="button" class="btn avatar-xs p-0 favourite-btn fs-15">
-                                                
-                                                <i class="ri-star-fill"></i>
-                                            </button>
-                                            <a href="javascript: void(0);" class="title"><span class="title-name">' + mailData.name + '</span> ' + mailcounted + '</a>\
-                                        </div>
-                                        <div class="col-mail col-mail-2">
-                                            
-                                            <a href="javascript: void(0);" class="subject">
-                                                <span class="subject-title">Subject Title</span> – <span class="teaser">Description</span>\
-                                            </a>
-                                            <div class="date">Date</div>
-                                        </div>
-                                    </li>*@
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="pills-social" role="tabpanel" aria-labelledby="pills-social-tab">
-                            <div class="message-list-content mx-n4 px-4 message-list-scroll" data-simplebar>
-                                <ul class="message-list" id="social-mail-list"></ul>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="pills-promotions" role="tabpanel" aria-labelledby="pills-promotions-tab">
-                            <div class="message-list-content mx-n4 px-4 message-list-scroll" data-simplebar>
-                                <ul class="message-list" id="promotions-mail-list"></ul>
-                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </div><!-- end cardheader -->
+            <div class="card-body">
+                <div class="text-center">
+
+                    <img class="userIcon" src="@_FileService.ConvertByteArrayToFile(user.ImageFileData, user.ImageFileType, (int)DefaultImage.BTUserImage)" />
+                </div>
+
+                <ul class="list-group list-group-flush border-dashed mb-0 mt-3 pt-2">
+                    <li class="list-group-item px-0">
+                        <a asp-action="Index" asp-controller="Projects">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 avatar-xs">
+                                    <span class="avatar-title bg-soft-info p-1 rounded-circle">
+                                        <i class="bi bi-clipboard-data text-success"></i>
+                                    </span>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <h6 class="mb-1">Active Projects:</h6>
+                                    <p class="fs-12 mb-0 text-muted">
+                                        <i class="mdi mdi-circle fs-10 align-middle text-danger me-1"></i>Unassigned:
+                                    </p>
+                                </div>
+                                <div class="flex-shrink-0 text-end">
+                                    <h6 class="mb-1"> @activeProjCount</h6>
+                                    <p class="text-success fs-12 mb-0">@projects.Where(p => p.Members.Count() == 0 && p.Archived == false).Count()</p>
+                                </div>
+                            </div>
+                        </a>
+                    </li><!-- end -->
+                    <li class="list-group-item px-0">
+                        <a asp-action="Index" asp-controller="Tickets">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 avatar-xs">
+                                    <span class="avatar-title bg-soft-primary p-1 rounded-circle">
+                                        <i class="bi bi-stickies-fill"></i>
+                                    </span>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <h6 class="mb-1">Active Tickets: </h6>
+                                    <p class="fs-12 mb-0 text-muted">
+                                        <i class="mdi mdi-circle fs-10 align-middle text-danger me-1"></i>Unassigned:
+                                    </p>
+                                </div>
+                                <div class="flex-shrink-0 text-end">
+                                    <h6 class="mb-1">@activeTicketCount</h6>
+                                    <p class="text-danger fs-12 mb-0">@activeTickets.Where(t => t.DeveloperUserId == null).Count()</p>
+                                </div>
+                            </div>
+                        </a>
+                    </li><!-- end -->
+                    <li class="list-group-item px-0">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0 avatar-xs">
+                                <span class="avatar-title bg-soft-warning p-1 rounded-circle">
+                                    <i class="bi bi-person-workspace text-dark"></i>
+                                </span>
+                            </div>
+                            <div class="flex-grow-1 ms-2">
+                                <h6 class="mb-1">Company Members:</h6>
+                                <p class="fs-12 mb-0 text-muted">
+                                    <i class="mdi mdi-circle fs-10 align-middle text-danger me-1"></i>Unassigned:
+                                </p>
+                            </div>
+                            <div class="flex-shrink-0 text-end">
+                                <h6 class="mb-1">@Model.Members.Count()</h6>
+                                <p class="text-success fs-12 mb-0">@unassignedMembers.Count()</p>
+                            </div>
+                        </div>
+                    </li><!-- end -->
+                    <li class="list-group-item px-0 pb-0">
+                        <div class="d-flex text-center">
+                        </div>
+                    </li><!-- end -->
+                </ul><!-- end -->
+            </div><!-- end card body -->
         </div><!-- end card -->
     </div><!-- end col -->
 
+    <div class="col-xxl-9 order-xxl-0">
+        <div class="d-flex flex-column h-100">
+            <div class="row">
+                <div class="col-12 mb-2">
+                    <div class="card card-animate fade-down">
+                        <a class="weatherwidget-io" href="https://forecast7.com/en/40d71n74d01/new-york/?unit=us" data-label_1="Winston-Salem" data-label_2="WEATHER" data-font="Verdana" data-icons="Climacons Animated" data-theme="retro-sky" style="pointer-events: none;">Winston-Salem WEATHER</a>
+                        <script>
+                            !function (d, s, id) { var js, fjs = d.getElementsByTagName(s)[0]; if (!d.getElementById(id)) { js = d.createElement(s); js.id = id; js.src = 'https://weatherwidget.io/js/widget.min.js'; fjs.parentNode.insertBefore(js, fjs); } }(document, 'script', 'weatherwidget-io-js');
+                        </script>
+
+                    </div>
+                </div>
+            </div><!-- end row -->
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Notifications</h5>
+                        </div>
+                        <div class="card-body">
+                            <table id="scroll-vertical_wrapper" class="table table-bordered dt-responsive nowrap align-middle mdl-data-table" style="width:100%">
+                                <thead>
+                                        <tr>
+                                        <th>Sent</th>
+                                        <th>Type</th>
+                                        <th>Title</th>
+                                        <th>Message</th>
+                                        <th>Sender</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach(Notification notification in notifications)
+                                    {
+                                    <tr>
+                                        <td>@notification.Created.ToShortDateString()</td>
+                                        <td>@notification.NotificationType.Name</td>
+                                        <td>@notification.Title</td>
+                                        <td><a href="#!">@notification.Message</a></td>
+                                        <td>@notification.Sender.FullName</td>
+                                        <td>
+                                                <button class="btn btn-sm btn-soft-info"><i class="bi bi-eye-fill"></i></button>
+                                        </td>
+                                        
+                                    </tr>
+                                    }
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    </div><!-- end col -->
 </div><!-- end row -->
-
-
 @section scripts{
-
-    <!--ckeditor js-->
-    <script src="~/assets/libs/ckeditor/ckeditor5-build-classic/build/ckeditor.js"></script>
-
-    <!-- mailbox init -->
-    <script src="~/assets/js/pages/mailbox.init.js"></script>
     <!-- apexcharts -->
-    <script src="~/assets/libs/apexcharts/apexcharts.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 
-    <!-- projects js -->
-    <script src="~/assets/js/pages/dashboard-projects.init.js"></script>
+        <!--datatable js-->
+        <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+
+        <script src="~/assets/js/pages/datatables.init.js"></script>
+
+    <!-- Swiper Js -->
+    <script src="~/assets/libs/swiper/swiper-bundle.min.js"></script>
+
+    <!-- CRM js -->
+    <script src="~/assets/js/pages/dashboard-crypto.init.js"></script>
 
     <!-- App js -->
     <script src="~/assets/js/app.js"></script>
+
+        <script>
+            $(document).ready(function () {
+                f
+                $('#scroll-vertical_wrapper').DataTable();
+            });
+        </script>
+
+
 }
-
-
-
-
-
-
-@*<div class="email-content">
-    <div class="p-4 pb-0">
-        <div class="border-bottom border-bottom-dashed">
-            <div class="row mt-n2 mb-3 mb-sm-0">
-                <div class="col col-sm-auto order-1 d-block d-lg-none">
-                    <button type="button" class="btn btn-soft-success btn-icon btn-sm fs-16 email-menu-btn">
-                        <i class="ri-menu-2-fill align-bottom"></i>
-                    </button>
-                </div>
-                <div class="col-sm order-3 order-sm-2">
-                    <div class="hstack gap-sm-1 align-items-center flex-wrap email-topbar-link">
-                        <div class="form-check fs-14 m-0">
-                            <input class="form-check-input" type="checkbox" value="" id="checkall">
-                            <label class="form-check-label" for="checkall"></label>
-                        </div>
-                        <div id="email-topbar-actions">
-                            <div class="hstack gap-sm-1 align-items-center flex-wrap">
-                                <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm fs-16" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Archive">
-                                    <i class="ri-inbox-archive-fill align-bottom"></i>
-                                </button>
-                                <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm fs-16" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Report Spam">
-                                    <i class="ri-error-warning-fill align-bottom"></i>
-                                </button>
-                                <div data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Trash">
-                                    <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm fs-16" data-bs-toggle="modal" data-bs-target="#removeItemModal">
-                                        <i class="ri-delete-bin-5-fill align-bottom"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="vr align-self-center mx-2"></div>
-                        <div class="dropdown">
-                            <button class="btn btn-ghost-secondary btn-icon btn-sm fs-16" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="ri-price-tag-3-fill align-bottom"></i>
-                            </button>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">Support</a>
-                                <a class="dropdown-item" href="#">Freelance</a>
-                                <a class="dropdown-item" href="#">Social</a>
-                                <a class="dropdown-item" href="#">Friends</a>
-                                <a class="dropdown-item" href="#">Family</a>
-                            </div>
-                        </div>
-                        <div class="dropdown">
-                            <button class="btn btn-ghost-secondary btn-icon btn-sm fs-16" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="ri-more-2-fill align-bottom"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end">
-                                <a class="dropdown-item" href="#" id="mark-all-read">Mark all as Read</a>
-                            </div>
-                        </div>
-                        <div class="alert alert-warning alert-dismissible unreadConversations-alert px-4 fade show " id="unreadConversations" role="alert">
-                            No Unread Conversations
-                        </div>
-                    </div>
-                </div>
-                <div class="col-auto order-2 order-sm-3">
-                    <div class="d-flex gap-sm-1 email-topbar-link">
-                        <button type="button" class="btn btn-ghost-secondary btn-icon btn-sm fs-16">
-                            <i class="ri-refresh-line align-bottom"></i>
-                        </button>
-                        <div class="dropdown">
-                            <button class="btn btn-ghost-secondary btn-icon btn-sm fs-16" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="ri-more-2-fill align-bottom"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end">
-                                <a class="dropdown-item" href="#">Mark as Unread</a>
-                                <a class="dropdown-item" href="#">Mark as Important</a>
-                                <a class="dropdown-item" href="#">Add to Tasks</a>
-                                <a class="dropdown-item" href="#">Add Star</a>
-                                <a class="dropdown-item" href="#">Mute</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row align-items-end mt-3">
-                <div class="col">
-                    <div id="mail-filter-navlist">
-                        <ul class="nav nav-tabs nav-tabs-custom nav-primary gap-1 text-center border-bottom-0" role="tablist">
-                            <li class="nav-item">
-                                <button class="nav-link fw-semibold active" id="pills-primary-tab" data-bs-toggle="pill" data-bs-target="#pills-primary" type="button" role="tab" aria-controls="pills-primary" aria-selected="true">
-                                    <i class="ri-inbox-fill align-bottom d-inline-block"></i>
-                                    <span class="ms-1 d-none d-sm-inline-block">Primary</span>
-                                </button>
-                            </li>
-                            <li class="nav-item">
-                                <button class="nav-link fw-semibold" id="pills-social-tab" data-bs-toggle="pill" data-bs-target="#pills-social" type="button" role="tab" aria-controls="pills-social" aria-selected="false">
-                                    <i class="ri-group-fill align-bottom d-inline-block"></i>
-                                    <span class="ms-1 d-none d-sm-inline-block">Social</span>
-                                </button>
-                            </li>
-                            <li class="nav-item">
-                                <button class="nav-link fw-semibold" id="pills-promotions-tab" data-bs-toggle="pill" data-bs-target="#pills-promotions" type="button" role="tab" aria-controls="pills-promotions" aria-selected="false">
-                                    <i class="ri-price-tag-3-fill align-bottom d-inline-block"></i>
-                                    <span class="ms-1 d-none d-sm-inline-block">Promotions</span>
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-
-                </div>
-                <div class="col-auto">
-                    <div class="text-muted mb-2">1-50 of 154</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="tab-content">
-            <div class="tab-pane fade show active" id="pills-primary" role="tabpanel" aria-labelledby="pills-primary-tab">
-                <div class="message-list-content mx-n4 px-4 message-list-scroll" data-simplebar>
-                    <div id="elmLoader">
-                        <div class="spinner-border text-primary avatar-sm" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                    <ul class="message-list" id="mail-list"></ul>
-                </div>
-            </div>
-            <div class="tab-pane fade" id="pills-social" role="tabpanel" aria-labelledby="pills-social-tab">
-                <div class="message-list-content mx-n4 px-4 message-list-scroll" data-simplebar>
-                    <ul class="message-list" id="social-mail-list"></ul>
-                </div>
-            </div>
-            <div class="tab-pane fade" id="pills-promotions" role="tabpanel" aria-labelledby="pills-promotions-tab">
-                <div class="message-list-content mx-n4 px-4 message-list-scroll" data-simplebar>
-                    <ul class="message-list" id="promotions-mail-list"></ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>*@

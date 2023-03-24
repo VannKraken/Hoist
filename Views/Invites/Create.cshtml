@@ -53,7 +53,7 @@
                         <label class="mg-b-0">Message</label>
                     </div>
                     <div class="col-md-8 mg-t-5 mg-md-t-0">
-                        <textarea asp-for="Message" multiple="multiple" class="form-control"></textarea>
+                        <textarea asp-for="Message" multiple="multiple" class="form-control" id="ckeditor-classic"></textarea>
                     </div>
                 </div>
                 <div class="form-group row justify-content-end mb-3">
@@ -66,10 +66,30 @@
         </div>
     </div>
 </div>
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 @section Scripts {
+    <!-- ckeditor -->
+    <script src="~/assets/libs/ckeditor/ckeditor5-build-classic/build/ckeditor.js"></script>
+
+    <!-- dropzone js -->
+    <script src="~/assets/libs/dropzone/dropzone-min.js"></script>
+    <!-- project-create init -->
+    <script src="~/assets/js/pages/project-create.init.js"></script>
+
+    <!-- App js -->
+    <script src="~/assets/js/app.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- multi.js -->
+    <script src="~/assets/libs/multi.js/multi.min.js"></script>
+    <!-- autocomplete js -->
+    <script src="~/assets/libs/tarekraafat/autocomplete.js/autoComplete.min.js"></script>
+
+    <!-- init js -->
+    <script src="~/assets/js/pages/form-advanced.init.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }

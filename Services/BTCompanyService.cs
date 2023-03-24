@@ -41,6 +41,7 @@ namespace Hoist.Services
                                                  .Include(c => c.Projects)
                                                     .ThenInclude(p => p.Members)
                                                  .Include(c => c.Members)
+                                                    .ThenInclude(m => m.Projects)
                                                  .Include(c => c.Invites)
                                                  .FirstOrDefaultAsync(c => c.Id == companyId);
 
@@ -62,6 +63,7 @@ namespace Hoist.Services
 
             List<BTUser> members = await _context.Users.Where(u => u.CompanyId == companyId)
                                                                .Include( u => u.Projects)
+                                                               .ThenInclude(p => p.Tickets)
                                                                .ToListAsync();
 
             return members;
@@ -94,8 +96,6 @@ namespace Hoist.Services
                 member.ImageFileData = await _btFileService.ConvertFileToByteArrayAsync(imageFile);
                 member.ImageFileType = member.ImageFormFile?.ContentType;
             }
-
-
 
             _context.Users.Update(member);
             await _context.SaveChangesAsync();

@@ -54,9 +54,9 @@ namespace Hoist.Services
                         notification.Id = 0;
                         notification.RecipientId = adminId;
                         await _context.AddAsync(notification);
+                        await _context.SaveChangesAsync();
                     }
 
-                    await _context.SaveChangesAsync();
 
                 }
             }

@@ -211,77 +211,7 @@ namespace Hoist.Controllers
             ViewData["CurrentSortType"] = sortType;
 
 
-            //if (string.IsNullOrEmpty(sortType))
-            //{
-            //    IPagedList<Project> projectsDefault = (await _btProjectService.GetProjectsAsync(companyId)).ToPagedList(page, pageSize);
-
-            //    ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
-
-
-            //    return View(projectsDefault);
-            //}
-
-            //if (sortType == "A - Z")
-            //{
-            //    IPagedList<Project> projectsAlphabetical = (await _btProjectService.GetProjectsAsync(companyId)).OrderBy(p => p.Name).ToPagedList(page, pageSize);
-
-            //    ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
-            //    ViewData["CurrentSortType"] = sortType;
-
-            //    return View(projectsAlphabetical);
-            //}
-            //if (sortType == "Z - A")
-            //{
-            //    IPagedList<Project> projectsAlphabeticalRev = (await _btProjectService.GetProjectsAsync(companyId)).OrderByDescending(p => p.Name).ToPagedList(page, pageSize);
-
-            //    ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
-            //    ViewData["CurrentSortType"] = sortType;
-
-            //    return View(projectsAlphabeticalRev);
-            //}
-            //if (sortType == "Deadline, Soonest")
-            //{
-            //    IPagedList<Project> projectsDeadline = (await _btProjectService.GetProjectsAsync(companyId)).OrderBy(p => p.EndDate).ToPagedList(page, pageSize);
-
-            //    ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
-            //    ViewData["CurrentSortType"] = sortType;
-
-            //    return View(projectsDeadline);
-            //}
-            //if (sortType == "Deadline, Furthest")
-            //{
-            //    IPagedList<Project> projectsDeadlineRev = (await _btProjectService.GetProjectsAsync(companyId)).OrderByDescending(p => p.EndDate).ToPagedList(page, pageSize);
-
-            //    ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
-            //    ViewData["CurrentSortType"] = sortType;
-
-            //    return View(projectsDeadlineRev);
-            //}
-            //if (sortType == "Priority, Low")
-            //{
-            //    IPagedList<Project> projectsDeadlineRev = (await _btProjectService.GetProjectsAsync(companyId)).OrderByDescending(p => p.EndDate).ToPagedList(page, pageSize);
-
-            //    ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
-            //    ViewData["CurrentSortType"] = sortType;
-
-            //    return View(projectsDeadlineRev);
-            //}
-            //if (sortType == "Priority, High")
-            //{
-            //    IPagedList<Project> projectsDeadlineRev = (await _btProjectService.GetProjectsAsync(companyId)).OrderByDescending(p => p.EndDate).ToPagedList(page, pageSize);
-
-            //    ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
-            //    ViewData["CurrentSortType"] = sortType;
-
-            //    return View(projectsDeadlineRev);
-            //}
-
-
-
-
-            //IPagedList<Project> projects = (await _btProjectService.GetProjectsAsync(companyId)).ToPagedList(page, pageSize);
-
-            //ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+            
 
 
             return View(sortedProjects);
@@ -558,12 +488,17 @@ namespace Hoist.Controllers
                         project.FileType = project.FormFile.ContentType;
                     }
 
+                    await _btProjectService.RemoveMembersFromProjectAsync(project.Id, companyId);
+                    await _btProjectService.RemoveProjectManagerAsync(project.Id);
+
                     if (selectedMembers != null)
                     {
+                        
                         await _btProjectService.AddMembersToProjectAsync(selectedMembers, project.Id, companyId);
                     }
                     if (projectManagerId != null)
                     {
+                        
                         await _btProjectService.AddProjectManagerAsync(projectManagerId, project.Id);
                     }
 
