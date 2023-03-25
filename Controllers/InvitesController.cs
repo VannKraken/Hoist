@@ -41,34 +41,34 @@ namespace Hoist.Controllers
             _dataProtector = dataProtectorProvider.CreateProtector(configuration.GetValue<string>("ProtectKey") ?? Environment.GetEnvironmentVariable("ProtectKey")!); //Creating a data protector for our
         }
 
-        // GET: Invites
-        public async Task<IActionResult> Index()
-        {
-            var applicationDbContext = _context.Invites.Include(i => i.Company).Include(i => i.Invitee).Include(i => i.Invitor).Include(i => i.Project);
-            return View(await applicationDbContext.ToListAsync());
-        }
+        //// GET: Invites
+        //public async Task<IActionResult> Index()
+        //{
+        //    var applicationDbContext = _context.Invites.Include(i => i.Company).Include(i => i.Invitee).Include(i => i.Invitor).Include(i => i.Project);
+        //    return View(await applicationDbContext.ToListAsync());
+        //}
 
-        // GET: Invites/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null || _context.Invites == null)
-            {
-                return NotFound();
-            }
+        //// GET: Invites/Details/5
+        //public async Task<IActionResult> Details(int? id)
+        //{
+        //    if (id == null || _context.Invites == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            var invite = await _context.Invites
-                .Include(i => i.Company)
-                .Include(i => i.Invitee)
-                .Include(i => i.Invitor)
-                .Include(i => i.Project)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (invite == null)
-            {
-                return NotFound();
-            }
+        //    var invite = await _context.Invites
+        //        .Include(i => i.Company)
+        //        .Include(i => i.Invitee)
+        //        .Include(i => i.Invitor)
+        //        .Include(i => i.Project)
+        //        .FirstOrDefaultAsync(m => m.Id == id);
+        //    if (invite == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return View(invite);
-        }
+        //    return View(invite);
+        //}
 
         // GET: Invites/Create
         public async Task<IActionResult> Create()
