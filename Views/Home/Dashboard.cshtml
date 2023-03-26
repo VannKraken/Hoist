@@ -32,6 +32,7 @@
 
     bool isProjectManager = User.IsInRole(nameof(BTRoles.ProjectManager));
     bool isDeveloper = User.IsInRole(nameof(BTRoles.Developer));
+    bool isSubmitter = User.IsInRole(nameof(BTRoles.Submitter));
 
     // Gather unassigned members and then filter the admins out to get a count of employees not assigned to a project.
     IEnumerable<BTUser> unassignedMembers = Model.Members
@@ -121,12 +122,29 @@
                                 <div class="flex-grow-1 ms-2">
                                     <h6 class="mb-1">Active Projects:</h6>
                                     <p class="fs-12 mb-0 text-muted">
-                                        <i class="mdi mdi-circle fs-10 align-middle text-danger me-1"></i>Unassigned:
+                                        @if (isAdmin)
+                                        {
+                                        <i class="mdi mdi-circle fs-10 align-middle text-danger me-1"></i>
+                                            <span>Unassigned:</span>
+                                        }
+                                        else
+                                        {
+                                            <i class="mdi mdi-circle fs-10 align-middle text-danger me-1"></i>
+                                            <span>Assigned To:</span>
+                                        }
                                     </p>
                                 </div>
                                 <div class="flex-shrink-0 text-end">
                                     <h6 class="mb-1"> @activeProjCount</h6>
-                                    <p class="text-success fs-12 mb-0">@projects.Where(p => p.Members.Count() == 0 && p.Archived == false).Count()</p>
+                                    @if (isAdmin)
+                                    {
+                                        <p class="text-success fs-12 mb-0">@projects.Where(p => p.Members.Count() == 0 && p.Archived == false).Count()</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-success fs-12 mb-0">@projects.Where(p => p.Members.Any( u => u.Id == user.Id) && p.Archived == false).Count()</p>
+                                    }
+                                    
                                 </div>
                             </div>
                         </a>
@@ -153,7 +171,7 @@
                         </a>
                     </li><!-- end -->
                     <li class="list-group-item px-0">
-                        <a asp-controller="companies" asp-action="CompanyMembers">
+                        <a asp-controller="Companies" asp-action="Members">
 
                             <div class="d-flex">
                             <div class="flex-shrink-0 avatar-xs">

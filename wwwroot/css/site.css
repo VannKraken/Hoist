@@ -22,3 +22,19 @@ table.dataTable > thead .sorting:before {
         width: auto;
         height: 100%;
     }
+    
+    
+    .userIconHeader {
+    display: inline-block;
+    object-fit: cover;
+    position: center;
+    width: 20px;
+    height: 20px;
+    overflow: hidden;
+    border-radius: 50%;
+}
+
+    .userIconHeader img {
+        width: auto;
+        height: 100%;
+    }
