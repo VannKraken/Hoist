@@ -23,6 +23,7 @@ namespace Hoist.Controllers
     public class ProjectsController : Controller
     {
 
+        #region Dependency Injection
         private readonly UserManager<BTUser> _userManager;
         private readonly SignInManager<BTUser> _signInManager;
         private readonly IBTFileService _btFileService;
@@ -44,134 +45,10 @@ namespace Hoist.Controllers
             _btProjectService = btProjectService;
             _btRolesService = btRolesService;
         }
+        #endregion
 
 
-        [HttpGet]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AssignProjectManager(int? projectId)
-        {
-
-            if (projectId == null)
-            {
-                return NotFound();
-            }
-            int companyId = User.Identity!.GetCompanyId();
-
-
-
-            IEnumerable<BTUser> projectManagers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId);
-
-            BTUser? currentProjectManager = await _btProjectService.GetProjectManagerAsync(projectId);
-
-            AssignPMViewModel viewModel = new()
-            {
-                Project = await _btProjectService.GetProjectAsync(projectId, companyId),
-                ProjectManagerList = new SelectList(projectManagers, "Id", "FullName", currentProjectManager?.Id),
-                ProjectManagerId = currentProjectManager?.Id
-            };
-
-
-
-
-            return View(viewModel);
-        }
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AssignProjectManager(AssignPMViewModel viewModel)
-        {
-            if (!string.IsNullOrEmpty(viewModel.ProjectManagerId))
-            {
-                await _btProjectService.AddProjectManagerAsync(viewModel.ProjectManagerId, viewModel.Project?.Id);
-                return RedirectToAction("Details", new { id = viewModel.Project?.Id });
-            }
-
-            ModelState.AddModelError("ProjectManagerId", "No Project Manager Chosen. Please select a Project Manager.");
-
-            int companyId = User.Identity!.GetCompanyId();
-
-            IEnumerable<BTUser> projectManagers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId);
-            BTUser? currentProjectManager = await _btProjectService.GetProjectManagerAsync(viewModel.Project?.Id);
-
-
-            //Reset viewmodel to reset the page.
-            viewModel.Project = await _btProjectService.GetProjectAsync(viewModel.Project?.Id, companyId);
-            viewModel.ProjectManagerList = new SelectList(projectManagers, "Id", "FullName", currentProjectManager?.Id);
-            viewModel.ProjectManagerId = currentProjectManager?.Id;
-
-
-            return View(viewModel);
-        }
-
-
-        [HttpGet]
-        [Authorize(Roles = "Admin, ProjectManager")]
-        public async Task<IActionResult> AssignProjectMembers(int? projectId)
-        {
-            if (projectId == null)
-            {
-                return NotFound();
-            }
-
-            int companyId = User.Identity!.GetCompanyId();
-            Project? project = await _btProjectService.GetProjectAsync(projectId, companyId);
-
-
-            List<BTUser> submitters = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId);
-            List<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
-
-            List<BTUser> userList = submitters.Concat(developers).ToList();
-
-            List<string> currentMembers = project.Members.Select(m => m.Id).ToList();
-
-            ProjectMembersViewModel viewModel = new()
-            {
-                Project = project,
-                UsersList = new MultiSelectList(userList, "Id", "FullName", currentMembers)
-
-            };
-
-            return View(viewModel);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin, ProjectManager")]
-        public async Task<IActionResult> AssignProjectMembers(ProjectMembersViewModel viewModel)
-        {
-
-            int companyId = User.Identity!.GetCompanyId();
-
-            if (viewModel.SelectedMembers != null)
-            {
-
-                //remove members
-
-                await _btProjectService.RemoveMembersFromProjectAsync(viewModel.Project!.Id, companyId);
-
-                //Add members
-
-                await _btProjectService.AddMembersToProjectAsync(viewModel.SelectedMembers, viewModel.Project.Id, companyId);
-
-                return RedirectToAction("Details", new { id = viewModel.Project!.Id });
-            }
-
-            //REset the form
-
-            ModelState.AddModelError("SelectedMembers", "No Members Chosen. Please select Members for the project.");
-
-            List<BTUser> submitters = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId);
-            List<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
-            List<BTUser> userList = submitters.Concat(developers).ToList();
-
-            List<string> currentMembers = viewModel.Project!.Members.Select(m => m.Id).ToList();
-
-
-            return View(viewModel);
-        }
-
+        #region Indexes and Details
         // GET: Projects
         public async Task<IActionResult> Index(int? pageNum, string? sortType)
         {
@@ -188,7 +65,7 @@ namespace Hoist.Controllers
                 "Deadline, Furthest",
                 "Priority, Low",
                 "Priority, High"
-                
+
             };
 
 
@@ -211,7 +88,7 @@ namespace Hoist.Controllers
             ViewData["CurrentSortType"] = sortType;
 
 
-            
+
 
 
             return View(sortedProjects);
@@ -319,6 +196,9 @@ namespace Hoist.Controllers
             return View(project);
         }
 
+        #endregion
+
+        #region Create Projects
         // GET: Projects/Create
         public async Task<IActionResult> Create()
         {
@@ -396,6 +276,9 @@ namespace Hoist.Controllers
             return View(project);
         }
 
+        #endregion
+
+        #region Edit Projects
         // GET: Projects/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -425,10 +308,11 @@ namespace Hoist.Controllers
 
 
             ViewData["ProjectPriorityId"] = new SelectList(priorities, "Id", "Name", currentPriority);
-            ViewData["MembersId"] = new MultiSelectList(userList, "Id", "FullName",currentDevelopers);
+            ViewData["MembersId"] = new MultiSelectList(userList, "Id", "FullName", currentDevelopers);
 
-            if (currentProjectManager != null) {
-            ViewData["ProjectManagersId"] = new SelectList(projectManagers, "Id", "FullName", currentProjectManager.Id);
+            if (currentProjectManager != null)
+            {
+                ViewData["ProjectManagersId"] = new SelectList(projectManagers, "Id", "FullName", currentProjectManager.Id);
             }
 
             ViewData["StartDate"] = project.StartDate;
@@ -450,7 +334,10 @@ namespace Hoist.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,ProjectPriorityId,Name,Description,Created,StartDate,EndDate,Archived,FileData,FileType,FormFile")] Project project, IEnumerable<string> selectedMembers, string? projectManagerId)
+        public async Task<IActionResult> Edit(int id,
+            [Bind("Id,CompanyId,ProjectPriorityId,Name,Description,Created,StartDate,EndDate,Archived,FileData,FileType,FormFile")] Project project,
+            IEnumerable<string> selectedMembers,
+            string? projectManagerId)
         {
 
 
@@ -493,12 +380,12 @@ namespace Hoist.Controllers
 
                     if (selectedMembers != null)
                     {
-                        
+
                         await _btProjectService.AddMembersToProjectAsync(selectedMembers, project.Id, companyId);
                     }
                     if (projectManagerId != null)
                     {
-                        
+
                         await _btProjectService.AddProjectManagerAsync(projectManagerId, project.Id);
                     }
 
@@ -526,6 +413,9 @@ namespace Hoist.Controllers
             return View(project);
         }
 
+        #endregion
+
+        #region Archive + Restore Project
         // GET: Projects/Delete/5
         public async Task<IActionResult> Archive(int id)
         {
@@ -548,7 +438,140 @@ namespace Hoist.Controllers
 
         }
 
+        #endregion
 
+
+
+        #region Assign Project Manager
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AssignProjectManager(int? projectId)
+        {
+
+            if (projectId == null)
+            {
+                return NotFound();
+            }
+            int companyId = User.Identity!.GetCompanyId();
+
+
+
+            IEnumerable<BTUser> projectManagers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId);
+
+            BTUser? currentProjectManager = await _btProjectService.GetProjectManagerAsync(projectId);
+
+            AssignPMViewModel viewModel = new()
+            {
+                Project = await _btProjectService.GetProjectAsync(projectId, companyId),
+                ProjectManagerList = new SelectList(projectManagers, "Id", "FullName", currentProjectManager?.Id),
+                ProjectManagerId = currentProjectManager?.Id
+            };
+
+
+
+
+            return View(viewModel);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AssignProjectManager(AssignPMViewModel viewModel)
+        {
+            if (!string.IsNullOrEmpty(viewModel.ProjectManagerId))
+            {
+                await _btProjectService.AddProjectManagerAsync(viewModel.ProjectManagerId, viewModel.Project?.Id);
+                return RedirectToAction("Details", new { id = viewModel.Project?.Id });
+            }
+
+            ModelState.AddModelError("ProjectManagerId", "No Project Manager Chosen. Please select a Project Manager.");
+
+            int companyId = User.Identity!.GetCompanyId();
+
+            IEnumerable<BTUser> projectManagers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId);
+            BTUser? currentProjectManager = await _btProjectService.GetProjectManagerAsync(viewModel.Project?.Id);
+
+
+            //Reset viewmodel to reset the page.
+            viewModel.Project = await _btProjectService.GetProjectAsync(viewModel.Project?.Id, companyId);
+            viewModel.ProjectManagerList = new SelectList(projectManagers, "Id", "FullName", currentProjectManager?.Id);
+            viewModel.ProjectManagerId = currentProjectManager?.Id;
+
+
+            return View(viewModel);
+        }
+        #endregion
+
+        #region Assign Project Members (With Own View)
+        [HttpGet]
+        [Authorize(Roles = "Admin, ProjectManager")]
+        public async Task<IActionResult> AssignProjectMembers(int? projectId)
+        {
+            if (projectId == null)
+            {
+                return NotFound();
+            }
+
+            int companyId = User.Identity!.GetCompanyId();
+            Project? project = await _btProjectService.GetProjectAsync(projectId, companyId);
+
+
+            List<BTUser> submitters = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId);
+            List<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
+
+            List<BTUser> userList = submitters.Concat(developers).ToList();
+
+            List<string> currentMembers = project.Members.Select(m => m.Id).ToList();
+
+            ProjectMembersViewModel viewModel = new()
+            {
+                Project = project,
+                UsersList = new MultiSelectList(userList, "Id", "FullName", currentMembers)
+
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin, ProjectManager")]
+        public async Task<IActionResult> AssignProjectMembers(ProjectMembersViewModel viewModel)
+        {
+
+            int companyId = User.Identity!.GetCompanyId();
+
+            if (viewModel.SelectedMembers != null)
+            {
+
+                //remove members
+
+                await _btProjectService.RemoveMembersFromProjectAsync(viewModel.Project!.Id, companyId);
+
+                //Add members
+
+                await _btProjectService.AddMembersToProjectAsync(viewModel.SelectedMembers, viewModel.Project.Id, companyId);
+
+                return RedirectToAction("Details", new { id = viewModel.Project!.Id });
+            }
+
+            //REset the form
+
+            ModelState.AddModelError("SelectedMembers", "No Members Chosen. Please select Members for the project.");
+
+            List<BTUser> submitters = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId);
+            List<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
+            List<BTUser> userList = submitters.Concat(developers).ToList();
+
+            List<string> currentMembers = viewModel.Project!.Members.Select(m => m.Id).ToList();
+
+
+            return View(viewModel);
+        }
+        #endregion
+
+        #region Add Members to Project (No View)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddMemberToProject(int projectId, IEnumerable<string> selectedMembers)
@@ -576,18 +599,12 @@ namespace Hoist.Controllers
 
             ViewData["ProjectManagersId"] = new SelectList(projectManagers, "Id", "FullName");
             ViewData["MembersId"] = new MultiSelectList(userList, "Id", "FullName");
-            return RedirectToAction("Detail", new { id = projectId});
+            return RedirectToAction("Details", new { id = projectId });
 
-        }
+        } 
+        #endregion
 
 
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> AddMemberToProject() 
-        //{
-
-        //    return View();
-        //}
 
     }
 }

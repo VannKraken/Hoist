@@ -19,63 +19,36 @@ namespace Hoist.Controllers
     [Authorize(Roles="Admin")]
     public class InvitesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        #region Dependency Injection
+
         private readonly IBTProjectService _btProjectService;
-        private readonly IBTCompanyService _bTCompanyService;
+        private readonly IBTCompanyService _btCompanyService;
         private readonly IBTInviteService _btInviteService;
         private readonly IEmailSender _emailService;
         private readonly UserManager<BTUser> _userManager;
         private readonly IDataProtector _dataProtector;
         private readonly IConfiguration _configuration;
 
-        public InvitesController(ApplicationDbContext context, IBTProjectService btProjectService, IBTCompanyService bTCompanyService,
+        public InvitesController(IBTProjectService btProjectService, IBTCompanyService bTCompanyService,
                                 IBTInviteService btInviteService, IEmailSender emailService, UserManager<BTUser> userManager, IDataProtectionProvider dataProtectorProvider, IConfiguration configuration)
         {
-            _context = context;
             _btProjectService = btProjectService;
-            _bTCompanyService = bTCompanyService;
+            _btCompanyService = bTCompanyService;
             _btInviteService = btInviteService;
             _emailService = emailService;
             _userManager = userManager;
             _configuration = configuration;
             _dataProtector = dataProtectorProvider.CreateProtector(configuration.GetValue<string>("ProtectKey") ?? Environment.GetEnvironmentVariable("ProtectKey")!); //Creating a data protector for our
         }
+        #endregion
 
-        //// GET: Invites
-        //public async Task<IActionResult> Index()
-        //{
-        //    var applicationDbContext = _context.Invites.Include(i => i.Company).Include(i => i.Invitee).Include(i => i.Invitor).Include(i => i.Project);
-        //    return View(await applicationDbContext.ToListAsync());
-        //}
 
-        //// GET: Invites/Details/5
-        //public async Task<IActionResult> Details(int? id)
-        //{
-        //    if (id == null || _context.Invites == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var invite = await _context.Invites
-        //        .Include(i => i.Company)
-        //        .Include(i => i.Invitee)
-        //        .Include(i => i.Invitor)
-        //        .Include(i => i.Project)
-        //        .FirstOrDefaultAsync(m => m.Id == id);
-        //    if (invite == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(invite);
-        //}
-
-        // GET: Invites/Create
+        #region Create Invites
         public async Task<IActionResult> Create()
         {
 
             int? companyId = User.Identity!.GetCompanyId();
-            
+
             ViewData["ProjectId"] = new SelectList(await _btProjectService.GetProjectsAsync(companyId.Value), "Id", "Name");
             return View();
         }
@@ -90,7 +63,7 @@ namespace Hoist.Controllers
             int companyId = User.Identity!.GetCompanyId();
 
             ModelState.Remove("InvitorId");
-            
+
             if (ModelState.IsValid)
             {
                 try
@@ -101,7 +74,7 @@ namespace Hoist.Controllers
                     string? email = _dataProtector.Protect(invite.InviteeEmail!);
                     string? company = _dataProtector.Protect(companyId.ToString());
 
-                    string? callbackUrl = Url.Action("ProcessInvite", "Invites", new { token, email, company}, protocol: Request.Scheme);
+                    string? callbackUrl = Url.Action("ProcessInvite", "Invites", new { token, email, company }, protocol: Request.Scheme);
 
                     string body = $@"{invite.Message} <br />
                        Please join my Company. <br />
@@ -109,7 +82,7 @@ namespace Hoist.Controllers
                        <a href=""{callbackUrl}"">COLLABORATE</a>";
 
                     string? destination = invite.InviteeEmail;
-                    Company companyInstance = await _bTCompanyService.GetEverythingForCompanyAsync(companyId);
+                    Company companyInstance = await _btCompanyService.GetEverythingForCompanyAsync(companyId);
 
                     string? subject = $"Hoist: {companyInstance.Name} invites you to raise the flag.";
 
@@ -125,7 +98,7 @@ namespace Hoist.Controllers
 
                     await _btInviteService.AddNewInviteAsync(invite);
 
-                
+
                     return RedirectToAction(nameof(Index), "Home");
 
                     //TODO: SWAL for invite sent
@@ -135,14 +108,16 @@ namespace Hoist.Controllers
 
                     throw;
                 }
-                
+
             }
 
 
             ViewData["ProjectId"] = new SelectList(await _btProjectService.GetProjectsAsync(companyId), "Id", "Name");
             return View(invite);
         }
+        #endregion
 
+        #region Processing Invites
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> ProcessInvite(string token, string email, string company)
@@ -174,8 +149,39 @@ namespace Hoist.Controllers
             }
 
 
-        }
+        } 
+        #endregion
 
 
+        //// GET: Invites
+        //public async Task<IActionResult> Index()
+        //{
+        //    var applicationDbContext = _context.Invites.Include(i => i.Company).Include(i => i.Invitee).Include(i => i.Invitor).Include(i => i.Project);
+        //    return View(await applicationDbContext.ToListAsync());
+        //}
+
+        //// GET: Invites/Details/5
+        //public async Task<IActionResult> Details(int? id)
+        //{
+        //    if (id == null || _context.Invites == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    var invite = await _context.Invites
+        //        .Include(i => i.Company)
+        //        .Include(i => i.Invitee)
+        //        .Include(i => i.Invitor)
+        //        .Include(i => i.Project)
+        //        .FirstOrDefaultAsync(m => m.Id == id);
+        //    if (invite == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return View(invite);
+        //}
+
+        // GET: Invites/Create
     }
 }

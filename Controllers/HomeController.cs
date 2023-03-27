@@ -11,6 +11,7 @@ namespace Hoist.Controllers
     [Authorize]
     public class HomeController : Controller
     {
+        #region Dependency Injection
         private readonly ILogger<HomeController> _logger;
         private readonly IBTCompanyService _btCompanyService;
         private readonly UserManager<BTUser> _userManager;
@@ -20,8 +21,11 @@ namespace Hoist.Controllers
             _logger = logger;
             _btCompanyService = btCompanyService;
             _userManager = userManager;
-        }
+        } 
+        #endregion
 
+
+        #region Main Views
         [AllowAnonymous]
         public IActionResult Index()
         {
@@ -35,7 +39,7 @@ namespace Hoist.Controllers
             int companyId = User.Identity!.GetCompanyId();
             string? userId = _userManager.GetUserId(User);
 
-           Company company =  await _btCompanyService.GetEverythingForCompanyAsync(companyId);
+            Company company = await _btCompanyService.GetEverythingForCompanyAsync(companyId);
 
             ViewBag.Notificatons = await _btCompanyService.GetMemberNotifications(userId, companyId);
 
@@ -43,18 +47,15 @@ namespace Hoist.Controllers
 
             return View(company);
         }
+        #endregion
 
 
-
-        //public IActionResult Privacy()
-        //{
-        //    return View();
-        //}
-
+        #region Error
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+        } 
+        #endregion
     }
 }

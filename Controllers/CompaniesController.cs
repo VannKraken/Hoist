@@ -22,6 +22,7 @@ namespace Hoist.Controllers
     [Authorize]
     public class CompaniesController : Controller
     {
+        #region Dependency Injection
         private readonly ApplicationDbContext _context;
         private readonly UserManager<BTUser> _userManager;
         private readonly IBTRolesService _btRolesService;
@@ -35,8 +36,113 @@ namespace Hoist.Controllers
             _btRolesService = btRolesService;
             _btCompanyService = btCompanyService;
             _userManager = userManager;
+        } 
+        #endregion
+
+
+        #region Info and Members
+
+        [Authorize]
+        public async Task<IActionResult> Info()
+        {
+            int companyId = User.Identity.GetCompanyId();
+
+            Company company = await _btCompanyService.GetCompanyInfo(companyId);
+
+            return View(company);
         }
 
+        [Authorize]
+        public async Task<IActionResult> Members(int? pageNum)
+        {
+            int pageSize = 20;  //Number per page
+            int page = pageNum ?? 1;  //Which page number clicked upon on the page.
+
+            int companyId = User.Identity!.GetCompanyId();
+            string? userId = _userManager.GetUserId(User);
+
+
+
+            IPagedList<BTUser> members = (await _btCompanyService.GetMembersAsync(companyId)).ToPagedList(page, pageSize);
+
+
+            return View(members);
+        } 
+        #endregion
+
+        #region Manage User Roles
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> ManageUserRoles()
+        {
+
+            int? companyId = User.Identity!.GetCompanyId();
+
+            IEnumerable<BTUser> members = await _btCompanyService.GetMembersAsync(companyId);
+            List<ManageUserRolesViewModel> userModels = new List<ManageUserRolesViewModel>();
+            //MultiSelectList allRoles = new MultiSelectList(await _btRolesService.GetRolesAsync());
+
+            List<IdentityRole> roles = (await _btRolesService.GetRolesAsync());
+            IdentityRole? roleToRemove = roles.FirstOrDefault(r => r.Name == "DemoUser");
+
+
+            roles.Remove(roleToRemove);            
+
+            foreach (BTUser member in members)
+            {
+                IEnumerable<string> currentRoles = await _btRolesService.GetUserRolesAsync(member);
+
+                ManageUserRolesViewModel user = new()
+                {
+
+
+                    BTUser = member,
+                    Roles = new MultiSelectList( roles, "Name", "Name", currentRoles)
+
+
+                };
+
+                userModels.Add(user);
+            }
+
+            return View(userModels);
+
+        }
+
+        [Authorize(Roles ="Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ManageUserRoles(ManageUserRolesViewModel viewModel)
+        {
+            int companyId = User.Identity!.GetCompanyId();
+
+            // 2 Instantiate the BTUser
+            BTUser? btUser = await _btCompanyService.GetMemberAsync(viewModel.BTUser!.Id, companyId);
+
+            // 3 Get Roles for the User
+            IEnumerable<string> currentRoles = await _btRolesService.GetUserRolesAsync(btUser);
+
+            // 4 Get Selected Role(s) for the User submitted from the form
+            IEnumerable<string> selectedRoles = viewModel.SelectedRoles.ToList();
+
+            // 5 Remove current role(s) and Add new role
+            await _btRolesService.RemoveUserFromRolesAsync(btUser, currentRoles);
+
+            foreach (string role in selectedRoles)
+            {
+                await _btRolesService.AddUserToRoleAsync(btUser, role);
+            }
+
+            await _context.SaveChangesAsync();
+
+            // 6 Navigate
+            return RedirectToAction("ManageUserRoles");
+
+
+
+
+        }
+        #endregion
 
         //#region Companies CRUD
         //// GET: Companies
@@ -177,116 +283,10 @@ namespace Hoist.Controllers
         //#endregion
 
 
-        private bool CompanyExists(int id)
-        {
-            return (_context.Companies?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
-
-
-        [Authorize]
-        public async Task<IActionResult> Info()
-        {
-            int companyId = User.Identity.GetCompanyId();
-
-            Company company = await _btCompanyService.GetCompanyInfo(companyId);
-
-            return View(company);
-        }
-
-        [Authorize]
-        public async Task<IActionResult> Members(int? pageNum)
-        {
-            int pageSize = 20;  //Number per page
-            int page = pageNum ?? 1;  //Which page number clicked upon on the page.
-
-            int companyId = User.Identity!.GetCompanyId();
-            string? userId = _userManager.GetUserId(User);
-
-
-
-            IPagedList<BTUser> members = (await _btCompanyService.GetMembersAsync(companyId)).ToPagedList(page, pageSize);
-
-
-            return View(members);
-        }
-
-
-
-
-        #region Manage User Roles
-        [Authorize(Roles = "Admin")]
-        [HttpGet]
-        public async Task<IActionResult> ManageUserRoles()
-        {
-
-            int? companyId = User.Identity!.GetCompanyId();
-
-            IEnumerable<BTUser> members = await _btCompanyService.GetMembersAsync(companyId);
-            List<ManageUserRolesViewModel> userModels = new List<ManageUserRolesViewModel>();
-            //MultiSelectList allRoles = new MultiSelectList(await _btRolesService.GetRolesAsync());
-
-            List<IdentityRole> roles = (await _btRolesService.GetRolesAsync());
-            IdentityRole? roleToRemove = roles.FirstOrDefault(r => r.Name == "DemoUser");
-
-
-            roles.Remove(roleToRemove);            
-
-            foreach (BTUser member in members)
-            {
-                IEnumerable<string> currentRoles = await _btRolesService.GetUserRolesAsync(member);
-
-                ManageUserRolesViewModel user = new()
-                {
-
-
-                    BTUser = member,
-                    Roles = new MultiSelectList( roles, "Name", "Name", currentRoles)
-
-
-                };
-
-                userModels.Add(user);
-            }
-
-            return View(userModels);
-
-        }
-
-        [Authorize(Roles ="Admin")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ManageUserRoles(ManageUserRolesViewModel viewModel)
-        {
-            int companyId = User.Identity!.GetCompanyId();
-
-            // 2 Instantiate the BTUser
-            BTUser? btUser = await _btCompanyService.GetMemberAsync(viewModel.BTUser!.Id, companyId);
-
-            // 3 Get Roles for the User
-            IEnumerable<string> currentRoles = await _btRolesService.GetUserRolesAsync(btUser);
-
-            // 4 Get Selected Role(s) for the User submitted from the form
-            IEnumerable<string> selectedRoles = viewModel.SelectedRoles.ToList();
-
-            // 5 Remove current role(s) and Add new role
-            await _btRolesService.RemoveUserFromRolesAsync(btUser, currentRoles);
-
-            foreach (string role in selectedRoles)
-            {
-                await _btRolesService.AddUserToRoleAsync(btUser, role);
-            }
-
-            await _context.SaveChangesAsync();
-
-            // 6 Navigate
-            return RedirectToAction("ManageUserRoles");
-
-
-
-
-        }
-        #endregion
-
+        //private bool CompanyExists(int id)
+        //{
+        //    return (_context.Companies?.Any(e => e.Id == id)).GetValueOrDefault();
+        //}
 
 
 
