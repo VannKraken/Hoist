@@ -23,6 +23,9 @@ namespace Hoist.Controllers
     public class TicketsController : Controller
     {
 
+
+
+        #region Dependency Injection
         private readonly UserManager<BTUser> _userManager;
         private readonly SignInManager<BTUser> _signInManager;
         private readonly IBTFileService _btFileService;
@@ -34,7 +37,16 @@ namespace Hoist.Controllers
         private readonly IBTCompanyService _btCompanyService;
         private readonly ApplicationDbContext _context;
 
-        public TicketsController(UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, IBTFileService btFileService, IBTTicketService btTicketService, IBTProjectService btProjectService, IBTRolesService btRolesService, IBTTicketHistoryService btTicketHistoryService, IBTNotifications btNotificationsService, ApplicationDbContext context, IBTCompanyService btCompanyService)
+        public TicketsController(UserManager<BTUser> userManager,
+                                 SignInManager<BTUser> signInManager,
+                                 IBTFileService btFileService,
+                                 IBTTicketService btTicketService,
+                                 IBTProjectService btProjectService,
+                                 IBTRolesService btRolesService,
+                                 IBTTicketHistoryService btTicketHistoryService,
+                                 IBTNotifications btNotificationsService,
+                                 ApplicationDbContext context,
+                                 IBTCompanyService btCompanyService)
         {
 
             _userManager = userManager;
@@ -50,6 +62,11 @@ namespace Hoist.Controllers
         }
 
         // GET: Tickets
+        #endregion
+
+
+        #region Index and Details Pages
+
         public async Task<IActionResult> Index()
         {
             int companyId = User.Identity!.GetCompanyId();
@@ -59,15 +76,23 @@ namespace Hoist.Controllers
             return View(tickets);
         }
 
+        public async Task<IActionResult> MyTickets()
+        {
 
+            string? userId = _userManager.GetUserId(User);
 
+            int? companyId = User.Identity.GetCompanyId();
 
+            IEnumerable<Ticket> tickets = await _btTicketService.GetUserTicketsAsync(userId, companyId);
 
-    // GET: Tickets/Details/5
-    public async Task<IActionResult> Details(int? id)
+            return View(tickets);
+
+        }
+
+        public async Task<IActionResult> Details(int? id)
 
         {
-            int companyId = User.Identity.GetCompanyId();  
+            int companyId = User.Identity.GetCompanyId();
             if (id == null)
             {
                 return NotFound();
@@ -82,6 +107,11 @@ namespace Hoist.Controllers
             return View(ticket);
         }
 
+
+
+        #endregion
+
+        #region Create Tickets
         // GET: Tickets/Create
         public async Task<IActionResult> Create()
         {
@@ -112,7 +142,7 @@ namespace Hoist.Controllers
 
 
 
-            
+
             ViewData["DevelopersId"] = new SelectList(developers, "Id", "FullName");
             ViewData["TicketPriorityId"] = new SelectList(priorities.OrderBy(p => p.Id), "Id", "Name");
             ViewData["TicketStatusId"] = new SelectList(await _btTicketService.GetTicketStatuses(), "Id", "Name");
@@ -124,9 +154,9 @@ namespace Hoist.Controllers
         {
             //TODO: Add view
             int companyId = User.Identity!.GetCompanyId();
-          
-            Project project = await _btProjectService.GetProjectAsync(id,companyId);
-            
+
+            Project project = await _btProjectService.GetProjectAsync(id, companyId);
+
             IEnumerable<TicketPriority> priorities = await _btTicketService.GetTicketPriorities();
             IEnumerable<BTUser> developers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId);
 
@@ -139,7 +169,7 @@ namespace Hoist.Controllers
             return View();
         }
 
-      
+
 
         // POST: Tickets/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -187,7 +217,7 @@ namespace Hoist.Controllers
                         Title = "New Ticket Added",
                         Message = $"New Ticket: `{ticket.Title}` by {user.FullName} ",
                         Created = DataUtility.GetPostGresDate(DateTime.Now),
-                        ProjectId= ticket.ProjectId,
+                        ProjectId = ticket.ProjectId,
                         SenderId = user.Id,
                         RecipientId = projectManager?.Id,
                         NotificationTypeId = (await _context.NotificationTypes.FirstOrDefaultAsync(n => n.Name == nameof(BTNotificationTypes.Ticket)))!.Id
@@ -240,7 +270,10 @@ namespace Hoist.Controllers
             return View(ticket);
         }
 
-        
+        #endregion
+
+        #region Edit Tickets
+
         // GET: Tickets/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -252,7 +285,7 @@ namespace Hoist.Controllers
 
             BTUser user = await _btCompanyService.GetMemberAsync(userId, companyId);
 
-            
+
 
 
             if (id == null)
@@ -267,7 +300,7 @@ namespace Hoist.Controllers
             }
 
 
-            
+
             BTUser? btUser = await _userManager.GetUserAsync(User);
 
             IEnumerable<Project> projects = await _btProjectService.GetProjectsAsync(companyId);
@@ -277,7 +310,7 @@ namespace Hoist.Controllers
 
 
 
-            
+
             ViewData["DevelopersId"] = new SelectList(developers, "Id", "FullName", ticket.DeveloperUserId);
             ViewData["TicketPriorityId"] = new SelectList(priorities.OrderBy(p => p.Id), "Id", "Name");
             ViewData["TicketStatusId"] = new SelectList(await _btTicketService.GetTicketStatuses(), "Id", "Name");
@@ -373,7 +406,10 @@ namespace Hoist.Controllers
             return View(ticket);
         }
 
-        // GET: Tickets/Delete/5
+
+        #endregion        // GET: Tickets/Delete/5
+
+        #region Archive Tickets
         public async Task<IActionResult> Archive(int? id)
         {
             int companyId = User.Identity.GetCompanyId();
@@ -402,8 +438,9 @@ namespace Hoist.Controllers
             await _btTicketService.ArchiveTicketAsync(ticket);
             return RedirectToAction(nameof(Index));
         }
+        #endregion
 
-
+        #region Adding Ticket Comments/Attachments
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddTicketComment([Bind("Id,TicketId,BTUserId,Comment,Created")] TicketComment ticketComment)
@@ -460,26 +497,33 @@ namespace Hoist.Controllers
             }
 
             return RedirectToAction("Details", new { id = ticketAttachment.TicketId, message = statusMessage });
-        }
+        } 
+        #endregion
 
-        [HttpGet]
-        public async Task<IActionResult> MyTickets()
+        #region Attachment Download
+        /// <summary>
+        /// This is for downloading the ticket attachments from the ticket details page.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> ShowFile(int id)
         {
+            TicketAttachment ticketAttachment = await _btTicketService.GetTicketAttachmentByIdAsync(id);
+            string fileName = ticketAttachment.FileName;
+            byte[] fileData = ticketAttachment.FileData;
+            string ext = Path.GetExtension(fileName).Replace(".", "");
 
-            string? userId = _userManager.GetUserId(User);
-
-            int? companyId = User.Identity.GetCompanyId();
-
-            IEnumerable<Ticket> tickets = await _btTicketService.GetUserTicketsAsync(userId, companyId);
-
-            return View(tickets);
-
-        }
-
+            Response.Headers.Add("Content-Disposition", $"inline; filename={fileName}");
+            return File(fileData, $"application/{ext}");
+        } 
+        #endregion
 
 
 
 
+
+        #region Assign Developer to Ticket Actions
+        [HttpGet]
         public async Task<IActionResult> AssignTicketDeveloper(int? ticketId)
         {
 
@@ -549,7 +593,7 @@ namespace Hoist.Controllers
 
                 await _btTicketHistoryService.AddHistoryAsync(oldTicket, newTicket, user.Id);
 
-                
+
 
                 Notification? notification = new()
                 {
@@ -565,11 +609,11 @@ namespace Hoist.Controllers
                 };
 
 
-             
 
 
-                    await _btNotificationsService.AddNotificationAsync(notification);
-                    await _btNotificationsService.SendEmailNotificationAsync(notification, "New Developer Assigned");
+
+                await _btNotificationsService.AddNotificationAsync(notification);
+                await _btNotificationsService.SendEmailNotificationAsync(notification, "New Developer Assigned");
 
 
                 return RedirectToAction("Details", new { id = newTicket.Id });
@@ -582,38 +626,11 @@ namespace Hoist.Controllers
             return View(viewModel);
 
         }
+        #endregion
 
 
-        [HttpGet]
-        public async Task<IActionResult> CompanyTicketsIndex()
-        {
-            int? companyId = User.Identity.GetCompanyId();
 
-            IEnumerable<Ticket> tickets = await _btTicketService.GetCompanyTicketsAsync(companyId);
 
-            return View(tickets);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetCompanyTicketHistories()
-        {
-            int companyId = User.Identity!.GetCompanyId();          
-
-            IEnumerable<TicketHistory> ticketHistories = await _btTicketHistoryService.GetCompanyTicketHistoriesAsync(companyId);
-
-            return View(ticketHistories);
-        }
-
-        public async Task<IActionResult> ShowFile(int id)
-        {
-            TicketAttachment ticketAttachment = await _btTicketService.GetTicketAttachmentByIdAsync(id);
-            string fileName = ticketAttachment.FileName;
-            byte[] fileData = ticketAttachment.FileData;
-            string ext = Path.GetExtension(fileName).Replace(".", "");
-
-            Response.Headers.Add("Content-Disposition", $"inline; filename={fileName}");
-            return File(fileData, $"application/{ext}");
-        }
 
     }
 }
