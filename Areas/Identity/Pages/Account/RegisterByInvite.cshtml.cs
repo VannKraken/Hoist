@@ -145,17 +145,25 @@ namespace Hoist.Areas.Identity.Pages.Account
 
         public async Task OnGetAsync(int id, int companyId, string returnUrl = null)
         {
-            ReturnUrl = returnUrl;
-            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            try
+            {
+                ReturnUrl = returnUrl;
+                ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
-            Invite invite = await _btInviteService.GetInviteAsync(id, companyId);
+                Invite invite = await _btInviteService.GetInviteAsync(id, companyId);
 
-            Input.Email = invite.InviteeEmail;
-            Input.FirstName = invite.InviteeFirstName;
-            Input.LastName = invite.InviteeLastName;
-            Input.Company = invite.Company.Name;
-            Input.CompanyId = invite.CompanyId;
-            Input.ProjectId = invite.ProjectId;
+                Input.Email = invite.InviteeEmail;
+                Input.FirstName = invite.InviteeFirstName;
+                Input.LastName = invite.InviteeLastName;
+                Input.Company = invite.Company.Name;
+                Input.CompanyId = invite.CompanyId;
+                Input.ProjectId = invite.ProjectId;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public async Task<IActionResult> OnPostAsync( string returnUrl = null)
