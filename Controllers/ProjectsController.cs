@@ -314,6 +314,11 @@ namespace Hoist.Controllers
             {
                 ViewData["ProjectManagersId"] = new SelectList(projectManagers, "Id", "FullName", currentProjectManager.Id);
             }
+            else 
+            {
+                ViewData["ProjectManagersId"] = new SelectList(projectManagers, "Id", "FullName", currentProjectManager.Id);
+            }
+
 
             ViewData["StartDate"] = project.StartDate;
             ViewData["EndDate"] = project.EndDate;
@@ -406,8 +411,11 @@ namespace Hoist.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            IEnumerable<BTUser> projectManagers = await _btRolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId);
+
             IEnumerable<ProjectPriority> priorities = await _btProjectService.GetProjectPrioritiesAsync();
 
+            ViewData["ProjectManagersId"] = new SelectList(projectManagers, "Id", "FullName", projectManagerId);
             ViewData["Developers"] = new MultiSelectList(await _btRolesService.GetUsersInRoleAsync("Developer", companyId));
             ViewData["ProjectPriorityId"] = new SelectList(priorities, "Id", "Name", project.ProjectPriorityId);
             return View(project);

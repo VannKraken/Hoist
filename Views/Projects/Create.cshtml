@@ -1,4 +1,5 @@
-﻿@model Hoist.Models.Project
+﻿@using Hoist.Models.Enums;
+@model Hoist.Models.Project
 
 @{
     ViewData["Title"] = "Create";
@@ -9,6 +10,10 @@
     ViewBag.pTitle = "Create Project";
     ViewBag.pageTitle = "Projects";
     Layout = "_LayoutDashboard";
+}
+
+@{
+    bool isAdmin = User.IsInRole(nameof(BTRoles.Admin));
 }
 
 @section styles{
@@ -73,13 +78,16 @@
                     <h5 class="card-title mb-0">Members</h5>
                 </div>
                 <div class="card-body">
+                    @if(isAdmin)
+                    {
                     <div class="mb-3">
                         <label for="choices-lead-input" class="form-label">Team Lead</label>
                         <select class="form-select" asp-items="ViewBag.ProjectManagersId" name="projectManagerId"
                                 id="choices-lead-input">
-                                <option value="">Project Manager</option>
+                            <option value="">Project Manager</option>
                         </select>
                     </div>
+                    }
                     <div>
                         <label class="form-label">Team Members</label>
                         <div class="avatar-group">
