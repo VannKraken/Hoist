@@ -147,7 +147,7 @@
                     <div class="py-3">
                         <div  style="text-overflow: ellipsis;" >
                             <h5 class="mb-3 fs-15">
-                                <a href="@Url.Action("Overview", "Projects")"
+                                <a asp-controller="Projects" asp-action="Details" asp-route-id="@project.Id" 
                                    class="text-dark" style=" max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@(project.Name.Length > 25 ? project.Name.Substring(0, 25) + "..." : project.Name)</a>
                             </h5>
                         </div>
