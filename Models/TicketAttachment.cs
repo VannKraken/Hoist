@@ -32,7 +32,7 @@ namespace Hoist.Models
         [Display(Name ="Select a File")]
         [DataType(DataType.Upload)]
         [MaxFileSize(1024*1024)]
-        [AllowedExtensions(new string[] { ".jpg", ".png", ".doc", ".docx", ".xls", ".xlsx", ".pdf" } )]
+        [AllowedExtensions(new string[] { ".jpg", ".png", ".doc", ".docx", ".xls", ".xlsx", ".pdf", ".txt" } )]
         public virtual IFormFile? FormFile { get; set; }
 
         //Navigation

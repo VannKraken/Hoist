@@ -138,11 +138,11 @@
                                             {
                                                 <div class="d-flex mb-4">
                                                     <div class="flex-shrink-0">
-                                                        <img src="~/assets/images/users/avatar-8.jpg" alt="" class="avatar-xs rounded-circle" />
+                                        <img src="@_FileService.ConvertByteArrayToFile(comment.BTUser.ImageFileData, comment.BTUser.ImageFileType, (int)DefaultImage.BTUserImage)" alt="" class="avatar-xs rounded-circle" />
                                                     </div>
                                                     <div class="flex-grow-1 ms-3">
                                                         <h5 class="fs-14">@comment.BTUser!.FullName<small class="text-muted"> at @comment.Created</small></h5>
-                                                        <p class="text-muted">@comment.Comment</p>
+                                                        <p class="text-muted">@Html.Raw(comment.Comment)</p>
                                                         @*<a href="javascript: void(0);" class="badge text-muted bg-light"><i class="mdi mdi-reply"></i> Reply</a>*@
 
                                                     </div>
@@ -174,11 +174,11 @@
                                             {
                                                 <div class="d-flex mb-4">
                                                     <div class="flex-shrink-0">
-                                                        <img src="~/assets/images/users/avatar-8.jpg" alt="" class="avatar-xs rounded-circle" />
+                                        <img src="@_FileService.ConvertByteArrayToFile(comment.BTUser.ImageFileData, comment.BTUser.ImageFileType, (int)DefaultImage.BTUserImage)" alt="" class="avatar-xs rounded-circle" />
                                                     </div>
                                                     <div class="flex-grow-1 ms-3 ">
                                                         <h5 class="fs-14">@comment.BTUser!.FullName<small class="text-muted"> at @comment.Created</small></h5>
-                                                        <p class="text-muted">@comment.Comment</p>
+                                                        <p class="text-muted">@Html.Raw(comment.Comment)</p>
                                                         <hr class="w-50"/>
                                                     </div>
                                                 </div>
@@ -210,14 +210,21 @@
                                                 </tr>
                                                 <tr>
                                                     <td class="fw-semibold">Assigned To:</td>
-                                                    <td>
-                                                        <div class="avatar-group">
-                                                            <a href="javascript:void(0);" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" data-bs-original-title="@Model.DeveloperUser?.FullName">
-                                                                <img src="@_FileService.ConvertByteArrayToFile(Model.DeveloperUser?.ImageFileData, Model.DeveloperUser?.ImageFileType, (int)DefaultImage.BTUserImage)" alt="" class="rounded-circle avatar-xs" />
-                                                            </a>
-                                                        </div>
-                                                    </td>
-                                                </tr>
+                                    @if (Model.DeveloperUserId != null)
+                                    {
+                                        <td>
+                                            <div class="avatar-group">
+                                                <a href="javascript:void(0);" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" data-bs-original-title="@Model.DeveloperUser?.FullName">
+                                                    <img src="@_FileService.ConvertByteArrayToFile(Model.DeveloperUser?.ImageFileData, Model.DeveloperUser?.ImageFileType, (int)DefaultImage.BTUserImage)" alt="" class="rounded-circle avatar-xs" />
+                                                </a>
+                                            </div>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td><strong class="text-danger">Not Assigned</strong></td>
+                                    }
+                                </tr>
                                                 <tr>
                                                     <td class="fw-semibold">Status:</td>
                                                     @switch (statusId)

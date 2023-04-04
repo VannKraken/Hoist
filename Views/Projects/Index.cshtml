@@ -1,12 +1,15 @@
 ﻿@model IPagedList<Hoist.Models.Project>
 @using Hoist.Models.Enums;
 @using Hoist.Services.Interfaces;
+@using Microsoft.AspNetCore.Identity;
 @using X.PagedList;
 @using X.PagedList.Mvc.Core;
 @using X.PagedList.Web.Common;
 
 @inject IBTFileService _FileService
 @inject IBTRolesService _RolesService
+@inject IBTProjectService _ProjectService
+@inject UserManager<BTUser> _UserManager
 
 
 @{
@@ -22,6 +25,8 @@
     string headerIcon;
 
     int totalProjects = Model.TotalItemCount;
+
+    string? userId = _UserManager.GetUserId(User);
 
     bool isAdmin = User.IsInRole(nameof(BTRoles.Admin));
     bool isProjectManager = User.IsInRole(nameof(BTRoles.ProjectManager));
@@ -127,16 +132,19 @@
                                         <i class="ri-eye-fill align-bottom me-2 text-muted"></i>
                                         View
                                     </a>
-                                    <a class="dropdown-item" asp-action="edit" asp-route-id="@project.Id">
-                                        <i class="ri-pencil-fill align-bottom me-2 text-muted"></i>
-                                        Edit
-                                    </a>
+                                    @if (isAdmin || (isProjectManager && project.Members.Any(m => m.Id == userId)))
+                                    {
+                                        <a class="dropdown-item" asp-action="edit" asp-route-id="@project.Id">
+                                            <i class="ri-pencil-fill align-bottom me-2 text-muted"></i>
+                                            Edit
+                                        </a>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                    data-bs-target="#removeProjectModal" onclick="setProjectId(@project.Id)">
                                         <i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i>
                                         Archive
                                     </a>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -292,41 +300,7 @@
     </div>
 </div>
 <!-- end row -->
-@*<div class="row g-0 text-center text-sm-start align-items-center mb-4">
-    <div class="col-sm-6">
-        <div>
-            <p class="mb-sm-0 text-muted">
-                Showing <span class="fw-semibold">@((Model.PageNumber - 1) * Model.PageSize + 1)</span> to <span class="fw-semibold">@Math.Min(Model.PageNumber * Model.PageSize, totalProjects)</span> of <span class="fw-semibold text-decoration-underline">@totalProjects</span> entries
-            </p>
-        </div>
-    </div>
-    <!-- end col -->
-@*    <div class="col-sm-6">
-        <ul class="pagination pagination-separated justify-content-center justify-content-sm-end mb-sm-0">
-            <li class="page-item disabled">
-                <a href="#" class="page-link">Previous</a>
-            </li>
-            <li class="page-item active">
-                <a href="#" class="page-link">1</a>
-            </li>
-            <li class="page-item ">
-                <a href="#" class="page-link">2</a>
-            </li>
-            <li class="page-item">
-                <a href="#" class="page-link">3</a>
-            </li>
-            <li class="page-item">
-                <a href="#" class="page-link">4</a>
-            </li>
-            <li class="page-item">
-                <a href="#" class="page-link">5</a>
-            </li>
-            <li class="page-item">
-                <a href="#" class="page-link">Next</a>
-            </li>
-        </ul>
-    </div><!-- end col -->
-</div>*@
+
 <!-- end row -->
 <!-- removeProjectModal -->
 <div id="removeProjectModal" class="modal fade zoomIn" tabindex="-1" aria-hidden="true">

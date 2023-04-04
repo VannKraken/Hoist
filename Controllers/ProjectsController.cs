@@ -423,8 +423,8 @@ namespace Hoist.Controllers
 
         #endregion
 
-        #region Archive + Restore Project
-        // GET: Projects/Delete/5
+        #region Archive
+        
         public async Task<IActionResult> Archive(int id)
         {
 

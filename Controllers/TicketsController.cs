@@ -471,7 +471,7 @@ namespace Hoist.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddTicketAttachment([Bind("Id,FormFile,Description,TicketId")] TicketAttachment ticketAttachment)
+        public async Task<IActionResult> AddTicketAttachment([Bind("Id,FormFile,FileName,FileType,FileData,Description,TicketId")] TicketAttachment ticketAttachment)
         {
             string statusMessage;
             ModelState.Remove("BTUserId");
@@ -481,7 +481,7 @@ namespace Hoist.Controllers
                 ticketAttachment.FileData = await _btFileService.ConvertFileToByteArrayAsync(ticketAttachment.FormFile);
                 ticketAttachment.FileType = ticketAttachment.FormFile.ContentType;
                 ticketAttachment.FileName = ticketAttachment.FormFile.FileName;
-
+                    
                 ticketAttachment.Created = DataUtility.GetPostGresDate(DateTime.UtcNow);
                 ticketAttachment.BTUserId = _userManager.GetUserId(User);
 
