@@ -140,5 +140,30 @@ namespace Hoist.Services
                 throw;
             }
         }
+
+        public async Task<bool> MarkViewed(int? notificationId)
+        {
+            try
+            {
+
+                if (notificationId != null)
+                {
+                   Notification? notification = await _context.Notifications.FirstOrDefaultAsync(n => n.Id == notificationId);
+                    if (notification != null)
+                    {
+                        notification.HasBeenViewed = true;
+                        await _context.SaveChangesAsync();
+                        return true;
+                    }
+                }
+                return false;
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
     }
 }

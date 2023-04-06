@@ -124,7 +124,7 @@
                                     <p class="fs-12 mb-0 text-muted">
                                         @if (isAdmin)
                                         {
-                                        <i class="mdi mdi-circle fs-10 align-middle text-danger me-1"></i>
+                                            <i class="mdi mdi-circle fs-10 align-middle text-danger me-1"></i>
                                             <span>Unassigned:</span>
                                         }
                                         else
@@ -144,7 +144,7 @@
                                     {
                                         <p class="text-success fs-12 mb-0">@projects.Where(p => p.Members.Any( u => u.Id == user.Id) && p.Archived == false).Count()</p>
                                     }
-                                    
+
                                 </div>
                             </div>
                         </a>
@@ -174,22 +174,22 @@
                         <a asp-controller="Companies" asp-action="Members">
 
                             <div class="d-flex">
-                            <div class="flex-shrink-0 avatar-xs">
-                                <span class="avatar-title bg-soft-warning p-1 rounded-circle">
-                                    <i class="bi bi-person-workspace text-dark"></i>
-                                </span>
+                                <div class="flex-shrink-0 avatar-xs">
+                                    <span class="avatar-title bg-soft-warning p-1 rounded-circle">
+                                        <i class="bi bi-person-workspace text-dark"></i>
+                                    </span>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <h6 class="mb-1">Company Members:</h6>
+                                    <p class="fs-12 mb-0 text-muted">
+                                        <i class="mdi mdi-circle fs-10 align-middle text-danger me-1"></i>Unassigned:
+                                    </p>
+                                </div>
+                                <div class="flex-shrink-0 text-end">
+                                    <h6 class="mb-1">@Model.Members.Count()</h6>
+                                    <p class="text-success fs-12 mb-0">@unassignedMembers.Count()</p>
+                                </div>
                             </div>
-                            <div class="flex-grow-1 ms-2">
-                                <h6 class="mb-1">Company Members:</h6>
-                                <p class="fs-12 mb-0 text-muted">
-                                    <i class="mdi mdi-circle fs-10 align-middle text-danger me-1"></i>Unassigned:
-                                </p>
-                            </div>
-                            <div class="flex-shrink-0 text-end">
-                                <h6 class="mb-1">@Model.Members.Count()</h6>
-                                <p class="text-success fs-12 mb-0">@unassignedMembers.Count()</p>
-                            </div>
-                        </div>
 
                         </a>
                     </li><!-- end -->
@@ -207,7 +207,7 @@
             <div class="row">
                 <div class="col-12 mb-2">
                     <div class="card card-animate fade-down">
-                        <a class="weatherwidget-io" style="pointer-events: none;"href="https://forecast7.com/en/36d10n80d24/winston-salem/?unit=us" data-label_1="WINSTON-SALEM" data-label_2="WEATHER" data-icons="Climacons Animated" data-theme="weather_one">WINSTON-SALEM WEATHER</a>
+                        <a class="weatherwidget-io" style="pointer-events: none;" href="https://forecast7.com/en/36d10n80d24/winston-salem/?unit=us" data-label_1="WINSTON-SALEM" data-label_2="WEATHER" data-icons="Climacons Animated" data-theme="weather_one">WINSTON-SALEM WEATHER</a>
                         <script>
                             !function (d, s, id) { var js, fjs = d.getElementsByTagName(s)[0]; if (!d.getElementById(id)) { js = d.createElement(s); js.id = id; js.src = 'https://weatherwidget.io/js/widget.min.js'; fjs.parentNode.insertBefore(js, fjs); } }(document, 'script', 'weatherwidget-io-js');
                         </script>
@@ -223,34 +223,106 @@
                             <h5 class="card-title mb-0">Notifications</h5>
                         </div>
                         <div class="card-body">
-                            <table id="scroll-vertical_wrapper" class="table table-bordered dt-responsive nowrap align-middle mdl-data-table" style="width:100%">
-                                <thead>
-                                    <tr>
-                                        <th>Sent</th>
-                                        <th>Type</th>
-                                        <th>Title</th>
-                                        <th>Message</th>
-                                        <th>Sender</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody >
-                                    @foreach (Notification notification in notifications.Where(n => n.HasBeenViewed == false).OrderByDescending(n => n.Created))
-                                    {
-                                        <tr>
-                                            <td>@notification.Created.ToShortDateString()</td>
-                                            <td>@notification.NotificationType.Name</td>
-                                            <td>@notification.Title</td>
-                                            <td><a href="#!">@notification.Message</a></td>
-                                            <td>@notification.Sender.FullName</td>
-                                            <td>
-                                                <a type="button" asp-action="Viewed" asp-controller="Notifications" asp-route-id="@notification.Id"  class="btn btn-sm btn-soft-info"><i class="bi bi-eye-fill"></i></a>
-                                            </td>
+                            <div class="row align-items-end mt-3">
+                                <div class="col">
+                                    <div id="mail-filter-navlist">
+                                        <ul class="nav nav-tabs nav-tabs-custom nav-primary gap-1 text-center border-bottom-0" role="tablist">
+                                            <li class="nav-item">
+                                                <button class="nav-link fw-semibold active" id="pills-primary-tab" data-bs-toggle="pill" data-bs-target="#pills-inbox" type="button" role="tab" aria-controls="pills-primary" aria-selected="true">
+                                                    <i class="ri-inbox-fill align-bottom d-inline-block"></i>
+                                                    <span class="ms-1 d-none d-sm-inline-block">Inbox</span>
+                                                </button>
+                                            </li>
+                                            <li class="nav-item">
+                                                <button class="nav-link fw-semibold" id="pills-social-tab" data-bs-toggle="pill" data-bs-target="#pills-archived" type="button" role="tab" aria-controls="pills-social" aria-selected="false">
+                                                    <i class="ri-group-fill align-bottom d-inline-block"></i>
+                                                    <span class="ms-1 d-none d-sm-inline-block">Archived</span>
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
 
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
+                                </div>
+                            </div>
+                            <div class="tab-content">
+
+                                <div class="tab-pane fade show active" id="pills-inbox" role="tabpanel">
+                                    <table id="scroll-vertical_wrapper" class="table table-bordered dt-responsive nowrap align-middle mdl-data-table" style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Sent</th>
+                                                <th>Type</th>
+                                                <th>Title</th>
+                                                <th>Message</th>
+                                                <th>Sender</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (Notification notification in notifications.Where(n => n.HasBeenViewed == false).OrderByDescending(n => n.Created))
+                                            {
+                                                <tr>
+                                                    <td>@notification.Created.ToShortDateString()</td>
+                                                    <td>@notification.NotificationType.Name</td>
+                                                    <td>@notification.Title</td>
+                                                    @if (notification.NotificationType.Name == "Ticket")
+                                                    {
+                                                        <td><a asp-action="Details" asp-controller="Tickets" asp-route-id="@notification.TicketId">@notification.Message</a></td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td><a asp-action="Details" asp-controller="Projects" asp-route-id="@notification.ProjectId">@notification.Message</a></td>
+                                                    }
+                                                    <td>@notification.Sender.FullName</td>
+                                                    <td>
+                                                        <a type="button" asp-action="MarkViewed" asp-controller="Notifications" asp-route-id="@notification.Id" class="btn btn-sm btn-soft-info"><i class="bi bi-eye-fill"></i></a>
+                                                    </td>
+
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="tab-pane fade" id="pills-archived" role="tabpanel">
+                                    <table id="scroll-vertical_wrapper_archived" class="table table-bordered dt-responsive nowrap align-middle mdl-data-table" style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Sent</th>
+                                                <th>Type</th>
+                                                <th>Title</th>
+                                                <th>Message</th>
+                                                <th>Sender</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (Notification notification in notifications.Where(n => n.HasBeenViewed == true).OrderByDescending(n => n.Created))
+                                            {
+                                                <tr>
+                                                    <td>@notification.Created.ToShortDateString()</td>
+                                                    <td>@notification.NotificationType.Name</td>
+                                                    <td>@notification.Title</td>
+                                                    @if (notification.NotificationType.Name == "Ticket")
+                                                    {
+                                                        <td><a asp-action="Details" asp-controller="Tickets" asp-route-id="@notification.TicketId">@notification.Message</a></td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td><a asp-action="Details" asp-controller="Projects" asp-route-id="@notification.ProjectId">@notification.Message</a></td>
+                                                    }
+                                                    <td>@notification.Sender.FullName</td>
+                                                    <td>
+                                                        <a type="button" asp-action="Viewed" asp-controller="Notifications" asp-route-id="@notification.Id" class="btn btn-sm btn-soft-info"><i class="bi bi-eye-fill"></i></a>
+                                                    </td>
+
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+                            
                         </div>
                     </div>
                 </div>
@@ -258,6 +330,7 @@
 
         </div><!-- end col -->
     </div><!-- end row -->
+    </div>
     @section scripts{
         <!-- apexcharts -->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
@@ -287,6 +360,15 @@
         <script>
             $(document).ready(function () {
                 $('#scroll-vertical_wrapper').DataTable({
+                    scrollY: '300px', // Set the height of the scrollable area
+                    scrollCollapse: true, // Optionally, enable or disable collapsing the table when the displayed data fits within the given height
+                    paging: true, // Optionally, disable pagination if you want to show all the data in the scrollable area
+                    order: [[0, 'desc']]
+                });
+            });
+        </script>        <script>
+            $(document).ready(function () {
+                $('#scroll-vertical_wrapper_archived').DataTable({
                     scrollY: '300px', // Set the height of the scrollable area
                     scrollCollapse: true, // Optionally, enable or disable collapsing the table when the displayed data fits within the given height
                     paging: true, // Optionally, disable pagination if you want to show all the data in the scrollable area

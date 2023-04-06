@@ -12,5 +12,7 @@ namespace Hoist.Services.Interfaces
         public Task<List<Notification>> GetNotificationByUserId(string? userId);
         public Task<bool> SendAdminEmailNotificationAsync(Notification? notification, string? emailSubject, int? companyId);
         public Task<bool> SendEmailNotificationAsync(Notification? notification, string? emailSubject);
+
+        public Task<bool> MarkViewed(int? notificationId);
     }
 }

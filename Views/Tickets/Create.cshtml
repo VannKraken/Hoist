@@ -1,4 +1,5 @@
-﻿@model Hoist.Models.Ticket
+﻿@using Hoist.Models.Enums;
+@model Hoist.Models.Ticket
 
 @{
     ViewData["Title"] = "Create";
@@ -7,6 +8,11 @@
     ViewBag.pageTitle = "Tickets";
     ViewBag.Url = "/Tickets/Index";
     Layout = "_Layout";
+}
+
+@{
+    bool isAdmin = User.IsInRole(nameof(BTRoles.Admin));
+    bool isProjectManager = User.IsInRole(nameof(BTRoles.ProjectManager));
 }
 
 
@@ -19,22 +25,22 @@
 }
 
 
-    <form asp-action="Create" enctype="multipart/form-data">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label asp-for="Title" class="form-label" for="project-title-input">Ticket Title</label>
-                            <input asp-for="Title" type="text" class="form-control" id="project-title-input"
-                                   placeholder="Enter ticket title">
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="Description" class="form-label">Ticket Description</label>
-                            <textarea asp-for="Description" id="ckeditor-classic"></textarea>
-                        </div>
-                        <div class="row">
+<form asp-action="Create" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label" for="project-title-input">Ticket Title</label>
+                        <input asp-for="Title" type="text" class="form-control" id="project-title-input"
+                               placeholder="Enter ticket title">
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Ticket Description</label>
+                        <textarea asp-for="Description" id="ckeditor-classic"></textarea>
+                    </div>
+                    <div class="row">
                         <div class="col-lg-4">
                             <div class="mb-3 mb-lg-0">
                                 <label asp-for="ProjectId" for="choices-priority-input" class="form-label">Project</label>
@@ -44,57 +50,59 @@
                                 </select>
                             </div>
                         </div>
-                            <div class="col-lg-4">
-                                <div class="mb-3 mb-lg-0">
-                                    <label asp-for="TicketPriorityId" for="choices-priority-input" class="form-label">Priority</label>
-                                    <select asp-for="TicketPriorityId" class="form-select" asp-items="ViewBag.TicketPriorityId" data-choices data-choices-search-false
-                                            id="choices-priority-input" required>
-                                        <option value="" selected disabled>Ticket Priority</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-4">
-                                <div class="mb-3 mb-lg-0">
-                                    <label asp-for="TicketTypeId" for="choices-priority-input" class="form-label">Type</label>
-                                    <select asp-for="TicketTypeId" class="form-select" asp-items="ViewBag.TicketTypeId" data-choices data-choices-search-false
-                                            id="choices-priority-input" required>
-                                        <option value="" selected disabled>Ticket Type</option>
-                                    </select>
-                                </div>
+
+                        <div class="col-lg-4">
+                            <div class="mb-3 mb-lg-0">
+                                <label asp-for="TicketPriorityId" for="choices-priority-input" class="form-label">Priority</label>
+                                <select asp-for="TicketPriorityId" class="form-select" asp-items="ViewBag.TicketPriorityId" data-choices data-choices-search-false
+                                        id="choices-priority-input" required>
+                                    <option value="" selected disabled>Ticket Priority</option>
+                                </select>
                             </div>
                         </div>
-                    </div>
-                    <!-- end card body -->
-                </div>
-                <!-- end card -->
 
-
-
-
-                <div class="text-end mb-4">
-                    <button type="submit" class="btn btn-success w-sm">Create</button>
-                </div>
-            </div>
-            <!-- end col -->
-            <div class="col-lg-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Assign Developer</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label for="choices-lead-input" class="form-label">Developer</label>
-                            <select class="form-select" asp-items="ViewBag.DevelopersId" asp-for="DeveloperUserId"
-                                    id="choices-lead-input">
-                                <option value="" selected>Assign a Developer</option>
-                            </select>
+                        <div class="col-lg-4">
+                            <div class="mb-3 mb-lg-0">
+                                <label asp-for="TicketTypeId" for="choices-priority-input" class="form-label">Type</label>
+                                <select asp-for="TicketTypeId" class="form-select" asp-items="ViewBag.TicketTypeId" data-choices data-choices-search-false
+                                        id="choices-priority-input" required>
+                                    <option value="" selected disabled>Ticket Type</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <!-- end card body -->
             </div>
+            <!-- end card -->
+
+
+
+
+            <div class="text-end mb-4">
+                <button type="submit" class="btn btn-success w-sm">Create</button>
+            </div>
         </div>
-    </form>
+        <!-- end col -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Assign Developer</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="choices-lead-input" class="form-label">Developer</label>
+                        <select class="form-select" asp-items="ViewBag.DevelopersId" asp-for="DeveloperUserId"
+                                id="choices-lead-input">
+                            <option value="" selected>Assign a Developer</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <!-- end card body -->
+        </div>
+    </div>
+</form>
 
 <!-- end row -->
 <!-- end modal -->

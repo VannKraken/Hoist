@@ -29,6 +29,7 @@ namespace Hoist.Controllers
         private readonly IBTFileService _btFileService;
         private readonly IBTProjectService _btProjectService;
         private readonly IBTRolesService _btRolesService;
+        private readonly IBTCompanyService _btCompanyService;
 
         public ProjectsController(
                                     UserManager<BTUser> userManager,
@@ -36,7 +37,8 @@ namespace Hoist.Controllers
                                     IBTFileService btFileService,
                                     IBTProjectService btProjectService,
                                     IBTRolesService btRolesService
-                                 )
+,
+                                    IBTCompanyService btCompanyService)
         {
 
             _userManager = userManager;
@@ -44,6 +46,7 @@ namespace Hoist.Controllers
             _btFileService = btFileService;
             _btProjectService = btProjectService;
             _btRolesService = btRolesService;
+            _btCompanyService = btCompanyService;
         }
         #endregion
 
@@ -316,7 +319,7 @@ namespace Hoist.Controllers
             }
             else 
             {
-                ViewData["ProjectManagersId"] = new SelectList(projectManagers, "Id", "FullName", currentProjectManager.Id);
+                ViewData["ProjectManagersId"] = new SelectList(projectManagers, "Id", "FullName");
             }
 
 
@@ -609,7 +612,36 @@ namespace Hoist.Controllers
             ViewData["MembersId"] = new MultiSelectList(userList, "Id", "FullName");
             return RedirectToAction("Details", new { id = projectId });
 
-        } 
+        }
+        #endregion
+
+        #region Remove Project Member
+
+        public async Task<IActionResult> RemoveMemberFromProject(int? projectId, string memberId)
+        {
+            int companyId = User.Identity.GetCompanyId();
+
+            if (projectId != null && memberId != null)
+            {
+
+                BTUser member = await _btCompanyService.GetMemberAsync(memberId, companyId);
+
+                bool memberPM = await _btRolesService.IsUserInRoleAsync(member, nameof(BTRoles.ProjectManager));
+
+                if (memberPM)
+                {
+                    await _btProjectService.RemoveProjectManagerAsync(projectId);
+                }
+
+                await _btProjectService.RemoveMemberFromProjectAsync(member, projectId);
+
+                return RedirectToAction("Details", new { id = projectId });
+            }
+
+            return RedirectToAction("Details", new { id = projectId });
+        }
+
+
         #endregion
 
 
