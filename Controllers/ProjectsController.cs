@@ -16,13 +16,20 @@ using Hoist.Models.ViewModels;
 using Hoist.Models.Enums;
 using System.ComponentModel.Design;
 
-
+//A controller is a component of the MVC design pattern.
+//The main idea of MVC is to separate the concerns of data management, user interface, and input processing.
+//This component, the controller, acts as a bridge between the Model and View. It is the foreman that controls the factory. The controller executes methods called Actions.
+//Each of these actions is responsible for -something-.
 namespace Hoist.Controllers
 {
     [Authorize]
     public class ProjectsController : Controller
     {
 
+
+        //This is dependency injection. Dependency Injection is a way of providing objects
+        //or classes from an external source to loosely couple our code with them ( as opposed to tightly coupling)
+        // This allows us to test and use them independently. This way we don't have to create the object directly here
         #region Dependency Injection
         private readonly UserManager<BTUser> _userManager;
         private readonly SignInManager<BTUser> _signInManager;
@@ -52,7 +59,15 @@ namespace Hoist.Controllers
 
 
         #region Indexes and Details
+
+        //This is an action. An action is a method or function that handles a specific user request from a web application or software.
+        //This can be anything such as clicking a button, submitting a form, or going to a new page. 
+        //Again, a clear separation of concerns and easier to test and maintain our code.
         // GET: Projects
+
+        //public is an access modifier. They are used to set the visibility and accessiblity of class members(properties, methods, fields, inner classes)
+        //async is a keyword that is used to modify a method (This action). It is used for when you are going to be using the await keyword
+        // This is to let the compiler know that the 
         public async Task<IActionResult> Index(int? pageNum, string? sortType)
         {
             int pageSize = 8;  //Number per page
