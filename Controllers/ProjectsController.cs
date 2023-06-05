@@ -188,6 +188,50 @@ namespace Hoist.Controllers
 
         }
 
+        public async Task<IActionResult> ArchivedProjects(int? pageNum, string? sortType)
+        {
+            int pageSize = 8;  //Number per page
+            int page = pageNum ?? 1;  //Which page number clicked upon on the page.
+
+            int companyId = User.Identity!.GetCompanyId();
+
+            List<string> sortingTypes = new()
+            {
+                "A - Z",
+                "Z - A",
+                "Deadline, Soonest",
+                "Deadline, Furthest",
+                "Priority, Low",
+                "Priority, High"
+
+            };
+
+
+            async Task<IPagedList<Project>> GetSortedProjects(string? sortString)
+            {
+                return sortString switch
+                {
+                    "A - Z" => (await _btProjectService.GetArchivedProjectsAsync(companyId)).OrderBy(p => p.Name).ToPagedList(page, pageSize),
+                    "Z - A" => (await _btProjectService.GetArchivedProjectsAsync(companyId)).OrderByDescending(p => p.Name).ToPagedList(page, pageSize),
+                    "Deadline, Soonest" => (await _btProjectService.GetArchivedProjectsAsync(companyId)).OrderBy(p => p.EndDate).ToPagedList(page, pageSize),
+                    "Deadline, Furthest" => (await _btProjectService.GetArchivedProjectsAsync(companyId)).OrderByDescending(p => p.EndDate).ToPagedList(page, pageSize),
+                    "Priority, Low" => (await _btProjectService.GetArchivedProjectsAsync(companyId)).OrderBy(p => p.ProjectPriorityId).ToPagedList(page, pageSize),
+                    "Priority, High" => (await _btProjectService.GetArchivedProjectsAsync(companyId)).OrderByDescending(p => p.ProjectPriorityId).ToPagedList(page, pageSize),
+                    _ => (await _btProjectService.GetArchivedProjectsAsync(companyId)).ToPagedList(page, pageSize),
+                };
+            }
+
+            IPagedList<Project> sortedProjects = await GetSortedProjects(sortType);
+            ViewData["SortTypes"] = new SelectList(sortingTypes, sortType);
+            ViewData["CurrentSortType"] = sortType;
+
+
+
+
+
+            return View(sortedProjects);
+        }
+
         // GET: Projects/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -462,6 +506,25 @@ namespace Hoist.Controllers
                 throw;
             }
 
+        }
+
+        public async Task<IActionResult> Restore(int id)
+        {
+            try
+            {
+                int companyId = User.Identity!.GetCompanyId();
+
+                Project project = await _btProjectService.GetProjectAsync(id, companyId);
+
+                await _btProjectService.RestoreProjectAsync(project.Id, companyId);
+
+                return RedirectToAction("ArchivedProjects");
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         #endregion

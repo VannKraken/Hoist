@@ -86,6 +86,28 @@ namespace Hoist.Services
 
 
         }
+
+        public async Task<IEnumerable<Project>> GetArchivedProjectsAsync(int companyId)
+        {
+            try
+            {
+                IEnumerable<Project> projects = await _context.Projects
+                                            .Where(p => p.CompanyId == companyId && p.Archived == true)
+                                            .Include(p => p.Tickets)
+                                            .Include(p => p.Company)
+                                            .Include(p => p.ProjectPriority)
+                                            .Include(p => p.Members).ToListAsync();
+
+                return projects;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+
+        }
         public async Task<BTUser> GetUserProjectsAsync(int companyId, string? userId)
         {
             try
@@ -172,6 +194,36 @@ namespace Hoist.Services
                 }
 
                 await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task RestoreProjectAsync(int projectId, int companyId)
+        {
+            try
+            {
+
+                Project project = await GetProjectAsync(projectId, companyId);
+
+                if(project != null)
+                {
+                    project.Archived = false;
+                    _context.Update(project);
+
+                    foreach(Ticket ticket in project.Tickets)
+                    {
+                        ticket.Archived = false;
+                        ticket.ArchivedByProject = false;
+                        _context.Update(ticket);
+                    }
+                }
+
+                await SaveProjectAsync();
+
             }
             catch (Exception)
             {
